@@ -37,11 +37,10 @@
             overflow-x: hidden;
         }
 
-        /* Header */
+        /* ── Header ──────────────────────────────────────────── */
         .header {
-            background: var(--bg-primary);
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            padding: 16px 20px 12px;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -51,15 +50,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
         }
 
+        /* Large date display, TeuxDeux style */
         .date-display {
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0px;
             text-transform: uppercase;
             color: var(--text-primary);
+            line-height: 1.1;
         }
 
         .menu-btn {
@@ -67,44 +67,41 @@
             border: none;
             color: var(--text-primary);
             cursor: pointer;
-            font-size: 24px;
-            padding: 4px;
+            font-size: 22px;
+            padding: 4px 8px;
         }
 
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            padding: 4px 12px;
-            background: var(--task-bg);
-            border-radius: 20px;
-            margin-right: 10px;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: var(--accent-green);
+            flex-shrink: 0;
         }
 
         .status-dot.disconnected {
-            background: #888888;
+            background: #555555;
         }
 
+        /* ── Task list — flat, line-separated (TeuxDeux style) ── */
         .mobile-view {
             display: block;
-            padding: 0;
             overflow-y: auto;
-            height: calc(100vh - 110px);
-            padding-bottom: 20px;
+            /* header ~68px + bottom-nav ~110px */
+            height: calc(100vh - 178px);
         }
 
         .day-column {
             background: var(--bg-secondary);
-            min-height: calc(100vh - 200px);
-            padding: 20px;
         }
 
         .day-header {
@@ -118,28 +115,61 @@
         .task-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-bottom: 100px;
+            gap: 10px;
+            padding: 16px 16px 40px;
         }
 
+        /* Card-style task rows */
         .task-item {
             background: var(--task-bg);
             border-left: 3px solid var(--accent-green);
-            padding: 14px 16px;
+            border-bottom: none;
+            padding: 13px 14px 13px 14px;
             border-radius: 4px;
             font-size: 15px;
             color: var(--text-primary);
             cursor: pointer;
-            transition: background 0.2s ease;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.15s ease;
         }
 
         .task-item:active {
             background: #2a2a2a;
         }
 
+        /* Drag handle — three horizontal lines, right-side for right-thumb reach */
+        .drag-handle {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 4px 6px 4px 10px;
+            cursor: grab;
+            flex-shrink: 0;
+            margin-left: auto;
+            opacity: 0.3;
+            touch-action: none;
+        }
+        .drag-handle span {
+            display: block;
+            width: 16px;
+            height: 2px;
+            background: var(--text-primary);
+            border-radius: 1px;
+        }
+        .drag-handle:active { cursor: grabbing; opacity: 0.7; }
+
+        /* Lifted card while dragging */
+        .task-item-wrapper.dragging {
+            opacity: 0.5;
+            z-index: 10;
+        }
+        .task-item-wrapper.drag-over {
+            border-top: 2px solid var(--accent-green);
+        }
+
+        /* Checkmark circle */
         .task-checkbox {
             width: 20px;
             height: 20px;
@@ -147,16 +177,16 @@
             border-radius: 50%;
             flex-shrink: 0;
             margin-top: 2px;
+            position: relative;
             cursor: pointer;
         }
 
         .task-checkbox.checked {
             background: var(--accent-green);
-            position: relative;
         }
 
         .task-checkbox.checked::after {
-            content: '✓';
+            content: "✓";
             position: absolute;
             top: 50%;
             left: 50%;
@@ -192,7 +222,7 @@
             flex-shrink: 0;
         }
 
-        /* Bottom Navigation */
+        /* ── Bottom bar — day strip + nav row ────────────────── */
         .bottom-nav {
             background: var(--accent-green);
             position: fixed;
@@ -200,10 +230,70 @@
             left: 0;
             right: 0;
             display: flex;
+            flex-direction: column;
+            border-top: none;
+            /* safe area for iPhone home bar */
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Day strip (date pills scrolling horizontally) */
+        .day-strip {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            overflow-x: auto;
+            padding: 10px 16px 6px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .day-strip::-webkit-scrollbar { display: none; }
+
+        .day-strip-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 14px;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-radius: 6px;
+            min-width: 52px;
+            transition: background 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .day-strip-item .ds-date {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--bg-secondary);
+            line-height: 1;
+        }
+
+        .day-strip-item .ds-day {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--bg-secondary);
+            opacity: 0.75;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .day-strip-item.active {
+            background: var(--bg-secondary);
+            border-radius: 50px;
+        }
+
+        .day-strip-item.active .ds-date,
+        .day-strip-item.active .ds-day {
+            color: var(--accent-green);
+            opacity: 1;
+        }
+
+        /* Bottom nav row: TODAY / + / SOMEDAY */
+        .bottom-nav-row {
+            display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 12px 20px;
-            border-top: 1px solid var(--accent-green-dark);
+            padding: 6px 20px 10px;
         }
 
         .nav-item {
@@ -211,85 +301,68 @@
             border: none;
             color: var(--bg-primary);
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 20px;
-            transition: background 0.2s ease;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .nav-item.active {
+        /* Active indicator dot under label */
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
             background: var(--bg-primary);
-            color: var(--accent-green);
+            border-radius: 50%;
         }
 
         .nav-item:active {
-            opacity: 0.8;
+            opacity: 0.7;
         }
 
         .add-task-btn {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             background: var(--bg-primary);
             border: none;
             border-radius: 50%;
             color: var(--accent-green);
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .add-task-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
         }
 
-        /* Day Navigation (mobile) */
-        .day-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .day-nav button {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px;
-        }
-
-        .current-day {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--accent-green);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        /* Hidden day-nav (old arrow nav) — kept for board view hide/show logic */
+        .day-nav { display: none !important; }
 
         /* Task Board View */
         .task-board-view {
             display: none;
-            padding: 20px 20px 100px;
+            padding: 20px 20px 20px;
             overflow-y: auto;
-            height: calc(100vh - 110px);
+            height: calc(100vh - 178px);
         }
 
         .task-board-view.active {
             display: block;
         }
 
-        .mobile-view.hidden,
-        .day-nav.hidden {
+        .mobile-view.hidden {
             display: none;
         }
 
@@ -391,23 +464,6 @@
             color: var(--text-secondary);
             padding: 60px 20px;
             font-size: 14px;
-        }
-
-        /* Backburner section — tucked at the bottom of the task board.
-           Muted to signal "out of sight", but uses the same group anatomy. */
-        .backburner-section {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
-            opacity: 0.75;
-        }
-
-        .backburner-section .task-item {
-            opacity: 0.7;
-        }
-
-        .backburner-section .category-group-header {
-            color: var(--text-secondary);
         }
 
         /* Add task input */
@@ -625,130 +681,155 @@
             font-weight: 600;
         }
 
-        /* ── Date Picker Sheet ─────────────────────────────────── */
-        .date-picker-overlay {
+        /* Edit Modal */
+        .edit-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.8);
             display: none;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
-            z-index: 310;
-            padding: 0;
+            z-index: 300;
+            padding: 20px;
         }
 
-        .date-picker-overlay.visible {
+        .edit-modal-overlay.visible {
             display: flex;
         }
 
-        .date-picker-sheet {
+        .edit-modal {
             background: var(--bg-primary);
-            border-radius: 16px 16px 0 0;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 420px;
             width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
-        .date-picker-header {
-            padding: 20px 20px 16px;
+        .edit-modal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
 
-        /* Unified task sheet additions */
-        .task-sheet-input {
+        .edit-modal input {
             width: 100%;
             background: var(--task-bg);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 15px;
             font-family: inherit;
-            margin-bottom: 14px;
         }
 
-        .task-sheet-input:focus {
+        .edit-modal input:focus {
             outline: none;
             border-color: var(--accent-green);
         }
 
-        .task-sheet-categories {
+        .category-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 14px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
-        .task-sheet-cat {
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 12px;
+        .category-chip {
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             border: 2px solid transparent;
-            opacity: 0.6;
+            opacity: 0.7;
             transition: opacity 0.15s ease, border-color 0.15s ease;
         }
 
-        .task-sheet-cat.selected {
+        .category-chip.selected {
             opacity: 1;
             border-color: var(--text-primary);
         }
 
-        .task-sheet-footer {
+        .edit-modal-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 12px;
+            margin-top: 8px;
         }
 
-        .task-sheet-cancel,
-        .task-sheet-backburner,
-        .task-sheet-save {
+        .edit-modal-actions button {
             flex: 1;
-            padding: 12px 8px;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
-            font-size: 13px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            font-family: inherit;
-            white-space: nowrap;
         }
 
-        .task-sheet-cancel {
-            background: var(--task-bg);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-color);
-        }
-
-        .task-sheet-backburner {
-            background: #88878022;
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .task-sheet-backburner.active {
-            background: #00ff6622;
-            color: var(--accent-green);
-            border-color: var(--accent-green);
-        }
-
-        .task-sheet-save {
+        .btn-save {
             background: var(--accent-green);
             color: var(--bg-primary);
         }
 
-        /* Day-nav picker chips (Jump to day) */
-        .day-nav-chips {
+        .btn-delete {
+            background: #E24B4A22;
+            color: #E24B4A;
+        }
+
+        /* Longpress Day Picker */
+        .longpress-picker-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 300;
+            padding: 0;
+        }
+
+        .longpress-picker-overlay.visible {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: 60vh;
+        }
+
+        .longpress-picker {
+            background: var(--bg-primary);
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 70vh;
             overflow-y: auto;
         }
 
-        .day-nav-chip {
+        .longpress-picker-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .longpress-picker-task {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .day-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .day-chip {
             padding: 10px 14px;
             background: var(--task-bg);
             border: 1px solid var(--border-color);
@@ -756,131 +837,67 @@
             font-size: 13px;
             color: var(--text-primary);
             cursor: pointer;
-            font-family: inherit;
         }
 
-        .day-nav-chip:active {
+        .day-chip:active {
             background: var(--accent-green);
             color: var(--bg-primary);
-            border-color: var(--accent-green);
         }
 
-        .day-nav-chip.current {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
+        /* Action menu (shares overlay/sheet style with longpress picker) */
+        .action-menu-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 300;
+            padding: 0;
         }
 
-        .date-picker-quick-btns {
+        .action-menu-overlay.visible {
             display: flex;
-            gap: 10px;
         }
 
-        .date-picker-quick-btn {
-            flex: 1;
-            padding: 12px;
+        .action-menu {
+            background: var(--bg-primary);
+            border-radius: 16px 16px 0 0;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .action-menu-item {
             background: var(--task-bg);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
             color: var(--text-primary);
-            font-size: 14px;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             font-family: inherit;
+            text-align: left;
+        }
+
+        .action-menu-item:active {
+            background: #2a2a2a;
+        }
+
+        .action-menu-item-danger {
+            color: #E24B4A;
+            border-color: #E24B4A33;
+            background: #E24B4A11;
+        }
+
+        .action-menu-item-cancel {
+            margin-top: 8px;
             text-align: center;
-            transition: background 0.15s ease, border-color 0.15s ease;
-        }
-
-        .date-picker-quick-btn:active {
-            background: var(--accent-green);
-            color: var(--bg-primary);
-            border-color: var(--accent-green);
-        }
-
-        /* Calendar grid */
-        .date-picker-calendar {
-            background: var(--accent-green);
-            padding: 16px 20px 28px;
-        }
-
-        .calendar-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-        }
-
-        .calendar-month-label {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--bg-primary);
-        }
-
-        .calendar-nav-btn {
-            background: none;
-            border: none;
-            color: var(--bg-primary);
-            font-size: 20px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 4px 10px;
-            border-radius: 6px;
-            line-height: 1;
-        }
-
-        .calendar-nav-btn:active {
-            background: rgba(0, 0, 0, 0.15);
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-        }
-
-        .calendar-dow {
-            text-align: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--bg-primary);
-            opacity: 0.75;
-            padding: 4px 0 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--bg-primary);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.1s ease;
-        }
-
-        .calendar-day:active {
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .calendar-day.today {
-            background: var(--bg-primary);
-            color: var(--accent-green);
-            font-weight: 700;
-        }
-
-        .calendar-day.today:active {
-            background: rgba(0, 0, 0, 0.85);
-        }
-
-        .calendar-day.past {
-            opacity: 0.4;
-        }
-
-        .calendar-day.empty {
-            cursor: default;
+            color: var(--text-secondary);
         }
 
         /* Swipe wrappers for day-view tasks */
@@ -914,8 +931,8 @@
 
         .task-swipe-done {
             justify-content: flex-start;
-            background: var(--accent-green);
-            color: var(--bg-primary);
+            background: #378ADD;
+            color: #ffffff;
         }
 
         .task-item-wrapper.swiping .task-swipe-action { opacity: 1; }
@@ -936,42 +953,6 @@
             transition: transform 0.25s ease, opacity 0.25s ease;
             transform: translateX(110%);
             opacity: 0;
-        }
-
-        /* Drag handle for reordering tasks within a day */
-        .drag-handle {
-            color: var(--text-secondary);
-            font-size: 16px;
-            line-height: 1;
-            padding: 0 4px 0 8px;
-            margin-left: auto;
-            cursor: grab;
-            touch-action: none; /* let our touch handlers manage gestures */
-            user-select: none;
-            -webkit-user-select: none;
-            opacity: 0.5;
-            flex-shrink: 0;
-            align-self: center;
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
-            opacity: 1;
-        }
-
-        /* Lift effect while dragging */
-        .task-item-wrapper.dragging {
-            z-index: 5;
-        }
-
-        .task-item-wrapper.dragging .task-item {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-            transform: scale(1.02);
-            opacity: 0.95;
-        }
-
-        .task-item-wrapper.drag-shift {
-            transition: transform 0.2s ease;
         }
 
         /* Pull-indicator color in light mode handled by var(--accent-green) */
@@ -1046,24 +1027,21 @@
     <!-- Header -->
     <div class="header">
         <div class="header-top">
-            <div class="date-display">CARDIAC CORE</div>
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div>
+                <div class="date-display" id="dateDisplay">SATURDAY, MAY 2</div>
                 <div class="status-indicator">
                     <div class="status-dot disconnected" id="statusDot"></div>
                     <span id="statusText">Offline</span>
                 </div>
-                <button class="menu-btn" onclick="toggleSettings()">☰</button>
             </div>
+            <button class="menu-btn" onclick="toggleSettings()">☰</button>
         </div>
     </div>
 
-    <!-- Day Navigation (Mobile) -->
-    <div class="day-nav" id="dayNav">
+    <!-- Day nav kept in DOM for JS hide/show compatibility but hidden via CSS -->
+    <div class="day-nav" id="dayNav" aria-hidden="true">
         <button onclick="changeDay(-1)">←</button>
-        <div style="text-align: center; cursor: pointer; padding: 4px 12px;" id="dayNavCenter" onclick="openDayNavPicker()">
-            <div class="current-day" id="currentDay">TODAY</div>
-            <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;" id="dateDisplay">&nbsp;</div>
-        </div>
+        <div><div class="current-day" id="currentDay">TODAY</div></div>
         <button onclick="changeDay(1)">→</button>
     </div>
 
@@ -1082,9 +1060,12 @@
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="switchView('today')">TODAY</button>
-        <button class="add-task-btn" onclick="showAddTask()">+</button>
-        <button class="nav-item" onclick="switchView('tasks')">TASKS</button>
+        <div class="day-strip" id="dayStrip"></div>
+        <div class="bottom-nav-row">
+            <button class="nav-item active" id="navToday" onclick="switchView('today')">TODAY</button>
+            <button class="add-task-btn" onclick="showAddTask()">+</button>
+            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">SOMEDAY</button>
+        </div>
     </div>
 
     <!-- Add Task Input -->
@@ -1125,40 +1106,38 @@
         </div>
     </div>
 
-    <!-- Unified Task Sheet (opened on double tap) -->
-    <div class="date-picker-overlay" id="taskSheet">
-        <div class="date-picker-sheet">
-            <div class="date-picker-calendar" id="taskSheetCalendar">
-                <div class="calendar-nav">
-                    <button class="calendar-nav-btn" id="calPrevMonth">‹</button>
-                    <div class="calendar-month-label" id="calMonthLabel"></div>
-                    <button class="calendar-nav-btn" id="calNextMonth">›</button>
-                </div>
-                <div class="calendar-grid" id="calGrid"></div>
-            </div>
-            <div class="date-picker-header">
-                <input type="text" id="taskSheetInput" class="task-sheet-input" placeholder="Task name…" />
-                <div class="task-sheet-categories" id="taskSheetCategories"></div>
-                <div class="date-picker-quick-btns">
-                    <button class="date-picker-quick-btn" id="taskSheetSomeday">Someday list</button>
-                    <button class="date-picker-quick-btn" id="taskSheetToday">Today</button>
-                </div>
-                <div class="task-sheet-footer">
-                    <button class="task-sheet-cancel" id="taskSheetCancel">Cancel</button>
-                    <button class="task-sheet-backburner" id="taskSheetBackburner">Backburner</button>
-                    <button class="task-sheet-save" id="taskSheetSave">Save</button>
-                </div>
+    <!-- Edit Task Modal -->
+    <div class="edit-modal-overlay" id="editModal">
+        <div class="edit-modal">
+            <div class="edit-modal-title">Edit Task</div>
+            <input type="text" id="editTaskInput" placeholder="Task name…" />
+            <div class="edit-modal-title" style="margin-top:18px;">Category</div>
+            <div class="category-grid" id="editCategoryGrid"></div>
+            <div class="edit-modal-actions">
+                <button class="btn-delete" onclick="deleteEditingTask()">Delete</button>
+                <button class="btn-save" onclick="saveEditingTask()">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- Day-nav Date Picker (jump to today + next 14 days) -->
-    <div class="date-picker-overlay" id="dayNavPicker">
-        <div class="date-picker-sheet">
-            <div class="date-picker-header">
-                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Jump to day</div>
-                <div class="day-nav-chips" id="dayNavChips"></div>
-            </div>
+    <!-- Longpress Day Picker -->
+    <div class="longpress-picker-overlay" id="longpressPicker">
+        <div class="longpress-picker">
+            <div class="longpress-picker-title">Move to day</div>
+            <div class="longpress-picker-task" id="longpressTaskName"></div>
+            <div class="day-chips" id="dayChips"></div>
+        </div>
+    </div>
+
+    <!-- Long-press Action Menu -->
+    <div class="action-menu-overlay" id="actionMenu">
+        <div class="action-menu">
+            <div class="longpress-picker-title">Task</div>
+            <div class="longpress-picker-task" id="actionMenuTaskName"></div>
+            <button class="action-menu-item" data-action="reschedule">Reschedule</button>
+            <button class="action-menu-item" data-action="edit">Edit</button>
+            <button class="action-menu-item action-menu-item-danger" data-action="delete">Delete</button>
+            <button class="action-menu-item action-menu-item-cancel" data-action="cancel">Cancel</button>
         </div>
     </div>
 
@@ -1319,18 +1298,56 @@
         function updateDateDisplay() {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            
+
             const date = new Date();
             date.setDate(date.getDate() + currentDayOffset);
-            
+
             const dayName = days[date.getDay()];
             const monthName = months[date.getMonth()];
             const dayNum = date.getDate();
-            
-            let label = currentDayOffset === 0 ? 'TODAY' : currentDayOffset === -1 ? 'YESTERDAY' : currentDayOffset === 1 ? 'TOMORROW' : dayName.toUpperCase();
-            
-            document.getElementById('currentDay').textContent = label;
-            document.getElementById('dateDisplay').textContent = `${dayName}, ${monthName} ${dayNum}`;
+
+            // Large header: "SATURDAY, MAY 2"
+            document.getElementById('dateDisplay').textContent =
+                `${dayName.toUpperCase()}, ${monthName.toUpperCase()} ${dayNum}`;
+
+            // Hidden day-nav label (kept for compatibility)
+            document.getElementById('currentDay').textContent =
+                currentDayOffset === 0 ? 'TODAY' :
+                currentDayOffset === -1 ? 'YESTERDAY' :
+                currentDayOffset === 1 ? 'TOMORROW' : dayName.toUpperCase();
+
+            renderDayStrip();
+        }
+
+        // Render the horizontal day strip across the bottom bar.
+        // Shows 2 past days + today + 6 future days. Active item is currentDayOffset.
+        function renderDayStrip() {
+            const strip = document.getElementById('dayStrip');
+            if (!strip) return;
+            const dayAbbr = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            const items = [];
+            for (let i = -2; i <= 6; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const m = d.getMonth() + 1;
+                const day = d.getDate();
+                const abbr = dayAbbr[d.getDay()];
+                const isActive = i === currentDayOffset;
+                items.push(`<div class="day-strip-item${isActive ? ' active' : ''}" onclick="changeDay(${i - currentDayOffset})">
+                    <span class="ds-date">${m}/${day}</span>
+                    <span class="ds-day">${abbr}</span>
+                </div>`);
+            }
+            strip.innerHTML = items.join('');
+
+            // Scroll active item into view
+            requestAnimationFrame(() => {
+                const active = strip.querySelector('.day-strip-item.active');
+                if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+            });
         }
 
         function changeDay(offset) {
@@ -1339,46 +1356,10 @@
             renderTasks();
         }
 
-        function jumpToDay(offset) {
-            currentDayOffset = offset;
-            updateDateDisplay();
-            renderTasks();
-            closeDayNavPicker();
-        }
-
-        // Day-nav date picker: bottom-sheet listing today + next 14 days.
-        // Opens when the user taps the day-nav center label.
-        function openDayNavPicker() {
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const chips = document.getElementById('dayNavChips');
-            chips.innerHTML = '';
-
-            for (let i = 0; i <= 14; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() + i);
-                const label = i === 0 ? 'Today'
-                    : i === 1 ? 'Tomorrow'
-                    : `${dayNames[d.getDay()]} ${monthNames[d.getMonth()]} ${d.getDate()}`;
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = 'day-nav-chip' + (i === currentDayOffset ? ' current' : '');
-                chip.textContent = label;
-                chip.addEventListener('click', () => jumpToDay(i));
-                chips.appendChild(chip);
-            }
-
-            document.getElementById('dayNavPicker').classList.add('visible');
-        }
-
-        function closeDayNavPicker() {
-            document.getElementById('dayNavPicker').classList.remove('visible');
-        }
-
         function renderTasks() {
             const list = document.getElementById('mobileTaskList');
             const dayTasks = tasks
-                .filter(t => t.dayOffset === currentDayOffset && !t.backburner)
+                .filter(t => t.dayOffset === currentDayOffset)
                 .sort((a, b) => (a.order || 0) - (b.order || 0));
 
             if (dayTasks.length === 0) {
@@ -1390,8 +1371,8 @@
             list.innerHTML = dayTasks.map(task => {
                 const categoryColor = categoryColors[task.category] || '#888780';
                 return `
-                    <div class="task-item-wrapper" data-task-id="${task.id}">
-                        <div class="task-swipe-done">✓ DONE</div>
+                    <div class="task-item-wrapper" data-task-id="${task.id}" draggable="false">
+                        <div class="task-swipe-done">→ TOMORROW</div>
                         <div class="task-swipe-action">← UNSCHEDULE</div>
                         <div class="task-item">
                             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
@@ -1402,17 +1383,17 @@
                                     ${escapeHtml(task.category)}
                                 </div>
                             </div>
-                            <div class="drag-handle" data-role="drag-handle" aria-label="Reorder">⠿</div>
+                            <div class="drag-handle" aria-label="Drag to reorder">
+                                <span></span><span></span><span></span>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
 
             // Attach gesture listeners to each newly-rendered wrapper.
-            list.querySelectorAll('.task-item-wrapper').forEach(wrapper => {
-                attachDayViewListeners(wrapper);
-                attachDragHandleListeners(wrapper);
-            });
+            list.querySelectorAll('.task-item-wrapper').forEach(attachDayViewListeners);
+            initDragHandles();
 
             if (currentView === 'tasks') renderTaskBoard();
         }
@@ -1596,11 +1577,9 @@
         let currentView = 'today';
 
         function rolloverOverdueTasks() {
-            // Move incomplete tasks from past days to today. Someday (999) and
-            // backburner tasks are left alone.
+            // Move incomplete tasks from past days to today. Someday (999) is left alone.
             let changed = false;
             for (const task of tasks) {
-                if (task.backburner) continue;
                 if (!task.completed && task.dayOffset != null && task.dayOffset < 0 && task.dayOffset !== 999) {
                     task.dayOffset = 0;
                     changed = true;
@@ -1630,26 +1609,22 @@
             currentView = view;
 
             const mobileView = document.getElementById('mobileView');
-            const dayNav = document.getElementById('dayNav');
             const boardView = document.getElementById('taskBoardView');
 
-            const navButtons = document.querySelectorAll('.bottom-nav .nav-item');
-            navButtons.forEach(btn => {
-                const handler = btn.getAttribute('onclick') || '';
-                const isActive =
-                    (view === 'today' && handler.includes("'today'")) ||
-                    (view === 'tasks' && handler.includes("'tasks'"));
-                btn.classList.toggle('active', isActive);
-            });
+            // Update nav button active states using stable IDs
+            document.getElementById('navToday').classList.toggle('active', view === 'today');
+            document.getElementById('navTasks').classList.toggle('active', view === 'tasks');
+
+            // Show/hide day strip on the bottom bar (hide it in board view)
+            const strip = document.getElementById('dayStrip');
+            if (strip) strip.style.display = (view === 'tasks') ? 'none' : '';
 
             if (view === 'tasks') {
                 mobileView.classList.add('hidden');
-                dayNav.classList.add('hidden');
                 boardView.classList.add('active');
                 renderTaskBoard();
             } else {
                 mobileView.classList.remove('hidden');
-                dayNav.classList.remove('hidden');
                 boardView.classList.remove('active');
                 renderTasks();
             }
@@ -1668,13 +1643,8 @@
             const groups = {};
             const knownOrder = Object.keys(categoryColors);
             for (const cat of knownOrder) groups[cat] = [];
-            const backburnerTasks = [];
             for (const task of tasks) {
                 if (task.completed) continue;
-                if (task.backburner) {
-                    backburnerTasks.push(task);
-                    continue;
-                }
                 if (!isUnscheduled(task)) continue;
                 const cat = task.category || 'Brain Dump';
                 if (!groups[cat]) groups[cat] = [];
@@ -1686,7 +1656,7 @@
                 ...Object.keys(groups).filter(c => !knownOrder.includes(c)),
             ];
 
-            const mainHtml = orderedCats.map(cat => {
+            container.innerHTML = orderedCats.map(cat => {
                 const color = categoryColors[cat] || '#888780';
                 const items = groups[cat]
                     .slice()
@@ -1717,53 +1687,6 @@
                     </div>
                 `;
             }).join('');
-
-            // Backburner section — only rendered when there's at least one task.
-            // Sentinel category key '__backburner' is used in `collapsedCategories`
-            // so its collapsed state persists like any other group. Defaults to
-            // collapsed (added on first render below).
-            const BACKBURNER_KEY = '__backburner';
-            if (backburnerTasks.length > 0 && !collapsedCategories.has(BACKBURNER_KEY)
-                && !localStorage.getItem('cardiacBackburnerInit')) {
-                collapsedCategories.add(BACKBURNER_KEY);
-                saveCollapsedCategories();
-                localStorage.setItem('cardiacBackburnerInit', '1');
-            }
-            const bbCollapsed = collapsedCategories.has(BACKBURNER_KEY);
-            const bbRows = backburnerTasks
-                .slice()
-                .sort((a, b) => (a.order || 0) - (b.order || 0))
-                .map(task => {
-                    const color = categoryColors[task.category] || '#888780';
-                    return `
-                        <div class="task-item" data-task-id="${task.id}">
-                            <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
-                            <div class="task-text ${task.completed ? 'completed' : ''}">
-                                ${escapeHtml(task.text)}
-                                <div class="task-category">
-                                    <span class="category-dot" style="background-color: ${color}"></span>
-                                    ${escapeHtml(task.category || 'Brain Dump')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            const backburnerHtml = backburnerTasks.length > 0 ? `
-                <div class="backburner-section">
-                    <div class="category-group ${bbCollapsed ? 'collapsed' : ''}" data-cat="${BACKBURNER_KEY}">
-                        <div class="category-group-header" data-action="toggle-collapse">
-                            <span class="category-group-chevron">▼</span>
-                            <span>🔥 Backburner</span>
-                            <span class="category-group-count">${backburnerTasks.length}</span>
-                        </div>
-                        <div class="category-group-body">
-                            ${bbRows}
-                        </div>
-                    </div>
-                </div>
-            ` : '';
-
-            container.innerHTML = mainHtml + backburnerHtml;
 
             // Attach gesture listeners to each task on the board.
             container.querySelectorAll('.task-item[data-task-id]').forEach(attachBoardTaskListeners);
@@ -1892,106 +1815,59 @@
             }, true);
         }
 
-        // ── Unified Task Sheet ──────────────────────────────────
-        // Opens on double tap. Combines task-name editing, category selection,
-        // date picker (Someday / Today / arbitrary calendar date), and delete
-        // into a single screen.
-        let taskSheetTaskId = null;
-        let calViewYear = 0;
-        let calViewMonth = 0; // 0-based
+        // ── Edit Task Modal ─────────────────────────────────────
+        let editingTaskId = null;
 
-        function openTaskSheet(taskId) {
+        function openEditModal(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
-            taskSheetTaskId = taskId;
+            editingTaskId = taskId;
 
-            // Name input
-            document.getElementById('taskSheetInput').value = task.text;
+            document.getElementById('editTaskInput').value = task.text;
 
-            // Categories
-            const cats = document.getElementById('taskSheetCategories');
-            cats.innerHTML = Object.entries(categoryColors).map(([name, color]) => `
-                <div class="task-sheet-cat ${task.category === name ? 'selected' : ''}"
+            const grid = document.getElementById('editCategoryGrid');
+            grid.innerHTML = Object.entries(categoryColors).map(([name, color]) => `
+                <div class="category-chip ${task.category === name ? 'selected' : ''}"
                      style="background: ${color}22; color: ${color};"
-                     data-category="${escapeHtml(name)}">
+                     data-category="${escapeHtml(name)}"
+                     onclick="selectEditCategory(this)">
                     ${escapeHtml(name)}
                 </div>
             `).join('');
-            cats.querySelectorAll('.task-sheet-cat').forEach(chip => {
-                chip.addEventListener('click', () => {
-                    cats.querySelectorAll('.task-sheet-cat').forEach(c => c.classList.remove('selected'));
-                    chip.classList.add('selected');
-                });
-            });
 
-            // Backburner button — label and active state reflect current status.
-            const bbBtn = document.getElementById('taskSheetBackburner');
-            if (bbBtn) {
-                bbBtn.textContent = task.backburner ? 'Restore' : 'Backburner';
-                bbBtn.classList.toggle('active', !!task.backburner);
-            }
-
-            // Default calendar to current month
-            const now = new Date();
-            calViewYear = now.getFullYear();
-            calViewMonth = now.getMonth();
-            renderCalendar();
-
-            document.getElementById('taskSheet').classList.add('visible');
+            document.getElementById('editModal').classList.add('visible');
+            setTimeout(() => document.getElementById('editTaskInput').focus(), 100);
         }
 
-        function closeTaskSheet() {
-            document.getElementById('taskSheet').classList.remove('visible');
-            taskSheetTaskId = null;
+        function selectEditCategory(el) {
+            document.querySelectorAll('#editCategoryGrid .category-chip').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
         }
 
-        // Cancel: dismiss without persisting. Edits typed in the input are
-        // discarded because we never wrote them back to the task.
-        function cancelTaskSheet() {
-            closeTaskSheet();
-        }
+        function saveEditingTask() {
+            const task = tasks.find(t => t.id === editingTaskId);
+            if (!task) { closeEditModal(); return; }
 
-        // Persist the name + category edits without closing. Used before any
-        // date-assignment action so the user doesn't lose typed changes.
-        function persistTaskSheetEdits() {
-            const task = tasks.find(t => t.id === taskSheetTaskId);
-            if (!task) return null;
-            const newText = document.getElementById('taskSheetInput').value.trim();
-            const selectedChip = document.querySelector('#taskSheetCategories .task-sheet-cat.selected');
+            const newText = document.getElementById('editTaskInput').value.trim();
+            const selectedChip = document.querySelector('#editCategoryGrid .category-chip.selected');
             if (newText) task.text = newText;
             if (selectedChip) task.category = selectedChip.getAttribute('data-category');
-            return task;
-        }
 
-        function saveTaskSheet() {
-            const task = persistTaskSheetEdits();
-            if (!task) { closeTaskSheet(); return; }
             saveTasks();
             renderActiveView();
-            closeTaskSheet();
+            closeEditModal();
             if (notionConnected) pushTaskToNotion(task);
         }
 
-        // Toggle backburner status. Persists any pending edits first so the
-        // user doesn't lose changes. Note: backburner is a local-only flag —
-        // we don't push it to Notion since there's no equivalent property in
-        // the user's schema. The category and dayOffset are preserved so the
-        // task can be restored exactly where it was.
-        function toggleTaskSheetBackburner() {
-            const task = persistTaskSheetEdits();
-            if (!task) { closeTaskSheet(); return; }
-            task.backburner = !task.backburner;
-            saveTasks();
-            renderActiveView();
-            closeTaskSheet();
-            if (notionConnected) pushTaskToNotion(task);
+        function deleteEditingTask() {
+            const taskId = editingTaskId;
+            closeEditModal();
+            deleteTaskById(taskId);
         }
 
-        // Shared delete path. Kept available even though the UI no longer
-        // exposes it directly — backburner is the user-facing alternative.
-        // Wire to a button or call from the console if a hard delete is ever
-        // needed; archives the Notion page first so it doesn't resurrect on
-        // the next sync, then removes the task locally.
+        // Shared delete path used by the modal and the action menu.
+        // Archives the Notion page first (if any) so it does not resurrect on the
+        // next sync, then removes the task locally and re-renders.
         async function deleteTaskById(taskId, { confirmFirst = true } = {}) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
@@ -2001,6 +1877,9 @@
                 if (!ok) return;
             }
 
+            // Archive in Notion before removing locally so we still have the
+            // notionId. If the archive fails (offline, API error), we surface it
+            // and bail — better than a phantom local delete that resurrects.
             if (notionConnected && task.notionId) {
                 const ok = await archiveTaskInNotion(task.notionId);
                 if (!ok) {
@@ -2014,119 +1893,130 @@
             renderActiveView();
         }
 
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('visible');
+            editingTaskId = null;
+        }
+
         function renderActiveView() {
             if (currentView === 'tasks') renderTaskBoard();
             else renderTasks();
         }
 
-        function renderCalendar() {
-            const monthNames = ['January','February','March','April','May','June',
-                                'July','August','September','October','November','December'];
-            document.getElementById('calMonthLabel').textContent =
-                `${monthNames[calViewMonth]} ${calViewYear}`;
+        // ── Longpress Day Picker ────────────────────────────────
+        let longpressTaskId = null;
 
-            const today = new Date();
-            today.setHours(0,0,0,0);
+        function openLongpressPicker(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            longpressTaskId = taskId;
 
-            const grid = document.getElementById('calGrid');
-            grid.innerHTML = '';
+            document.getElementById('longpressTaskName').textContent = task.text;
 
-            // Day-of-week headers
-            ['S','M','T','W','T','F','S'].forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'calendar-dow';
-                el.textContent = d;
-                grid.appendChild(el);
-            });
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const chips = document.getElementById('dayChips');
+            chips.innerHTML = '';
 
-            // First day of the month
-            const first = new Date(calViewYear, calViewMonth, 1);
-            const startDow = first.getDay(); // 0=Sun
+            // Someday chip first
+            const somedayChip = document.createElement('div');
+            somedayChip.className = 'day-chip';
+            somedayChip.textContent = 'Someday';
+            somedayChip.onclick = () => assignTaskDay(longpressTaskId, 999);
+            chips.appendChild(somedayChip);
 
-            // Empty cells before the 1st
-            for (let i = 0; i < startDow; i++) {
-                const el = document.createElement('div');
-                el.className = 'calendar-day empty';
-                grid.appendChild(el);
+            for (let i = 0; i <= 14; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() + i);
+                const label = i === 0 ? 'Today'
+                    : i === 1 ? 'Tomorrow'
+                    : `${dayNames[d.getDay()]} ${monthNames[d.getMonth()]} ${d.getDate()}`;
+                const chip = document.createElement('div');
+                chip.className = 'day-chip';
+                chip.textContent = label;
+                chip.onclick = () => assignTaskDay(longpressTaskId, i);
+                chips.appendChild(chip);
             }
 
-            // Days in month
-            const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(calViewYear, calViewMonth, day);
-                date.setHours(0,0,0,0);
-                const diffMs = date - today;
-                const diffDays = Math.round(diffMs / 86400000);
-                const isPast = diffDays < 0;
-
-                const el = document.createElement('div');
-                el.className = 'calendar-day' +
-                    (diffDays === 0 ? ' today' : '') +
-                    (isPast ? ' past' : '');
-                el.textContent = day;
-
-                el.addEventListener('click', () => {
-                    assignTaskDay(taskSheetTaskId, diffDays);
-                });
-
-                grid.appendChild(el);
-            }
+            document.getElementById('longpressPicker').classList.add('visible');
         }
 
         function assignTaskDay(taskId, dayOffset) {
-            if (taskId == null) { closeTaskSheet(); return; }
-            // Persist any pending name/category edits first so they aren't lost.
-            const task = persistTaskSheetEdits();
-            if (!task) { closeTaskSheet(); return; }
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) { closeLongpressPicker(); return; }
             task.dayOffset = dayOffset;
             task.order = tasks.filter(t => t.dayOffset === dayOffset).length;
             saveTasks();
             renderActiveView();
-            closeTaskSheet();
+            closeLongpressPicker();
             if (notionConnected) pushTaskToNotion(task);
         }
 
-        // Wire up the static parts of the task sheet (calendar nav, quick
-        // buttons, dismissal). Done on DOMContentLoaded so the DOM is ready.
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('calPrevMonth').addEventListener('click', () => {
-                calViewMonth--;
-                if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
-                renderCalendar();
-            });
-            document.getElementById('calNextMonth').addEventListener('click', () => {
-                calViewMonth++;
-                if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
-                renderCalendar();
-            });
-            document.getElementById('taskSheetSomeday').addEventListener('click', () => {
-                assignTaskDay(taskSheetTaskId, 999);
-            });
-            document.getElementById('taskSheetToday').addEventListener('click', () => {
-                assignTaskDay(taskSheetTaskId, 0);
-            });
-            document.getElementById('taskSheetSave').addEventListener('click', saveTaskSheet);
-            document.getElementById('taskSheetCancel').addEventListener('click', cancelTaskSheet);
-            document.getElementById('taskSheetBackburner').addEventListener('click', toggleTaskSheetBackburner);
-            document.getElementById('taskSheet').addEventListener('click', e => {
-                if (e.target === document.getElementById('taskSheet')) closeTaskSheet();
-            });
-            document.getElementById('dayNavPicker').addEventListener('click', e => {
-                if (e.target === document.getElementById('dayNavPicker')) closeDayNavPicker();
-            });
-        });
+        function closeLongpressPicker() {
+            document.getElementById('longpressPicker').classList.remove('visible');
+            longpressTaskId = null;
+        }
+
+        // ── Action Menu (long-press) ────────────────────────────
+        let actionMenuTaskId = null;
+
+        function openActionMenu(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            actionMenuTaskId = taskId;
+            document.getElementById('actionMenuTaskName').textContent = task.text;
+            document.getElementById('actionMenu').classList.add('visible');
+        }
+
+        function closeActionMenu() {
+            document.getElementById('actionMenu').classList.remove('visible');
+            actionMenuTaskId = null;
+        }
+
+        function handleActionMenuClick(action) {
+            const taskId = actionMenuTaskId;
+            closeActionMenu();
+            if (taskId == null) return;
+
+            if (action === 'reschedule') {
+                openLongpressPicker(taskId);
+            } else if (action === 'edit') {
+                openEditModal(taskId);
+            } else if (action === 'delete') {
+                deleteTaskById(taskId);
+            }
+            // 'cancel' or anything else: just dismiss (already done above)
+        }
 
         function initOverlayDismissals() {
-            // Task sheet dismissal is wired in DOMContentLoaded above.
+            const editModal = document.getElementById('editModal');
+            editModal.addEventListener('click', e => {
+                if (e.target === editModal) closeEditModal();
+            });
+            const picker = document.getElementById('longpressPicker');
+            picker.addEventListener('click', e => {
+                if (e.target === picker) closeLongpressPicker();
+            });
+            const actionMenu = document.getElementById('actionMenu');
+            actionMenu.addEventListener('click', e => {
+                if (e.target === actionMenu) {
+                    closeActionMenu();
+                    return;
+                }
+                const btn = e.target.closest('.action-menu-item');
+                if (btn) handleActionMenuClick(btn.dataset.action);
+            });
         }
 
         // ── Board-task gesture handling ─────────────────────────
         // Single tap = no-op (intentional, prevents fat-finger toggles).
-        // Double tap = unified task sheet. Triple tap = schedule to today.
+        // Double tap = edit modal. Triple tap = schedule to today.
+        // Long press = action menu (Reschedule / Edit / Delete).
         function attachBoardTaskListeners(item) {
             let tapCount = 0;
             let tapTimer = null;
-            let mode = null; // 'tap' | 'cancelled'
+            let longpressTimer = null;
+            let mode = null; // 'tap' | 'longpress' | 'cancelled'
             let startX = 0, startY = 0;
 
             item.addEventListener('touchstart', e => {
@@ -2136,15 +2026,25 @@
                 mode = 'tap';
                 tapCount += 1;
 
+                clearTimeout(longpressTimer);
+                longpressTimer = setTimeout(() => {
+                    if (mode !== 'tap') return;
+                    mode = 'longpress';
+                    tapCount = 0;
+                    clearTimeout(tapTimer);
+                    openActionMenu(Number(item.dataset.taskId));
+                }, 600);
+
                 clearTimeout(tapTimer);
                 tapTimer = setTimeout(() => {
                     if (mode !== 'tap') return;
                     const count = tapCount;
                     tapCount = 0;
+                    clearTimeout(longpressTimer);
                     const taskId = Number(item.dataset.taskId);
 
                     if (count === 2) {
-                        openTaskSheet(taskId);
+                        openEditModal(taskId);
                     } else if (count >= 3) {
                         scheduleBoardTaskToToday(taskId);
                     }
@@ -2160,13 +2060,15 @@
                     mode = 'cancelled';
                     tapCount = 0;
                     clearTimeout(tapTimer);
+                    clearTimeout(longpressTimer);
                 }
             }, { passive: true });
 
-            // Desktop fallback: dblclick opens the unified sheet.
+            // Desktop fallback: dblclick opens edit. (No single-click handler —
+            // that's the whole point of this view.)
             item.addEventListener('dblclick', e => {
                 e.stopPropagation();
-                openTaskSheet(Number(item.dataset.taskId));
+                openEditModal(Number(item.dataset.taskId));
             });
         }
 
@@ -2181,52 +2083,62 @@
         }
 
         // ── Day-view gesture handling ───────────────────────────
-        // Single tap = no-op (avoids fat-finger mistakes).
-        // Double tap = unified task sheet.
-        // Swipe right = complete, Swipe left = unschedule.
         function attachDayViewListeners(wrapper) {
             const taskItem = wrapper.querySelector('.task-item');
             if (!taskItem) return;
 
             let startX = 0, startY = 0, currentX = 0;
             let isHorizontal = null;
+            let longpressTimer = null;
             let lastTapTime = 0;
+            let didSwipe = false;
             let touchHandled = false; // Block synthetic click after touch
-            let onHandle = false;     // True when the touch started on the drag handle
 
             wrapper.addEventListener('touchstart', e => {
                 if (!e.touches[0]) return;
-                // Drag handle owns its own touch sequence — don't compete with it.
-                onHandle = !!(e.target && e.target.closest && e.target.closest('[data-role="drag-handle"]'));
-                if (onHandle) return;
-
                 startX = e.touches[0].clientX;
                 startY = e.touches[0].clientY;
                 currentX = 0;
                 isHorizontal = null;
+                didSwipe = false;
                 touchHandled = true;
 
                 const taskId = Number(wrapper.dataset.taskId);
                 const now = Date.now();
 
-                // Double tap → unified task sheet
+                // Double tap → edit modal
                 if (now - lastTapTime < 350) {
+                    clearTimeout(longpressTimer);
                     lastTapTime = 0;
-                    openTaskSheet(taskId);
+                    didSwipe = true; // suppress the deferred single-tap toggle below
+                    openEditModal(taskId);
                     return;
                 }
                 lastTapTime = now;
+
+                // Long press → action menu (Reschedule / Edit / Delete)
+                clearTimeout(longpressTimer);
+                longpressTimer = setTimeout(() => {
+                    longpressTimer = null;
+                    didSwipe = true;
+                    openActionMenu(taskId);
+                }, 600);
             }, { passive: true });
 
             wrapper.addEventListener('touchmove', e => {
-                if (onHandle) return;
                 if (!e.touches[0]) return;
                 const dx = e.touches[0].clientX - startX;
                 const dy = e.touches[0].clientY - startY;
 
                 if (isHorizontal === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
                     isHorizontal = Math.abs(dx) > Math.abs(dy);
-                    if (!isHorizontal) return;
+                    if (!isHorizontal) {
+                        clearTimeout(longpressTimer);
+                        longpressTimer = null;
+                        return;
+                    }
+                    clearTimeout(longpressTimer);
+                    longpressTimer = null;
                 }
                 if (!isHorizontal) return;
 
@@ -2239,36 +2151,55 @@
             }, { passive: false });
 
             wrapper.addEventListener('touchend', () => {
-                if (onHandle) { onHandle = false; return; }
+                clearTimeout(longpressTimer);
+                longpressTimer = null;
                 const taskId = Number(wrapper.dataset.taskId);
 
                 if (isHorizontal) {
+                    didSwipe = true;
                     if (currentX < -60) {
                         wrapper.classList.add('swipe-complete');
                         setTimeout(() => unscheduleTask(taskId), 250);
                     } else if (currentX > 60) {
                         wrapper.classList.add('swipe-complete-right');
-                        setTimeout(() => toggleTask(taskId), 250);
+                        setTimeout(() => moveTaskToNextDay(taskId), 250);
                     } else {
                         taskItem.style.transition = 'transform 0.2s ease';
                         taskItem.style.transform = 'translateX(0)';
                         wrapper.classList.remove('swiping', 'swiping-right');
                     }
+                } else if (!didSwipe) {
+                    // Single tap — defer briefly so a double-tap can claim it.
+                    setTimeout(() => {
+                        if (Date.now() - lastTapTime >= 340) {
+                            toggleTask(taskId);
+                        }
+                    }, 350);
                 }
-                // Single tap on day view: deliberately no-op.
 
                 isHorizontal = null;
                 currentX = 0;
             });
 
-            // Desktop: single click no-op, dblclick opens task sheet. Touch path skips click.
+            // Desktop: native click toggles, dblclick opens edit. Suppressed on touch.
             taskItem.addEventListener('click', () => {
                 if (touchHandled) return;
-                // No-op on desktop click as well.
+                toggleTask(Number(wrapper.dataset.taskId));
             });
             taskItem.addEventListener('dblclick', () => {
-                openTaskSheet(Number(wrapper.dataset.taskId));
+                openEditModal(Number(wrapper.dataset.taskId));
             });
+        }
+
+        function moveTaskToNextDay(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            // Move to the day after whichever day is currently showing
+            task.dayOffset = currentDayOffset + 1;
+            task.order = tasks.filter(t => t.dayOffset === task.dayOffset).length;
+            saveTasks();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(task);
         }
 
         function unscheduleTask(taskId) {
@@ -2281,134 +2212,104 @@
             if (notionConnected) pushTaskToNotion(task);
         }
 
-        // ── Drag handle reorder (day view, touch-only) ──────────
-        // Touch the ⠿ handle on a task to lift it; drag up/down to reorder
-        // within the current day. Releases settle a new `order` for every
-        // task on this day and persist to localStorage + Notion.
-        function attachDragHandleListeners(wrapper) {
-            const handle = wrapper.querySelector('[data-role="drag-handle"]');
-            if (!handle) return;
+        // ── Drag-to-reorder (day view) ─────────────────────────
+        // Uses touch events on the drag handle only. The main task body still
+        // handles swipe and tap gestures independently.
+        (function initDragReorder() {
+            // We re-init after every renderTasks call via initDragHandles().
+        })();
 
-            const taskItem = wrapper.querySelector('.task-item');
-            const list = wrapper.parentElement;
-            if (!taskItem || !list) return;
+        function initDragHandles() {
+            const list = document.getElementById('mobileTaskList');
+            if (!list) return;
 
-            let dragging = false;
-            let startY = 0;
-            let currentY = 0;
-            let wrapperHeight = 0;
-            let originalIndex = 0;
-            let siblings = [];     // array of .task-item-wrapper elements at drag-start time
-            let placeholderIndex = 0; // current insertion index within `siblings`
+            let draggingWrapper = null;
+            let dragStartY = 0;
+            let dragCurrentY = 0;
+            let placeholder = null;
+            let wrappers = [];
 
-            // Prevent the parent's click/swipe handlers from firing when the
-            // user starts on the handle. We stop propagation so the wrapper's
-            // touchstart still runs but its `onHandle` guard short-circuits it.
-            handle.addEventListener('touchstart', e => {
-                if (!e.touches[0]) return;
-                e.stopPropagation();
-                dragging = true;
-                startY = e.touches[0].clientY;
-                currentY = 0;
+            list.querySelectorAll('.drag-handle').forEach(handle => {
+                handle.addEventListener('touchstart', e => {
+                    e.stopPropagation(); // don't trigger swipe/tap on the task item
+                    const touch = e.touches[0];
+                    draggingWrapper = handle.closest('.task-item-wrapper');
+                    if (!draggingWrapper) return;
 
-                wrapperHeight = wrapper.offsetHeight;
-                siblings = Array.from(list.querySelectorAll('.task-item-wrapper'));
-                originalIndex = siblings.indexOf(wrapper);
-                placeholderIndex = originalIndex;
+                    dragStartY = touch.clientY;
+                    dragCurrentY = touch.clientY;
 
-                wrapper.classList.add('dragging');
-                // Other rows animate when shifted.
-                siblings.forEach(s => { if (s !== wrapper) s.classList.add('drag-shift'); });
-            }, { passive: true });
+                    // Snapshot wrapper order for hit-testing
+                    wrappers = [...list.querySelectorAll('.task-item-wrapper')];
 
-            handle.addEventListener('touchmove', e => {
-                if (!dragging || !e.touches[0]) return;
-                e.preventDefault();
-                currentY = e.touches[0].clientY - startY;
-                taskItem.style.transition = 'none';
-                taskItem.style.transform = `translateY(${currentY}px)`;
+                    // Placeholder to hold the slot
+                    placeholder = document.createElement('div');
+                    placeholder.style.cssText = `height: ${draggingWrapper.offsetHeight}px; border-radius: 4px; background: var(--border-color); opacity: 0.4;`;
 
-                // Determine where the dragged row should slot in. We use the
-                // dragged row's center vs each sibling's center.
-                const draggedCenter = wrapper.getBoundingClientRect().top
-                    + wrapperHeight / 2 + currentY;
+                    // Lift the card
+                    const rect = draggingWrapper.getBoundingClientRect();
+                    draggingWrapper.classList.add('dragging');
+                    draggingWrapper.style.position = 'fixed';
+                    draggingWrapper.style.left = rect.left + 'px';
+                    draggingWrapper.style.width = rect.width + 'px';
+                    draggingWrapper.style.top = rect.top + 'px';
+                    draggingWrapper.style.zIndex = '500';
+                    draggingWrapper.style.transition = 'none';
+                    draggingWrapper.style.pointerEvents = 'none';
+                    list.insertBefore(placeholder, draggingWrapper);
+                }, { passive: true });
 
-                let newIndex = originalIndex;
-                for (let i = 0; i < siblings.length; i++) {
-                    const sib = siblings[i];
-                    if (sib === wrapper) continue;
-                    const sibRect = sib.getBoundingClientRect();
-                    const sibCenter = sibRect.top + sibRect.height / 2;
-                    if (draggedCenter > sibCenter) newIndex = i + (i > originalIndex ? 0 : 1);
-                    else { newIndex = i + (i > originalIndex ? -1 : 0); break; }
-                }
-                // Clamp
-                if (newIndex < 0) newIndex = 0;
-                if (newIndex > siblings.length - 1) newIndex = siblings.length - 1;
+                handle.addEventListener('touchmove', e => {
+                    if (!draggingWrapper) return;
+                    e.preventDefault(); // prevent page scroll while dragging
+                    const touch = e.touches[0];
+                    const dy = touch.clientY - dragCurrentY;
+                    dragCurrentY = touch.clientY;
 
-                if (newIndex !== placeholderIndex) {
-                    placeholderIndex = newIndex;
-                    // Visually shift siblings. Each non-dragged sibling either
-                    // moves up by wrapperHeight (if its old position is now
-                    // below the placeholder but was above origin), or moves
-                    // down (vice versa), or sits still.
-                    siblings.forEach((sib, i) => {
-                        if (sib === wrapper) return;
-                        let shift = 0;
-                        if (originalIndex < placeholderIndex
-                            && i > originalIndex && i <= placeholderIndex) {
-                            shift = -wrapperHeight;
-                        } else if (originalIndex > placeholderIndex
-                            && i >= placeholderIndex && i < originalIndex) {
-                            shift = wrapperHeight;
+                    const currentTop = parseFloat(draggingWrapper.style.top) || 0;
+                    draggingWrapper.style.top = (currentTop + dy) + 'px';
+
+                    // Find which wrapper the center of the dragged card is over
+                    const cardCenterY = touch.clientY;
+                    for (const w of wrappers) {
+                        if (w === draggingWrapper) continue;
+                        const r = w.getBoundingClientRect();
+                        const midY = r.top + r.height / 2;
+                        if (cardCenterY < midY) {
+                            list.insertBefore(placeholder, w);
+                            break;
+                        } else if (w === wrappers[wrappers.length - 1]) {
+                            list.appendChild(placeholder);
                         }
-                        sib.style.transform = `translateY(${shift}px)`;
+                    }
+                }, { passive: false });
+
+                handle.addEventListener('touchend', () => {
+                    if (!draggingWrapper) return;
+
+                    // Reset styles
+                    draggingWrapper.style.cssText = '';
+                    draggingWrapper.classList.remove('dragging');
+                    draggingWrapper.style.pointerEvents = '';
+
+                    // Move dragging wrapper into placeholder position
+                    list.insertBefore(draggingWrapper, placeholder);
+                    placeholder.remove();
+
+                    // Persist new order to tasks array
+                    const newOrder = [...list.querySelectorAll('.task-item-wrapper')];
+                    newOrder.forEach((w, idx) => {
+                        const id = Number(w.dataset.taskId);
+                        const task = tasks.find(t => t.id === id);
+                        if (task) task.order = idx;
                     });
-                }
-            }, { passive: false });
+                    saveTasks();
 
-            const finish = () => {
-                if (!dragging) return;
-                dragging = false;
-
-                // Clean up styles.
-                taskItem.style.transition = '';
-                taskItem.style.transform = '';
-                siblings.forEach(s => {
-                    s.style.transform = '';
-                    s.classList.remove('drag-shift');
+                    draggingWrapper = null;
+                    placeholder = null;
+                    wrappers = [];
                 });
-                wrapper.classList.remove('dragging');
-
-                if (placeholderIndex !== originalIndex) {
-                    commitReorder(siblings, originalIndex, placeholderIndex);
-                }
-                siblings = [];
-            };
-            handle.addEventListener('touchend', finish);
-            handle.addEventListener('touchcancel', finish);
-        }
-
-        // Apply the new visual order to the task list and persist. Operates
-        // only on the tasks that were visible in the day view at drag-start
-        // — Someday tasks and other days are untouched.
-        function commitReorder(siblings, fromIndex, toIndex) {
-            // Build the new ID order from the sibling list.
-            const taskIds = siblings.map(s => Number(s.dataset.taskId));
-            const [moved] = taskIds.splice(fromIndex, 1);
-            taskIds.splice(toIndex, 0, moved);
-
-            // Rewrite `order` on each affected task.
-            taskIds.forEach((id, idx) => {
-                const t = tasks.find(x => x.id === id);
-                if (t) t.order = idx;
             });
-
-            saveTasks();
-            renderTasks();
-            // Order is local-only metadata; we don't push to Notion since
-            // there's no equivalent property in the user's schema. (If a
-            // Notion "Order" property is ever added, this is the spot.)
         }
 
         function escapeHtml(s) {
