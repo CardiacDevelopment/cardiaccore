@@ -37,10 +37,11 @@
             overflow-x: hidden;
         }
 
-        /* ── Header ──────────────────────────────────────────── */
+        /* Header */
         .header {
-            background: var(--bg-secondary);
-            padding: 16px 20px 12px;
+            background: var(--bg-primary);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -50,16 +51,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
         }
 
-        /* Large date display, TeuxDeux style */
         .date-display {
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: 0px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             color: var(--text-primary);
-            line-height: 1.1;
         }
 
         .menu-btn {
@@ -67,41 +67,44 @@
             border: none;
             color: var(--text-primary);
             cursor: pointer;
-            font-size: 22px;
-            padding: 4px 8px;
+            font-size: 24px;
+            padding: 4px;
         }
 
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 4px;
+            gap: 8px;
+            font-size: 12px;
+            padding: 4px 12px;
+            background: var(--task-bg);
+            border-radius: 20px;
+            margin-right: 10px;
         }
 
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: var(--accent-green);
-            flex-shrink: 0;
         }
 
         .status-dot.disconnected {
-            background: #555555;
+            background: #888888;
         }
 
-        /* ── Task list — flat, line-separated (TeuxDeux style) ── */
         .mobile-view {
             display: block;
+            padding: 0;
             overflow-y: auto;
-            /* header ~68px + bottom-nav ~110px */
-            height: calc(100vh - 178px);
+            height: calc(100vh - 110px);
+            padding-bottom: 20px;
         }
 
         .day-column {
             background: var(--bg-secondary);
+            min-height: calc(100vh - 200px);
+            padding: 20px;
         }
 
         .day-header {
@@ -115,61 +118,28 @@
         .task-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding: 16px 16px 40px;
+            gap: 12px;
+            padding-bottom: 100px;
         }
 
-        /* Card-style task rows */
         .task-item {
             background: var(--task-bg);
             border-left: 3px solid var(--accent-green);
-            border-bottom: none;
-            padding: 13px 14px 13px 14px;
+            padding: 14px 16px;
             border-radius: 4px;
             font-size: 15px;
             color: var(--text-primary);
             cursor: pointer;
+            transition: background 0.2s ease;
             display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.15s ease;
+            align-items: flex-start;
+            gap: 12px;
         }
 
         .task-item:active {
             background: #2a2a2a;
         }
 
-        /* Drag handle — three horizontal lines, right-side for right-thumb reach */
-        .drag-handle {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            padding: 4px 6px 4px 10px;
-            cursor: grab;
-            flex-shrink: 0;
-            margin-left: auto;
-            opacity: 0.3;
-            touch-action: none;
-        }
-        .drag-handle span {
-            display: block;
-            width: 16px;
-            height: 2px;
-            background: var(--text-primary);
-            border-radius: 1px;
-        }
-        .drag-handle:active { cursor: grabbing; opacity: 0.7; }
-
-        /* Lifted card while dragging */
-        .task-item-wrapper.dragging {
-            opacity: 0.5;
-            z-index: 10;
-        }
-        .task-item-wrapper.drag-over {
-            border-top: 2px solid var(--accent-green);
-        }
-
-        /* Checkmark circle */
         .task-checkbox {
             width: 20px;
             height: 20px;
@@ -177,16 +147,16 @@
             border-radius: 50%;
             flex-shrink: 0;
             margin-top: 2px;
-            position: relative;
             cursor: pointer;
         }
 
         .task-checkbox.checked {
             background: var(--accent-green);
+            position: relative;
         }
 
         .task-checkbox.checked::after {
-            content: "✓";
+            content: '✓';
             position: absolute;
             top: 50%;
             left: 50%;
@@ -222,7 +192,7 @@
             flex-shrink: 0;
         }
 
-        /* ── Bottom bar — day strip + nav row ────────────────── */
+        /* Bottom Navigation */
         .bottom-nav {
             background: var(--accent-green);
             position: fixed;
@@ -230,70 +200,10 @@
             left: 0;
             right: 0;
             display: flex;
-            flex-direction: column;
-            border-top: none;
-            /* safe area for iPhone home bar */
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        /* Day strip (date pills scrolling horizontally) */
-        .day-strip {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            overflow-x: auto;
-            padding: 10px 16px 6px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-        }
-        .day-strip::-webkit-scrollbar { display: none; }
-
-        .day-strip-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 6px 14px;
-            cursor: pointer;
-            flex-shrink: 0;
-            border-radius: 6px;
-            min-width: 52px;
-            transition: background 0.15s ease;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .day-strip-item .ds-date {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--bg-secondary);
-            line-height: 1;
-        }
-
-        .day-strip-item .ds-day {
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--bg-secondary);
-            opacity: 0.75;
-            text-transform: uppercase;
-            margin-top: 2px;
-        }
-
-        .day-strip-item.active {
-            background: var(--bg-secondary);
-            border-radius: 50px;
-        }
-
-        .day-strip-item.active .ds-date,
-        .day-strip-item.active .ds-day {
-            color: var(--accent-green);
-            opacity: 1;
-        }
-
-        /* Bottom nav row: TODAY / + / SOMEDAY */
-        .bottom-nav-row {
-            display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 6px 20px 10px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--accent-green-dark);
         }
 
         .nav-item {
@@ -301,68 +211,154 @@
             border: none;
             color: var(--bg-primary);
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
-            position: relative;
-            -webkit-tap-highlight-color: transparent;
+            transition: background 0.2s ease;
         }
 
-        /* Active indicator dot under label */
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
+        .nav-item.active {
             background: var(--bg-primary);
-            border-radius: 50%;
+            color: var(--accent-green);
         }
 
         .nav-item:active {
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
         .add-task-btn {
-            width: 42px;
-            height: 42px;
+            width: 48px;
+            height: 48px;
             background: var(--bg-primary);
             border: none;
             border-radius: 50%;
             color: var(--accent-green);
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .add-task-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
         }
 
-        /* Hidden day-nav (old arrow nav) — kept for board view hide/show logic */
-        .day-nav { display: none !important; }
+        /* Day Navigation (mobile) */
+        .day-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .day-nav button {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .current-day {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .group-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 14px;
+            line-height: 1;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .group-toggle-btn[aria-pressed="true"] {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--bg-primary);
+        }
+        .group-toggle-btn:active {
+            opacity: 0.8;
+        }
+
+        /* Day-view category sections (when grouped) */
+        #mobileTaskList .day-category-group {
+            margin-bottom: 24px;
+        }
+        #mobileTaskList .day-category-group:last-child {
+            margin-bottom: 0;
+        }
+        #mobileTaskList .day-category-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #mobileTaskList .day-category-group-header .category-dot {
+            width: 10px;
+            height: 10px;
+        }
+        #mobileTaskList .day-category-group-chevron {
+            font-size: 10px;
+            color: var(--text-secondary);
+            transition: transform 0.15s ease;
+            display: inline-block;
+            width: 10px;
+        }
+        #mobileTaskList .day-category-group.collapsed .day-category-group-chevron {
+            transform: rotate(-90deg);
+        }
+        #mobileTaskList .day-category-group-count {
+            color: var(--text-secondary);
+            font-weight: 400;
+            margin-left: auto;
+        }
+        #mobileTaskList .day-category-group-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        #mobileTaskList .day-category-group.collapsed .day-category-group-body {
+            display: none;
+        }
 
         /* Task Board View */
         .task-board-view {
             display: none;
-            padding: 20px 20px 20px;
+            padding: 20px 20px 100px;
             overflow-y: auto;
-            height: calc(100vh - 178px);
+            height: calc(100vh - 110px);
         }
 
         .task-board-view.active {
             display: block;
         }
 
-        .mobile-view.hidden {
+        .mobile-view.hidden,
+        .day-nav.hidden {
             display: none;
         }
 
@@ -931,8 +927,8 @@
 
         .task-swipe-done {
             justify-content: flex-start;
-            background: #378ADD;
-            color: #ffffff;
+            background: var(--accent-green);
+            color: var(--bg-primary);
         }
 
         .task-item-wrapper.swiping .task-swipe-action { opacity: 1; }
@@ -1027,22 +1023,28 @@
     <!-- Header -->
     <div class="header">
         <div class="header-top">
-            <div>
-                <div class="date-display" id="dateDisplay">SATURDAY, MAY 2</div>
+            <div class="date-display">CARDIAC CORE</div>
+            <div style="display:flex; align-items:center; gap:10px;">
                 <div class="status-indicator">
                     <div class="status-dot disconnected" id="statusDot"></div>
                     <span id="statusText">Offline</span>
                 </div>
+                <button class="menu-btn" onclick="toggleSettings()">☰</button>
             </div>
-            <button class="menu-btn" onclick="toggleSettings()">☰</button>
         </div>
     </div>
 
-    <!-- Day nav kept in DOM for JS hide/show compatibility but hidden via CSS -->
-    <div class="day-nav" id="dayNav" aria-hidden="true">
+    <!-- Day Navigation (Mobile) -->
+    <div class="day-nav" id="dayNav">
         <button onclick="changeDay(-1)">←</button>
-        <div><div class="current-day" id="currentDay">TODAY</div></div>
-        <button onclick="changeDay(1)">→</button>
+        <div style="text-align: center;">
+            <div class="current-day" id="currentDay">TODAY</div>
+            <div style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;" id="dateDisplay">&nbsp;</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button class="group-toggle-btn" id="groupToggleBtn" onclick="toggleGroupByCategory()" aria-pressed="false" title="Group by category">⌗</button>
+            <button onclick="changeDay(1)">→</button>
+        </div>
     </div>
 
     <!-- Mobile View -->
@@ -1060,12 +1062,9 @@
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="day-strip" id="dayStrip"></div>
-        <div class="bottom-nav-row">
-            <button class="nav-item active" id="navToday" onclick="switchView('today')">TODAY</button>
-            <button class="add-task-btn" onclick="showAddTask()">+</button>
-            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">SOMEDAY</button>
-        </div>
+        <button class="nav-item active" onclick="switchView('today')">TODAY</button>
+        <button class="add-task-btn" onclick="showAddTask()">+</button>
+        <button class="nav-item" onclick="switchView('tasks')">TASKS</button>
     </div>
 
     <!-- Add Task Input -->
@@ -1147,6 +1146,10 @@
         let notionConnected = false;
         let tasks = [];
         let collapsedCategories = new Set();
+        // Day-view grouping (separate from board's collapsedCategories so the
+        // two views don't fight over the same state).
+        let groupByCategory = false;
+        let dayCollapsedCategories = new Set();
 
         const categoryColors = {
             'Brain Dump': '#888780',
@@ -1164,9 +1167,11 @@
         async function init() {
             loadTasks();
             loadCollapsedCategories();
+            loadDayGroupingPrefs();
             applyLightModePreference();
             rolloverOverdueTasks();
             updateDateDisplay();
+            updateGroupToggleUI();
             renderTasks();
 
             // Check Notion connection status (uses server-side env-var token)
@@ -1187,6 +1192,7 @@
             });
 
             initTaskBoardEvents();
+            initDayCategoryHeaderEvents();
             initOverlayDismissals();
             initPullToRefresh();
         }
@@ -1298,56 +1304,18 @@
         function updateDateDisplay() {
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
+            
             const date = new Date();
             date.setDate(date.getDate() + currentDayOffset);
-
+            
             const dayName = days[date.getDay()];
             const monthName = months[date.getMonth()];
             const dayNum = date.getDate();
-
-            // Large header: "SATURDAY, MAY 2"
-            document.getElementById('dateDisplay').textContent =
-                `${dayName.toUpperCase()}, ${monthName.toUpperCase()} ${dayNum}`;
-
-            // Hidden day-nav label (kept for compatibility)
-            document.getElementById('currentDay').textContent =
-                currentDayOffset === 0 ? 'TODAY' :
-                currentDayOffset === -1 ? 'YESTERDAY' :
-                currentDayOffset === 1 ? 'TOMORROW' : dayName.toUpperCase();
-
-            renderDayStrip();
-        }
-
-        // Render the horizontal day strip across the bottom bar.
-        // Shows 2 past days + today + 6 future days. Active item is currentDayOffset.
-        function renderDayStrip() {
-            const strip = document.getElementById('dayStrip');
-            if (!strip) return;
-            const dayAbbr = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-            const today = new Date();
-            today.setHours(0,0,0,0);
-
-            const items = [];
-            for (let i = -2; i <= 6; i++) {
-                const d = new Date(today);
-                d.setDate(today.getDate() + i);
-                const m = d.getMonth() + 1;
-                const day = d.getDate();
-                const abbr = dayAbbr[d.getDay()];
-                const isActive = i === currentDayOffset;
-                items.push(`<div class="day-strip-item${isActive ? ' active' : ''}" onclick="changeDay(${i - currentDayOffset})">
-                    <span class="ds-date">${m}/${day}</span>
-                    <span class="ds-day">${abbr}</span>
-                </div>`);
-            }
-            strip.innerHTML = items.join('');
-
-            // Scroll active item into view
-            requestAnimationFrame(() => {
-                const active = strip.querySelector('.day-strip-item.active');
-                if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-            });
+            
+            let label = currentDayOffset === 0 ? 'TODAY' : currentDayOffset === -1 ? 'YESTERDAY' : currentDayOffset === 1 ? 'TOMORROW' : dayName.toUpperCase();
+            
+            document.getElementById('currentDay').textContent = label;
+            document.getElementById('dateDisplay').textContent = `${dayName}, ${monthName} ${dayNum}`;
         }
 
         function changeDay(offset) {
@@ -1368,34 +1336,75 @@
                 return;
             }
 
-            list.innerHTML = dayTasks.map(task => {
-                const categoryColor = categoryColors[task.category] || '#888780';
-                return `
-                    <div class="task-item-wrapper" data-task-id="${task.id}" draggable="false">
-                        <div class="task-swipe-done">→ TOMORROW</div>
-                        <div class="task-swipe-action">← UNSCHEDULE</div>
-                        <div class="task-item">
-                            <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
-                            <div class="task-text ${task.completed ? 'completed' : ''}">
-                                ${escapeHtml(task.text)}
-                                <div class="task-category">
-                                    <span class="category-dot" style="background-color: ${categoryColor}"></span>
-                                    ${escapeHtml(task.category)}
-                                </div>
-                            </div>
-                            <div class="drag-handle" aria-label="Drag to reorder">
-                                <span></span><span></span><span></span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            if (groupByCategory) {
+                list.innerHTML = renderDayTasksGrouped(dayTasks);
+            } else {
+                list.innerHTML = dayTasks.map(renderDayTaskHtml).join('');
+            }
 
             // Attach gesture listeners to each newly-rendered wrapper.
             list.querySelectorAll('.task-item-wrapper').forEach(attachDayViewListeners);
-            initDragHandles();
 
             if (currentView === 'tasks') renderTaskBoard();
+        }
+
+        // One task row's HTML — extracted so flat and grouped paths share it.
+        function renderDayTaskHtml(task) {
+            const categoryColor = categoryColors[task.category] || '#888780';
+            return `
+                <div class="task-item-wrapper" data-task-id="${task.id}">
+                    <div class="task-swipe-done">✓ DONE</div>
+                    <div class="task-swipe-action">← UNSCHEDULE</div>
+                    <div class="task-item">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
+                        <div class="task-text ${task.completed ? 'completed' : ''}">
+                            ${escapeHtml(task.text)}
+                            <div class="task-category">
+                                <span class="category-dot" style="background-color: ${categoryColor}"></span>
+                                ${escapeHtml(task.category)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Build grouped HTML: each category section contains a header and the
+        // tasks for that category. Categories with zero tasks are omitted.
+        function renderDayTasksGrouped(dayTasks) {
+            const groups = new Map();
+            const knownOrder = Object.keys(categoryColors);
+            // Initialise in known order so sections render predictably even
+            // if tasks come back in a different order.
+            for (const cat of knownOrder) groups.set(cat, []);
+            for (const task of dayTasks) {
+                const cat = task.category || 'Brain Dump';
+                if (!groups.has(cat)) groups.set(cat, []);
+                groups.get(cat).push(task);
+            }
+
+            const sections = [];
+            for (const [cat, items] of groups) {
+                if (items.length === 0) continue;
+                const color = categoryColors[cat] || '#888780';
+                const collapsed = dayCollapsedCategories.has(cat);
+                const catAttr = escapeHtml(cat);
+                const rows = items.map(renderDayTaskHtml).join('');
+                sections.push(`
+                    <div class="day-category-group ${collapsed ? 'collapsed' : ''}" data-cat="${catAttr}">
+                        <div class="day-category-group-header" data-action="toggle-day-collapse">
+                            <span class="day-category-group-chevron">▼</span>
+                            <span class="category-dot" style="background-color: ${color}"></span>
+                            <span>${escapeHtml(cat)}</span>
+                            <span class="day-category-group-count">${items.length}</span>
+                        </div>
+                        <div class="day-category-group-body">
+                            ${rows}
+                        </div>
+                    </div>
+                `);
+            }
+            return sections.join('');
         }
 
         function addTask(text) {
@@ -1609,22 +1618,26 @@
             currentView = view;
 
             const mobileView = document.getElementById('mobileView');
+            const dayNav = document.getElementById('dayNav');
             const boardView = document.getElementById('taskBoardView');
 
-            // Update nav button active states using stable IDs
-            document.getElementById('navToday').classList.toggle('active', view === 'today');
-            document.getElementById('navTasks').classList.toggle('active', view === 'tasks');
-
-            // Show/hide day strip on the bottom bar (hide it in board view)
-            const strip = document.getElementById('dayStrip');
-            if (strip) strip.style.display = (view === 'tasks') ? 'none' : '';
+            const navButtons = document.querySelectorAll('.bottom-nav .nav-item');
+            navButtons.forEach(btn => {
+                const handler = btn.getAttribute('onclick') || '';
+                const isActive =
+                    (view === 'today' && handler.includes("'today'")) ||
+                    (view === 'tasks' && handler.includes("'tasks'"));
+                btn.classList.toggle('active', isActive);
+            });
 
             if (view === 'tasks') {
                 mobileView.classList.add('hidden');
+                dayNav.classList.add('hidden');
                 boardView.classList.add('active');
                 renderTaskBoard();
             } else {
                 mobileView.classList.remove('hidden');
+                dayNav.classList.remove('hidden');
                 boardView.classList.remove('active');
                 renderTasks();
             }
@@ -1702,6 +1715,67 @@
             }
         }
 
+        // Day-view grouping prefs — separate storage from the board's
+        // collapsedCategories so each view remembers its own state.
+        function loadDayGroupingPrefs() {
+            try {
+                groupByCategory = localStorage.getItem('cardiacDayGrouped') === '1';
+            } catch (err) {
+                groupByCategory = false;
+            }
+            try {
+                const saved = localStorage.getItem('cardiacDayCollapsedCategories');
+                if (saved) dayCollapsedCategories = new Set(JSON.parse(saved));
+            } catch (err) {
+                console.error('Failed to load day collapsed categories:', err);
+                dayCollapsedCategories = new Set();
+            }
+        }
+
+        function saveDayCollapsedCategories() {
+            try {
+                localStorage.setItem(
+                    'cardiacDayCollapsedCategories',
+                    JSON.stringify([...dayCollapsedCategories])
+                );
+            } catch (err) {
+                console.error('Failed to save day collapsed categories:', err);
+            }
+        }
+
+        function toggleGroupByCategory() {
+            groupByCategory = !groupByCategory;
+            try {
+                localStorage.setItem('cardiacDayGrouped', groupByCategory ? '1' : '0');
+            } catch (err) {
+                console.error('Failed to save grouping pref:', err);
+            }
+            updateGroupToggleUI();
+            renderTasks();
+        }
+
+        function updateGroupToggleUI() {
+            const btn = document.getElementById('groupToggleBtn');
+            if (!btn) return;
+            btn.setAttribute('aria-pressed', groupByCategory ? 'true' : 'false');
+        }
+
+        function toggleDayCategoryCollapse(cat) {
+            if (dayCollapsedCategories.has(cat)) {
+                dayCollapsedCategories.delete(cat);
+            } else {
+                dayCollapsedCategories.add(cat);
+            }
+            saveDayCollapsedCategories();
+            // Toggle in place — no re-render needed, keeps any in-flight UI state.
+            const list = document.getElementById('mobileTaskList');
+            if (!list) return;
+            const group = list.querySelector(
+                `.day-category-group[data-cat="${cssEscape(cat)}"]`
+            );
+            if (group) group.classList.toggle('collapsed');
+        }
+
         function saveCollapsedCategories() {
             try {
                 localStorage.setItem(
@@ -1767,6 +1841,20 @@
         function cssEscape(s) {
             if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(s);
             return String(s).replace(/(["'\\])/g, '\\$1');
+        }
+
+        function initDayCategoryHeaderEvents() {
+            const list = document.getElementById('mobileTaskList');
+            if (!list) return;
+            list.addEventListener('click', (e) => {
+                // Bail early if the click is on a task — those have their own
+                // gesture handlers and we mustn't toggle the section over them.
+                if (e.target.closest('.task-item-wrapper')) return;
+                const header = e.target.closest('.day-category-group-header');
+                if (!header) return;
+                const group = header.closest('.day-category-group');
+                if (group) toggleDayCategoryCollapse(group.dataset.cat);
+            });
         }
 
         function initTaskBoardEvents() {
@@ -2162,7 +2250,7 @@
                         setTimeout(() => unscheduleTask(taskId), 250);
                     } else if (currentX > 60) {
                         wrapper.classList.add('swipe-complete-right');
-                        setTimeout(() => moveTaskToNextDay(taskId), 250);
+                        setTimeout(() => toggleTask(taskId), 250);
                     } else {
                         taskItem.style.transition = 'transform 0.2s ease';
                         taskItem.style.transform = 'translateX(0)';
@@ -2191,17 +2279,6 @@
             });
         }
 
-        function moveTaskToNextDay(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-            // Move to the day after whichever day is currently showing
-            task.dayOffset = currentDayOffset + 1;
-            task.order = tasks.filter(t => t.dayOffset === task.dayOffset).length;
-            saveTasks();
-            renderActiveView();
-            if (notionConnected) pushTaskToNotion(task);
-        }
-
         function unscheduleTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
@@ -2210,106 +2287,6 @@
             saveTasks();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
-        }
-
-        // ── Drag-to-reorder (day view) ─────────────────────────
-        // Uses touch events on the drag handle only. The main task body still
-        // handles swipe and tap gestures independently.
-        (function initDragReorder() {
-            // We re-init after every renderTasks call via initDragHandles().
-        })();
-
-        function initDragHandles() {
-            const list = document.getElementById('mobileTaskList');
-            if (!list) return;
-
-            let draggingWrapper = null;
-            let dragStartY = 0;
-            let dragCurrentY = 0;
-            let placeholder = null;
-            let wrappers = [];
-
-            list.querySelectorAll('.drag-handle').forEach(handle => {
-                handle.addEventListener('touchstart', e => {
-                    e.stopPropagation(); // don't trigger swipe/tap on the task item
-                    const touch = e.touches[0];
-                    draggingWrapper = handle.closest('.task-item-wrapper');
-                    if (!draggingWrapper) return;
-
-                    dragStartY = touch.clientY;
-                    dragCurrentY = touch.clientY;
-
-                    // Snapshot wrapper order for hit-testing
-                    wrappers = [...list.querySelectorAll('.task-item-wrapper')];
-
-                    // Placeholder to hold the slot
-                    placeholder = document.createElement('div');
-                    placeholder.style.cssText = `height: ${draggingWrapper.offsetHeight}px; border-radius: 4px; background: var(--border-color); opacity: 0.4;`;
-
-                    // Lift the card
-                    const rect = draggingWrapper.getBoundingClientRect();
-                    draggingWrapper.classList.add('dragging');
-                    draggingWrapper.style.position = 'fixed';
-                    draggingWrapper.style.left = rect.left + 'px';
-                    draggingWrapper.style.width = rect.width + 'px';
-                    draggingWrapper.style.top = rect.top + 'px';
-                    draggingWrapper.style.zIndex = '500';
-                    draggingWrapper.style.transition = 'none';
-                    draggingWrapper.style.pointerEvents = 'none';
-                    list.insertBefore(placeholder, draggingWrapper);
-                }, { passive: true });
-
-                handle.addEventListener('touchmove', e => {
-                    if (!draggingWrapper) return;
-                    e.preventDefault(); // prevent page scroll while dragging
-                    const touch = e.touches[0];
-                    const dy = touch.clientY - dragCurrentY;
-                    dragCurrentY = touch.clientY;
-
-                    const currentTop = parseFloat(draggingWrapper.style.top) || 0;
-                    draggingWrapper.style.top = (currentTop + dy) + 'px';
-
-                    // Find which wrapper the center of the dragged card is over
-                    const cardCenterY = touch.clientY;
-                    for (const w of wrappers) {
-                        if (w === draggingWrapper) continue;
-                        const r = w.getBoundingClientRect();
-                        const midY = r.top + r.height / 2;
-                        if (cardCenterY < midY) {
-                            list.insertBefore(placeholder, w);
-                            break;
-                        } else if (w === wrappers[wrappers.length - 1]) {
-                            list.appendChild(placeholder);
-                        }
-                    }
-                }, { passive: false });
-
-                handle.addEventListener('touchend', () => {
-                    if (!draggingWrapper) return;
-
-                    // Reset styles
-                    draggingWrapper.style.cssText = '';
-                    draggingWrapper.classList.remove('dragging');
-                    draggingWrapper.style.pointerEvents = '';
-
-                    // Move dragging wrapper into placeholder position
-                    list.insertBefore(draggingWrapper, placeholder);
-                    placeholder.remove();
-
-                    // Persist new order to tasks array
-                    const newOrder = [...list.querySelectorAll('.task-item-wrapper')];
-                    newOrder.forEach((w, idx) => {
-                        const id = Number(w.dataset.taskId);
-                        const task = tasks.find(t => t.id === id);
-                        if (task) task.order = idx;
-                    });
-                    saveTasks();
-
-                    draggingWrapper = null;
-                    placeholder = null;
-                    wrappers = [];
-                });
-            });
         }
 
         function escapeHtml(s) {
