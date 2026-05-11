@@ -96,8 +96,8 @@
         .mobile-view {
             display: block;
             overflow-y: auto;
-            /* header ~68px + bottom-nav ~110px */
-            height: calc(100vh - 178px);
+            /* header ~68px + bottom-nav ~128px */
+            height: calc(100vh - 196px);
         }
 
         .day-column {
@@ -242,7 +242,7 @@
             align-items: center;
             gap: 0;
             overflow-x: auto;
-            padding: 10px 16px 6px;
+            padding: 12px 16px 8px;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
@@ -252,24 +252,24 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 6px 14px;
+            padding: 8px 16px;
             cursor: pointer;
             flex-shrink: 0;
             border-radius: 6px;
-            min-width: 52px;
+            min-width: 60px;
             transition: background 0.15s ease;
             -webkit-tap-highlight-color: transparent;
         }
 
         .day-strip-item .ds-date {
-            font-size: 15px;
+            font-size: 17px;
             font-weight: 700;
             color: var(--bg-secondary);
             line-height: 1;
         }
 
         .day-strip-item .ds-day {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--bg-secondary);
             opacity: 0.75;
@@ -293,19 +293,19 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 6px 20px 10px;
+            padding: 8px 20px 14px;
         }
 
         .nav-item {
             background: none;
             border: none;
             color: var(--bg-primary);
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 20px;
             position: relative;
             -webkit-tap-highlight-color: transparent;
@@ -329,13 +329,13 @@
         }
 
         .add-task-btn {
-            width: 42px;
-            height: 42px;
+            width: 52px;
+            height: 52px;
             background: var(--bg-primary);
             border: none;
             border-radius: 50%;
             color: var(--accent-green);
-            font-size: 26px;
+            font-size: 32px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
@@ -355,7 +355,7 @@
             display: none;
             padding: 20px 20px 20px;
             overflow-y: auto;
-            height: calc(100vh - 178px);
+            height: calc(100vh - 196px);
         }
 
         .task-board-view.active {
@@ -374,7 +374,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
+            padding: 8px 0;
             font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
@@ -391,11 +392,11 @@
         }
 
         .category-group-chevron {
-            font-size: 10px;
+            font-size: 20px;
             color: var(--text-secondary);
             transition: transform 0.15s ease;
             display: inline-block;
-            width: 10px;
+            width: 22px;
         }
 
         .category-group.collapsed .category-group-chevron {
@@ -469,7 +470,7 @@
         /* Add task input */
         .add-task-input {
             position: fixed;
-            bottom: 80px;
+            bottom: 100px;
             left: 20px;
             right: 20px;
             background: var(--task-bg);
@@ -989,7 +990,7 @@
         /* Undo toast */
         .undo-toast {
             position: fixed;
-            bottom: calc(178px + 12px);
+            bottom: calc(196px + 12px);
             left: 50%;
             transform: translateX(-50%) translateY(20px);
             background: var(--bg-primary);
@@ -1087,7 +1088,7 @@
 
     <!-- Mobile View -->
     <div class="mobile-view" id="mobileView">
-        <div id="pullIndicator" class="pull-indicator">↓ Release to sync Notion</div>
+        <div id="pullIndicator" class="pull-indicator">↓ Release to add task</div>
         <div class="day-column">
             <div class="task-list" id="mobileTaskList"></div>
         </div>
@@ -1247,6 +1248,7 @@
             initTaskBoardEvents();
             initOverlayDismissals();
             initPullToRefresh();
+            scheduleNextRollover();
         }
 
         // Check Notion connection status (single-user / server-token mode)
@@ -1381,7 +1383,7 @@
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-            const date = new Date();
+            const date = getEffectiveToday();
             date.setDate(date.getDate() + currentDayOffset);
 
             const dayName = days[date.getDay()];
@@ -1407,13 +1409,13 @@
             const strip = document.getElementById('dayStrip');
             if (!strip) return;
             const dayAbbr = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-            const today = new Date();
+            const today = getEffectiveToday();
             today.setHours(0,0,0,0);
 
             const items = [];
-            // Center the visible window on currentDayOffset so the active pill
-            // is always rendered, even when navigating far from today.
-            for (let i = currentDayOffset - 3; i <= currentDayOffset + 6; i++) {
+            // Anchor near start: show 1 past day + today + 9 future days so
+            // today sits at the left edge with future days filling the strip.
+            for (let i = currentDayOffset - 1; i <= currentDayOffset + 9; i++) {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 const m = d.getMonth() + 1;
@@ -1430,7 +1432,7 @@
             // Scroll active item into view
             requestAnimationFrame(() => {
                 const active = strip.querySelector('.day-strip-item.active');
-                if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+                if (active) active.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' });
             });
         }
 
@@ -1662,6 +1664,28 @@
 
         let currentView = 'today';
 
+        // Returns the "effective today" — midnight–3 AM still counts as the
+        // previous calendar day so tasks don't flip until 3 AM.
+        function getEffectiveToday() {
+            return new Date(Date.now() - 3 * 60 * 60 * 1000);
+        }
+
+        // Schedules a one-shot timer to fire at the next 3 AM wall-clock time,
+        // then re-schedules itself so the rollover keeps running while the app
+        // is open overnight.
+        function scheduleNextRollover() {
+            const now = new Date();
+            const next3AM = new Date(now);
+            next3AM.setHours(3, 0, 0, 0);
+            if (now >= next3AM) next3AM.setDate(next3AM.getDate() + 1);
+            setTimeout(() => {
+                rolloverOverdueTasks();
+                updateDateDisplay();
+                renderActiveView();
+                scheduleNextRollover();
+            }, next3AM - now);
+        }
+
         function rolloverOverdueTasks() {
             // Move incomplete tasks from past days to today. Someday (999) is left alone.
             let changed = false;
@@ -1693,6 +1717,12 @@
         function switchView(view) {
             if (view !== 'today' && view !== 'tasks') return;
             currentView = view;
+
+            // Always snap back to today when tapping TODAY
+            if (view === 'today') {
+                currentDayOffset = 0;
+                updateDateDisplay();
+            }
 
             const mobileView = document.getElementById('mobileView');
             const boardView = document.getElementById('taskBoardView');
@@ -2495,13 +2525,10 @@
             }, { passive: true });
 
             mobileView.addEventListener('touchend', () => {
-                if (indicator.classList.contains('visible') && notionConnected) {
-                    indicator.textContent = '↻ Syncing...';
-                    syncFromNotion().finally(() => {
-                        indicator.classList.remove('visible');
-                        indicator.textContent = '↓ Release to sync Notion';
-                    });
+                if (indicator.classList.contains('visible')) {
+                    showAddTask();
                 }
+                indicator.classList.remove('visible');
                 pulling = false;
             });
         }
