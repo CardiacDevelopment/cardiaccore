@@ -1565,7 +1565,12 @@
                 chip.className = 'day-picker-chip' + (offset === selectedOffset ? ' selected' : '');
                 chip.textContent = label;
                 chip.addEventListener('mousedown', e => e.preventDefault());
-                chip.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+                chip.addEventListener('touchend', e => {
+                    e.preventDefault(); // prevent synthetic click double-fire
+                    onSelect(offset);
+                    strip.querySelectorAll('.day-picker-chip').forEach(c => c.classList.remove('selected'));
+                    chip.classList.add('selected');
+                }, { passive: false });
                 chip.addEventListener('click', () => {
                     onSelect(offset);
                     strip.querySelectorAll('.day-picker-chip').forEach(c => c.classList.remove('selected'));
