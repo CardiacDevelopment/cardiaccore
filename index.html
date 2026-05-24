@@ -1138,7 +1138,7 @@
         <div class="bottom-nav-row">
             <button class="nav-item active" id="navToday" onclick="switchView('today')">TODAY</button>
             <button class="add-task-btn" onclick="showAddTask()">+</button>
-            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">SOMEDAY</button>
+            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">TASKS</button>
         </div>
     </div>
 
@@ -1254,7 +1254,7 @@
             'Benefits Board': '#EF9F27',
             'Property Management': '#639922',
             'Estate': '#BA7517',
-            'Acquisitions': '#7F77DD',
+            'Aquisitions': '#7F77DD',
             'Growth': '#1D9E75',
             'Research': '#888780'
         };
@@ -1579,7 +1579,7 @@
                 return chip;
             };
 
-            strip.appendChild(makeChip('Someday', 999));
+            strip.appendChild(makeChip('Tasks', 999));
             for (let i = 0; i <= 13; i++) {
                 const d = new Date();
                 d.setDate(d.getDate() + i);
@@ -2121,7 +2121,7 @@
             // Someday chip first
             const somedayChip = document.createElement('div');
             somedayChip.className = 'day-chip';
-            somedayChip.textContent = 'Someday';
+            somedayChip.textContent = 'Tasks';
             somedayChip.onclick = () => assignTaskDay(longpressTaskId, 999);
             chips.appendChild(somedayChip);
 
@@ -2448,7 +2448,7 @@
             saveTasks();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
-            showUndoToast('Moved to Someday', () => {
+            showUndoToast('Moved to Tasks', () => {
                 task.dayOffset = prevOffset;
                 task.order = tasks.filter(t => t.dayOffset === prevOffset).length;
                 saveTasks();
