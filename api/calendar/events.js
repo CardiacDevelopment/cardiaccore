@@ -55,6 +55,9 @@ module.exports = async function handler(req, res) {
   }
 
   const rawFeeds = Array.isArray(body.feeds) ? body.feeds : [];
+  // Client sends its IANA timezone so UTC event times convert to the user's
+  // wall clock. Falls back to the parser's DEFAULT_TZ if absent/invalid.
+  const tz = (body.tz && typeof body.tz === 'string') ? body.tz : undefined;
 
   const now = new Date();
   // Anchor the window on UTC midnight so it's stable across requests within a day.
@@ -87,7 +90,7 @@ module.exports = async function handler(req, res) {
   }
 
   const results = await Promise.allSettled(
-    validFeeds.map(f => fetchAndExpand(f.url, windowStart, windowEnd))
+    validFeeds.map(f => fetchAndExpand(f.url, windowStart, windowEnd, tz))
   );
 
   const events = [];
