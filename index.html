@@ -215,6 +215,25 @@
             gap: 6px;
         }
 
+        /* Time prefix on timed tasks — small accent-colored label above task text */
+        .task-time {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-green);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        /* Timed tasks: subtle visual cue that they are anchored to a time */
+        .task-item-wrapper.timed .task-item {
+            border-left-width: 4px;
+        }
+        /* Timed tasks hide the drag handle — they are chronology-anchored */
+        .task-item-wrapper.timed .drag-handle {
+            display: none;
+        }
+
         .category-dot {
             width: 8px;
             height: 8px;
@@ -466,12 +485,18 @@
             font-size: 14px;
         }
 
-        /* Add task container + input */
-        .add-task-container {
+        /* Add task input */
+        .add-task-input {
             position: fixed;
             bottom: 80px;
             left: 20px;
             right: 20px;
+            background: var(--task-bg);
+            border: 2px solid var(--accent-green);
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 15px;
+            color: var(--text-primary);
             z-index: 50;
             opacity: 0;
             pointer-events: none;
@@ -479,25 +504,14 @@
             transition: opacity 0.15s ease, transform 0.15s ease;
         }
 
-        .add-task-container.visible {
+        .add-task-input:focus {
+            outline: none;
+        }
+
+        .add-task-input.visible {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
-        }
-
-        .add-task-input {
-            width: 100%;
-            box-sizing: border-box;
-            background: var(--task-bg);
-            border: 2px solid var(--accent-green);
-            border-radius: 8px;
-            padding: 14px;
-            font-size: 15px;
-            color: var(--text-primary);
-        }
-
-        .add-task-input:focus {
-            outline: none;
         }
 
         /* Settings Panel */
@@ -849,35 +863,6 @@
             color: var(--bg-primary);
         }
 
-        /* Shared day picker strip (used in add-task and edit modal) */
-        .day-picker-strip {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 8px 0 4px;
-            scrollbar-width: none;
-        }
-
-        .day-picker-strip::-webkit-scrollbar { display: none; }
-
-        .day-picker-chip {
-            flex-shrink: 0;
-            padding: 7px 12px;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .day-picker-chip.selected {
-            background: var(--accent-green);
-            color: var(--bg-primary);
-            border-color: var(--accent-green);
-        }
-
         /* Action menu (shares overlay/sheet style with longpress picker) */
         .action-menu-overlay {
             position: fixed;
@@ -1020,46 +1005,6 @@
             color: #111111 !important;
         }
 
-        /* Undo toast */
-        .undo-toast {
-            position: fixed;
-            bottom: calc(178px + 12px);
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 10px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 13px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            z-index: 400;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        }
-        .undo-toast.visible {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translateX(-50%) translateY(0);
-        }
-        .undo-toast-btn {
-            background: none;
-            border: none;
-            color: var(--accent-green);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 0;
-            font-family: inherit;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
         /* Auth Modal */
         .auth-modal {
             text-align: center;
@@ -1138,15 +1083,12 @@
         <div class="bottom-nav-row">
             <button class="nav-item active" id="navToday" onclick="switchView('today')">TODAY</button>
             <button class="add-task-btn" onclick="showAddTask()">+</button>
-            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">TASKS</button>
+            <button class="nav-item" id="navTasks" onclick="switchView('tasks')">SOMEDAY</button>
         </div>
     </div>
 
     <!-- Add Task Input -->
-    <div class="add-task-container" id="addTaskContainer">
-        <input type="text" class="add-task-input" id="addTaskInput" placeholder="Add a task..." />
-        <div class="day-picker-strip" id="addTaskDayStrip"></div>
-    </div>
+    <input type="text" class="add-task-input" id="addTaskInput" placeholder="Add a task..." />
 
     <!-- Settings Panel -->
     <div class="settings-panel" id="settingsPanel">
@@ -1188,10 +1130,16 @@
         <div class="edit-modal">
             <div class="edit-modal-title">Edit Task</div>
             <input type="text" id="editTaskInput" placeholder="Task name…" />
+            <div class="edit-modal-title" style="margin-top:18px;">Time</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="time" id="editTimeInput" step="900" style="flex:1;" />
+                <button type="button" onclick="clearEditTime()"
+                        style="background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 14px; border-radius:6px; font-size:13px; cursor:pointer; font-family:inherit;">
+                    Clear
+                </button>
+            </div>
             <div class="edit-modal-title" style="margin-top:18px;">Category</div>
             <div class="category-grid" id="editCategoryGrid"></div>
-            <div class="edit-modal-title" style="margin-top:18px;">Day</div>
-            <div class="day-picker-strip" id="editDayStrip"></div>
             <div class="edit-modal-actions">
                 <button class="btn-delete" onclick="deleteEditingTask()">Delete</button>
                 <button class="btn-save" onclick="saveEditingTask()">Save</button>
@@ -1208,18 +1156,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirm Modal -->
-    <div class="modal" id="deleteConfirmModal">
-        <div class="modal-content">
-            <div class="modal-title" id="deleteConfirmTitle">Delete task?</div>
-            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;line-height:1.5;" id="deleteConfirmBody">This cannot be undone from the app.</p>
-            <div class="modal-buttons">
-                <button class="modal-button cancel" onclick="closeDeleteConfirmModal()">Cancel</button>
-                <button class="modal-button confirm" id="deleteConfirmBtn">Delete</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Long-press Action Menu -->
     <div class="action-menu-overlay" id="actionMenu">
         <div class="action-menu">
@@ -1232,19 +1168,11 @@
         </div>
     </div>
 
-    <!-- Undo Toast -->
-    <div class="undo-toast" id="undoToast">
-        <span id="undoToastText"></span>
-        <button class="undo-toast-btn" id="undoToastBtn">Undo</button>
-    </div>
-
     <script>
         // State
         let currentDayOffset = 0;
         let notionConnected = false;
         let tasks = [];
-        let addTaskSelectedDayOffset = 0;
-        let editTaskSelectedDayOffset = 0;
         let collapsedCategories = new Set();
 
         const categoryColors = {
@@ -1254,7 +1182,7 @@
             'Benefits Board': '#EF9F27',
             'Property Management': '#639922',
             'Estate': '#BA7517',
-            'Aquisitions': '#7F77DD',
+            'Acquisitions': '#7F77DD',
             'Growth': '#1D9E75',
             'Research': '#888780'
         };
@@ -1277,12 +1205,12 @@
                 if (e.key === 'Enter' && addTaskInput.value.trim()) {
                     addTask(addTaskInput.value.trim());
                     addTaskInput.value = '';
-                    document.getElementById('addTaskContainer').classList.remove('visible');
+                    addTaskInput.classList.remove('visible');
                 }
             });
 
             addTaskInput.addEventListener('blur', () => {
-                setTimeout(() => document.getElementById('addTaskContainer').classList.remove('visible'), 200);
+                setTimeout(() => addTaskInput.classList.remove('visible'), 200);
             });
 
             initTaskBoardEvents();
@@ -1319,20 +1247,6 @@
             }
         }
 
-        // Briefly overrides the header status text then reverts to the current
-        // connection state. Used for transient feedback (sync results, push errors).
-        let _statusMsgTimer = null;
-        function showStatusMessage(text, durationMs = 3000) {
-            const el = document.getElementById('statusText');
-            if (!el) return;
-            if (_statusMsgTimer) clearTimeout(_statusMsgTimer);
-            el.textContent = text;
-            _statusMsgTimer = setTimeout(() => {
-                _statusMsgTimer = null;
-                updateConnectionUI();
-            }, durationMs);
-        }
-
         function updateConnectionUI(data = {}) {
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
@@ -1357,59 +1271,49 @@
         }
 
         // Tasks
-        function getDefaultTasks() {
-            return [
-                {
-                    id: 1,
-                    text: 'Send art and Gayla email update',
-                    completed: false,
-                    dayOffset: 0,
-                    category: 'Personal',
-                    order: 0,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    text: 'Call Aaron',
-                    completed: false,
-                    dayOffset: 0,
-                    category: 'Personal',
-                    order: 1,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 3,
-                    text: 'Message Aptive',
-                    completed: false,
-                    dayOffset: 0,
-                    category: 'Property Management',
-                    order: 2,
-                    createdAt: new Date().toISOString()
-                },
-                {
-                    id: 4,
-                    text: 'Buy mom iPad',
-                    completed: false,
-                    dayOffset: 0,
-                    category: 'Personal',
-                    order: 3,
-                    createdAt: new Date().toISOString()
-                }
-            ];
-        }
-
         function loadTasks() {
             const saved = localStorage.getItem('cardiacTasks');
             if (saved) {
-                try {
-                    tasks = JSON.parse(saved);
-                } catch (err) {
-                    console.error('Failed to parse saved tasks, starting fresh:', err);
-                    tasks = getDefaultTasks();
-                    saveTasks();
-                }
+                tasks = JSON.parse(saved);
             } else {
-                tasks = getDefaultTasks();
+                tasks = [
+                    {
+                        id: 1,
+                        text: 'Send art and Gayla email update',
+                        completed: false,
+                        dayOffset: 0,
+                        category: 'Personal',
+                        order: 0,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        text: 'Call Aaron',
+                        completed: false,
+                        dayOffset: 0,
+                        category: 'Personal',
+                        order: 1,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        text: 'Message Aptive',
+                        completed: false,
+                        dayOffset: 0,
+                        category: 'Property Management',
+                        order: 2,
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 4,
+                        text: 'Buy mom iPad',
+                        completed: false,
+                        dayOffset: 0,
+                        category: 'Personal',
+                        order: 3,
+                        createdAt: new Date().toISOString()
+                    }
+                ];
                 saveTasks();
             }
         }
@@ -1452,9 +1356,7 @@
             today.setHours(0,0,0,0);
 
             const items = [];
-            // Center the visible window on currentDayOffset so the active pill
-            // is always rendered, even when navigating far from today.
-            for (let i = currentDayOffset - 3; i <= currentDayOffset + 6; i++) {
+            for (let i = -2; i <= 6; i++) {
                 const d = new Date(today);
                 d.setDate(today.getDate() + i);
                 const m = d.getMonth() + 1;
@@ -1483,6 +1385,9 @@
 
         function renderTasks() {
             const list = document.getElementById('mobileTaskList');
+            // Tasks are rendered in `order` ascending. Timed tasks are constrained
+            // to chronological order via placeTimedTask() whenever a time is set
+            // or changed, so this single sort handles both kinds.
             const dayTasks = tasks
                 .filter(t => t.dayOffset === currentDayOffset)
                 .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -1495,13 +1400,20 @@
 
             list.innerHTML = dayTasks.map(task => {
                 const categoryColor = categoryColors[task.category] || '#888780';
+                const hasTime = !!task.startTime;
+                const timeLabel = hasTime
+                    ? `<div class="task-time">${escapeHtml(formatTime12h(task.startTime))}</div>`
+                    : '';
+                // Drag handle hidden for timed tasks via .timed CSS rule; we still
+                // emit the markup so DOM structure stays consistent across renders.
                 return `
-                    <div class="task-item-wrapper" data-task-id="${task.id}" draggable="false">
+                    <div class="task-item-wrapper ${hasTime ? 'timed' : ''}" data-task-id="${task.id}" draggable="false">
                         <div class="task-swipe-done">→ TOMORROW</div>
                         <div class="task-swipe-action">← UNSCHEDULE</div>
                         <div class="task-item">
                             <div class="task-checkbox ${task.completed ? 'checked' : ''}"></div>
                             <div class="task-text ${task.completed ? 'completed' : ''}">
+                                ${timeLabel}
                                 ${escapeHtml(task.text)}
                                 <div class="task-category">
                                     <span class="category-dot" style="background-color: ${categoryColor}"></span>
@@ -1528,9 +1440,9 @@
                 id: Date.now(),
                 text: text,
                 completed: false,
-                dayOffset: addTaskSelectedDayOffset,
+                dayOffset: currentDayOffset,
                 category: 'Personal',
-                order: tasks.filter(t => t.dayOffset === addTaskSelectedDayOffset).length,
+                order: tasks.filter(t => t.dayOffset === currentDayOffset).length,
                 createdAt: new Date().toISOString()
             };
             tasks.push(task);
@@ -1556,51 +1468,10 @@
             }
         }
 
-        function buildDayChips(strip, selectedOffset, onSelect) {
-            const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-            const makeChip = (label, offset) => {
-                const chip = document.createElement('div');
-                chip.className = 'day-picker-chip' + (offset === selectedOffset ? ' selected' : '');
-                chip.textContent = label;
-                chip.addEventListener('mousedown', e => e.preventDefault());
-                chip.addEventListener('touchend', e => {
-                    e.preventDefault(); // prevent synthetic click double-fire
-                    onSelect(offset);
-                    strip.querySelectorAll('.day-picker-chip').forEach(c => c.classList.remove('selected'));
-                    chip.classList.add('selected');
-                }, { passive: false });
-                chip.addEventListener('click', () => {
-                    onSelect(offset);
-                    strip.querySelectorAll('.day-picker-chip').forEach(c => c.classList.remove('selected'));
-                    chip.classList.add('selected');
-                });
-                return chip;
-            };
-
-            strip.appendChild(makeChip('Tasks', 999));
-            for (let i = 0; i <= 13; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() + i);
-                const label = i === 0 ? 'Today'
-                    : i === 1 ? 'Tomorrow'
-                    : `${dayNames[d.getDay()]} ${monthNames[d.getMonth()]} ${d.getDate()}`;
-                strip.appendChild(makeChip(label, i));
-            }
-        }
-
         function showAddTask() {
-            addTaskSelectedDayOffset = currentDayOffset;
-
-            const strip = document.getElementById('addTaskDayStrip');
-            strip.innerHTML = '';
-            buildDayChips(strip, addTaskSelectedDayOffset, offset => {
-                addTaskSelectedDayOffset = offset;
-            });
-
-            document.getElementById('addTaskContainer').classList.add('visible');
-            document.getElementById('addTaskInput').focus();
+            const input = document.getElementById('addTaskInput');
+            input.classList.add('visible');
+            input.focus();
         }
 
         function toggleSettings() {
@@ -1611,7 +1482,7 @@
         // Notion Sync
         async function syncFromNotion({ silent = false } = {}) {
             if (!notionConnected) {
-                if (!silent) showStatusMessage('Not connected to Notion');
+                if (!silent) alert('Not connected to Notion');
                 return;
             }
 
@@ -1666,10 +1537,10 @@
 
                 saveTasks();
                 renderTasks();
-                if (!silent) showStatusMessage(`✓ Synced ${remoteTasks.length} tasks from Notion`);
+                if (!silent) alert(`Synced ${remoteTasks.length} tasks from Notion`);
             } catch (error) {
                 console.error('Sync error:', error);
-                if (!silent) showStatusMessage('⚠ Sync failed: ' + error.message);
+                if (!silent) alert('Sync failed: ' + error.message);
             } finally {
                 if (syncBtn) {
                     syncBtn.disabled = false;
@@ -1690,7 +1561,6 @@
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));
                     console.error('Push failed:', err.error || response.statusText);
-                    showStatusMessage('⚠ Notion sync failed — changes saved locally');
                     return;
                 }
                 const data = await response.json();
@@ -1704,7 +1574,6 @@
                 }
             } catch (error) {
                 console.error('Push error:', error);
-                showStatusMessage('⚠ Notion sync failed — changes saved locally');
             }
         }
 
@@ -1992,6 +1861,8 @@
             editingTaskId = taskId;
 
             document.getElementById('editTaskInput').value = task.text;
+            // Native <input type="time"> expects "HH:MM" 24h, which is what we store.
+            document.getElementById('editTimeInput').value = task.startTime || '';
 
             const grid = document.getElementById('editCategoryGrid');
             grid.innerHTML = Object.entries(categoryColors).map(([name, color]) => `
@@ -2002,13 +1873,6 @@
                     ${escapeHtml(name)}
                 </div>
             `).join('');
-
-            editTaskSelectedDayOffset = task.dayOffset != null ? task.dayOffset : 999;
-            const editStrip = document.getElementById('editDayStrip');
-            editStrip.innerHTML = '';
-            buildDayChips(editStrip, editTaskSelectedDayOffset, offset => {
-                editTaskSelectedDayOffset = offset;
-            });
 
             document.getElementById('editModal').classList.add('visible');
             setTimeout(() => document.getElementById('editTaskInput').focus(), 100);
@@ -2024,16 +1888,77 @@
             if (!task) { closeEditModal(); return; }
 
             const newText = document.getElementById('editTaskInput').value.trim();
+            const newTime = document.getElementById('editTimeInput').value || '';
             const selectedChip = document.querySelector('#editCategoryGrid .category-chip.selected');
             if (newText) task.text = newText;
             if (selectedChip) task.category = selectedChip.getAttribute('data-category');
-            task.dayOffset = editTaskSelectedDayOffset;
-            task.order = tasks.filter(t => t.dayOffset === editTaskSelectedDayOffset && t.id !== task.id).length;
+
+            // startTime is local-only and never pushed to Notion. Empty string from
+            // the time input means "no time" — store undefined so we don't ship
+            // empty strings around.
+            const timeChanged = (task.startTime || '') !== newTime;
+            if (timeChanged) {
+                if (newTime) {
+                    task.startTime = newTime;
+                    placeTimedTask(task);
+                } else {
+                    delete task.startTime;
+                    // No reorder needed — float keeps its current order slot.
+                }
+            }
 
             saveTasks();
             renderActiveView();
             closeEditModal();
             if (notionConnected) pushTaskToNotion(task);
+        }
+
+        function clearEditTime() {
+            const input = document.getElementById('editTimeInput');
+            if (input) input.value = '';
+        }
+
+        // Position a newly-timed (or re-timed) task chronologically among other
+        // timed tasks on the same day. Floats keep their existing order; only
+        // timed tasks need to respect chronology.
+        //
+        // Rule: place this task immediately after the latest other timed task
+        // with startTime <= this.startTime. If none, place at the start of the day.
+        // Then renumber the whole day to clean integer orders.
+        function placeTimedTask(task) {
+            if (!task.startTime) return;
+            const day = task.dayOffset;
+            const allDay = tasks.filter(t => t.dayOffset === day);
+            const otherTimed = allDay
+                .filter(t => t.id !== task.id && t.startTime)
+                .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            const beforeMe = otherTimed.filter(t => t.startTime <= task.startTime);
+            if (beforeMe.length === 0) {
+                // No timed task earlier than this — go to start of day.
+                task.order = -0.5;
+            } else {
+                const latestBefore = beforeMe[beforeMe.length - 1];
+                task.order = (latestBefore.order || 0) + 0.5;
+            }
+
+            // Renumber to integers so future operations stay predictable.
+            allDay
+                .sort((a, b) => (a.order || 0) - (b.order || 0))
+                .forEach((t, i) => { t.order = i; });
+        }
+
+        // Format "HH:MM" 24h → "H:MM AM/PM" 12h. Returns '' for falsy input.
+        function formatTime12h(hhmm) {
+            if (!hhmm) return '';
+            const parts = String(hhmm).split(':');
+            if (parts.length < 2) return '';
+            const h = Number(parts[0]);
+            const m = Number(parts[1]);
+            if (!Number.isFinite(h) || !Number.isFinite(m)) return '';
+            const period = h >= 12 ? 'PM' : 'AM';
+            const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+            return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
         }
 
         function deleteEditingTask() {
@@ -2050,32 +1975,9 @@
             if (!task) return;
 
             if (confirmFirst) {
-                openDeleteConfirmModal(taskId);
-                return; // execution continues in confirmDeleteTask() after user confirms
+                const ok = window.confirm(`Delete "${task.text}"? This cannot be undone from the app.`);
+                if (!ok) return;
             }
-
-            await _executeDelete(taskId);
-        }
-
-        function openDeleteConfirmModal(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-            document.getElementById('deleteConfirmTitle').textContent = `Delete "${task.text}"?`;
-            const btn = document.getElementById('deleteConfirmBtn');
-            btn.onclick = async () => {
-                closeDeleteConfirmModal();
-                await _executeDelete(taskId);
-            };
-            document.getElementById('deleteConfirmModal').classList.add('visible');
-        }
-
-        function closeDeleteConfirmModal() {
-            document.getElementById('deleteConfirmModal').classList.remove('visible');
-        }
-
-        async function _executeDelete(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
 
             // Archive in Notion before removing locally so we still have the
             // notionId. If the archive fails (offline, API error), we surface it
@@ -2083,7 +1985,7 @@
             if (notionConnected && task.notionId) {
                 const ok = await archiveTaskInNotion(task.notionId);
                 if (!ok) {
-                    showStatusMessage('⚠ Could not archive in Notion — task not deleted');
+                    window.alert('Could not archive in Notion. Task was not deleted.');
                     return;
                 }
             }
@@ -2121,7 +2023,7 @@
             // Someday chip first
             const somedayChip = document.createElement('div');
             somedayChip.className = 'day-chip';
-            somedayChip.textContent = 'Tasks';
+            somedayChip.textContent = 'Someday';
             somedayChip.onclick = () => assignTaskDay(longpressTaskId, 999);
             chips.appendChild(somedayChip);
 
@@ -2189,10 +2091,6 @@
         }
 
         function initOverlayDismissals() {
-            const deleteModal = document.getElementById('deleteConfirmModal');
-            deleteModal.addEventListener('click', e => {
-                if (e.target === deleteModal) closeDeleteConfirmModal();
-            });
             const editModal = document.getElementById('editModal');
             editModal.addEventListener('click', e => {
                 if (e.target === editModal) closeEditModal();
@@ -2244,13 +2142,7 @@
                     if (mode !== 'tap') return;
                     const count = tapCount;
                     tapCount = 0;
-                    // Only cancel the long-press timer for multi-tap resolution.
-                    // For count === 1 we leave it running so a held finger still
-                    // triggers the long-press at 600 ms.
-                    if (count >= 2) {
-                        clearTimeout(longpressTimer);
-                        longpressTimer = null;
-                    }
+                    clearTimeout(longpressTimer);
                     const taskId = Number(item.dataset.taskId);
 
                     if (count === 2) {
@@ -2271,25 +2163,14 @@
                     tapCount = 0;
                     clearTimeout(tapTimer);
                     clearTimeout(longpressTimer);
-                    longpressTimer = null;
                 }
             }, { passive: true });
 
-            // Cancel long-press when finger lifts before 600 ms.
-            item.addEventListener('touchend', () => {
-                clearTimeout(longpressTimer);
-                longpressTimer = null;
-            }, { passive: true });
-
-            // Desktop fallback: dblclick opens edit; right-click opens action menu.
+            // Desktop fallback: dblclick opens edit. (No single-click handler —
+            // that's the whole point of this view.)
             item.addEventListener('dblclick', e => {
                 e.stopPropagation();
                 openEditModal(Number(item.dataset.taskId));
-            });
-            item.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                e.stopPropagation();
-                openActionMenu(Number(item.dataset.taskId));
             });
         }
 
@@ -2400,13 +2281,9 @@
 
                 isHorizontal = null;
                 currentX = 0;
-                // Reset after the synthetic click that follows touchend has fired,
-                // so future mouse clicks on hybrid devices still work.
-                setTimeout(() => { touchHandled = false; }, 400);
             });
 
-            // Desktop: native click toggles, dblclick opens edit, right-click opens
-            // action menu (Reschedule / Edit / Delete). All suppressed on touch.
+            // Desktop: native click toggles, dblclick opens edit. Suppressed on touch.
             taskItem.addEventListener('click', () => {
                 if (touchHandled) return;
                 toggleTask(Number(wrapper.dataset.taskId));
@@ -2414,47 +2291,27 @@
             taskItem.addEventListener('dblclick', () => {
                 openEditModal(Number(wrapper.dataset.taskId));
             });
-            taskItem.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                openActionMenu(Number(wrapper.dataset.taskId));
-            });
         }
 
         function moveTaskToNextDay(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
-            const prevOffset = task.dayOffset;
             // Move to the day after whichever day is currently showing
             task.dayOffset = currentDayOffset + 1;
             task.order = tasks.filter(t => t.dayOffset === task.dayOffset).length;
             saveTasks();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
-            showUndoToast('Moved to tomorrow', () => {
-                task.dayOffset = prevOffset;
-                task.order = tasks.filter(t => t.dayOffset === prevOffset).length;
-                saveTasks();
-                renderActiveView();
-                if (notionConnected) pushTaskToNotion(task);
-            });
         }
 
         function unscheduleTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
-            const prevOffset = task.dayOffset;
             task.dayOffset = 999;
             task.order = 0;
             saveTasks();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
-            showUndoToast('Moved to Tasks', () => {
-                task.dayOffset = prevOffset;
-                task.order = tasks.filter(t => t.dayOffset === prevOffset).length;
-                saveTasks();
-                renderActiveView();
-                if (notionConnected) pushTaskToNotion(task);
-            });
         }
 
         // ── Drag-to-reorder (day view) ─────────────────────────
@@ -2555,27 +2412,6 @@
                     wrappers = [];
                 });
             });
-        }
-
-        // Shows a brief undo toast. Calls undoFn if the user taps Undo within 3s.
-        let _undoTimer = null;
-        function showUndoToast(message, undoFn) {
-            if (_undoTimer) clearTimeout(_undoTimer);
-            const toast = document.getElementById('undoToast');
-            const text = document.getElementById('undoToastText');
-            const btn = document.getElementById('undoToastBtn');
-            text.textContent = message;
-            btn.onclick = () => {
-                clearTimeout(_undoTimer);
-                _undoTimer = null;
-                toast.classList.remove('visible');
-                undoFn();
-            };
-            toast.classList.add('visible');
-            _undoTimer = setTimeout(() => {
-                toast.classList.remove('visible');
-                _undoTimer = null;
-            }, 3000);
         }
 
         function escapeHtml(s) {
