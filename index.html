@@ -257,9 +257,9 @@
         }
 
         /* ── Calendar events ─────────────────────────────────── */
-        /* Inline timed events (interleaved with timed tasks).
-           Distinct blue border + slightly tinted bg + no checkbox/drag.
-           Whole card is tappable (opens source URL). */
+        /* Inline timed events (interleaved with timed tasks). Per-calendar
+           color is applied inline (border-left-color, background, label color);
+           the rules here are structural + provide a fallback color. */
         .task-item-wrapper.event {
             cursor: pointer;
         }
@@ -274,13 +274,9 @@
             font-size: 10px;
             font-weight: 700;
             color: #8AA4E8;
-            opacity: 0.7;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
         .task-item-wrapper.event .drag-handle,
         .task-item-wrapper.event .task-checkbox,
@@ -313,12 +309,11 @@
             cursor: pointer;
             transition: background 0.15s ease;
         }
-        .all-day-event:active {
-            background: rgba(91,123,217,0.22);
-        }
-        .all-day-event-icon {
-            font-size: 12px;
-            color: #8AA4E8;
+        .all-day-event-cal {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             flex-shrink: 0;
         }
         .all-day-event-title {
@@ -331,6 +326,71 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             flex-shrink: 0;
+        }
+
+        /* ── Calendar settings rows ──────────────────────────── */
+        .cal-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            flex-wrap: wrap;
+        }
+        .cal-row-color {
+            width: 32px;
+            height: 32px;
+            padding: 2px;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .cal-row-name {
+            flex: 1;
+            min-width: 0;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .cal-row-name:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+        .cal-row-remove {
+            background: #E24B4A11;
+            border: 1px solid #E24B4A33;
+            color: #E24B4A;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cal-row-error {
+            flex-basis: 100%;
+            font-size: 11px;
+            color: #E2A04B;
+            padding-left: 40px;
+        }
+        .palette-swatch {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .palette-swatch:active {
+            border-color: var(--text-primary);
         }
 
         .category-dot {
@@ -1073,25 +1133,6 @@
             opacity: 0;
         }
 
-        /* Pull-indicator color in light mode handled by var(--accent-green) */
-
-        .pull-indicator {
-            text-align: center;
-            padding: 0;
-            font-size: 12px;
-            color: var(--accent-green);
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.2s ease, padding 0.2s ease;
-        }
-        .pull-indicator.visible {
-            max-height: 48px;
-            padding: 14px 0;
-        }
-
         /* Light mode */
         body.light-mode {
             --bg-primary: #ffffff;
@@ -1165,7 +1206,6 @@
 
     <!-- Mobile View -->
     <div class="mobile-view" id="mobileView">
-        <div id="pullIndicator" class="pull-indicator">↓ Release to sync Notion</div>
         <div class="all-day-banner" id="allDayBanner"></div>
         <div class="day-column">
             <div class="task-list" id="mobileTaskList"></div>
@@ -1220,8 +1260,36 @@
         </div>
 
         <div class="setting-item">
+            <div class="setting-label">Calendars</div>
+            <div id="calendarList"></div>
+            <button class="setting-button" onclick="openAddCalendar()" style="margin-top:10px;">
+                + Add Calendar
+            </button>
+        </div>
+
+        <div class="setting-item">
             <div class="setting-label">Data</div>
             <button class="setting-button" onclick="exportTasks()">Export Tasks</button>
+        </div>
+    </div>
+
+    <!-- Add Calendar Modal -->
+    <div class="edit-modal-overlay" id="addCalendarModal">
+        <div class="edit-modal">
+            <div class="edit-modal-title">Add Calendar</div>
+            <input type="text" id="calNameInput" placeholder="Name (e.g. Work)" />
+            <div class="edit-modal-title" style="margin-top:14px;">iCal URL</div>
+            <input type="text" id="calUrlInput" placeholder="https://… or webcal://…" />
+            <div class="edit-modal-title" style="margin-top:14px;">Color</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <input type="color" id="calColorInput" value="#5B7BD9"
+                       style="width:48px; height:38px; padding:2px; background:var(--task-bg); border:1px solid var(--border-color); border-radius:6px; cursor:pointer;" />
+                <div id="calPaletteRow" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+            </div>
+            <div class="edit-modal-actions" style="margin-top:18px;">
+                <button class="btn-delete" onclick="closeAddCalendar()">Cancel</button>
+                <button class="btn-save" onclick="submitAddCalendar()">Add</button>
+            </div>
         </div>
     </div>
 
@@ -1274,10 +1342,31 @@
         let notionConnected = false;
         let tasks = [];
         let collapsedCategories = new Set();
-        // Calendar events from /api/calendar/events. Refreshed on init,
-        // pull-to-refresh, and every CAL_REFRESH_MS while the page is open.
+        // Calendar events from /api/calendar/events. Refreshed on init
+        // and every CAL_REFRESH_MS while the page is open.
         let calendarEvents = [];
         const CAL_REFRESH_MS = 5 * 60 * 1000;
+
+        // User-managed calendar feeds. Each: { id, name, url, color, enabled }.
+        // Stored in localStorage under 'cardiacCalendars'. The client owns this
+        // list and sends it to /api/calendar/events on every fetch.
+        let calendars = [];
+
+        // Palette offered when adding a calendar (user can still pick any color
+        // via the native picker). Chosen to be distinct on the dark theme.
+        const CALENDAR_PALETTE = [
+            '#5B7BD9', // blue
+            '#1D9E75', // green
+            '#d4537e', // pink
+            '#EF9F27', // orange
+            '#7F77DD', // purple
+            '#2BB6C4', // teal
+            '#E2724B', // rust
+            '#9DA62B', // olive
+        ];
+
+        // Fallback color for events whose calendar can't be resolved.
+        const CALENDAR_FALLBACK_COLOR = '#5B7BD9';
 
         const categoryColors = {
             'Brain Dump': '#888780',
@@ -1295,6 +1384,7 @@
         async function init() {
             loadTasks();
             loadCollapsedCategories();
+            loadCalendars();
             applyLightModePreference();
             rolloverOverdueTasks();
             updateDateDisplay();
@@ -1319,7 +1409,7 @@
 
             initTaskBoardEvents();
             initOverlayDismissals();
-            initPullToRefresh();
+            renderCalendarSettings();
 
             // Calendar events: fetch immediately, then refresh every 5 min.
             // First fetch is non-blocking — UI renders without events first.
@@ -2081,6 +2171,145 @@
             return `${hour12}:${String(m).padStart(2, '0')} ${period}`;
         }
 
+        // ── Calendar feed management ───────────────────────────
+        function loadCalendars() {
+            try {
+                const saved = localStorage.getItem('cardiacCalendars');
+                calendars = saved ? JSON.parse(saved) : [];
+                if (!Array.isArray(calendars)) calendars = [];
+            } catch (err) {
+                console.error('Failed to load calendars:', err);
+                calendars = [];
+            }
+        }
+
+        function saveCalendars() {
+            try {
+                localStorage.setItem('cardiacCalendars', JSON.stringify(calendars));
+            } catch (err) {
+                console.error('Failed to save calendars:', err);
+            }
+        }
+
+        // Look up a calendar's color/name by id. Returns sensible fallbacks.
+        function calendarById(id) {
+            return calendars.find(c => String(c.id) === String(id)) || null;
+        }
+        function colorForEvent(ev) {
+            const cal = calendarById(ev.calendarId);
+            return (cal && cal.color) || CALENDAR_FALLBACK_COLOR;
+        }
+        function nameForEvent(ev) {
+            const cal = calendarById(ev.calendarId);
+            return (cal && cal.name) || 'Calendar';
+        }
+
+        function addCalendar(name, url, color) {
+            const cal = {
+                id: 'cal_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                name: String(name || '').trim() || 'Untitled',
+                url: String(url || '').trim(),
+                color: color || CALENDAR_PALETTE[calendars.length % CALENDAR_PALETTE.length],
+                enabled: true,
+            };
+            calendars.push(cal);
+            saveCalendars();
+            renderCalendarSettings();
+            fetchCalendarEvents();
+        }
+
+        function updateCalendar(id, patch) {
+            const cal = calendarById(id);
+            if (!cal) return;
+            Object.assign(cal, patch);
+            saveCalendars();
+            // Re-color/re-name in place by re-rendering current view + banner.
+            if (currentView === 'today') {
+                renderAllDayBanner();
+                renderTasks();
+            }
+            // If the URL or enabled state changed, re-fetch.
+            if ('url' in patch || 'enabled' in patch) fetchCalendarEvents();
+        }
+
+        function removeCalendar(id) {
+            const cal = calendarById(id);
+            if (!cal) return;
+            if (!window.confirm(`Remove calendar "${cal.name}"?`)) return;
+            calendars = calendars.filter(c => String(c.id) !== String(id));
+            saveCalendars();
+            renderCalendarSettings();
+            fetchCalendarEvents();
+        }
+
+        // Render the list of calendars in the settings panel. Each row has an
+        // editable name, a color swatch, an enable toggle, and a remove button.
+        function renderCalendarSettings() {
+            const list = document.getElementById('calendarList');
+            if (!list) return;
+            if (calendars.length === 0) {
+                list.innerHTML = '<div style="font-size:13px; color:var(--text-secondary); padding:4px 0 8px;">No calendars yet. Add one below.</div>';
+                return;
+            }
+            list.innerHTML = calendars.map(cal => {
+                const err = cal._error
+                    ? `<div class="cal-row-error">⚠ ${escapeHtml(cal._error)}</div>`
+                    : '';
+                const disabledStyle = cal.enabled === false ? 'opacity:0.5;' : '';
+                return `
+                    <div class="cal-row" data-cal-id="${escapeHtml(String(cal.id))}" style="${disabledStyle}">
+                        <input type="color" class="cal-row-color" value="${escapeHtml(cal.color || '#5B7BD9')}"
+                               onchange="updateCalendar('${cal.id}', { color: this.value })" />
+                        <input type="text" class="cal-row-name" value="${escapeHtml(cal.name)}"
+                               onchange="updateCalendar('${cal.id}', { name: this.value.trim() || 'Untitled' })" />
+                        <div class="toggle-switch ${cal.enabled !== false ? 'on' : ''}"
+                             onclick="updateCalendar('${cal.id}', { enabled: ${cal.enabled === false} })"
+                             title="Show/hide this calendar"></div>
+                        <button class="cal-row-remove" onclick="removeCalendar('${cal.id}')" aria-label="Remove calendar">×</button>
+                        ${err}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ── Add Calendar modal ─────────────────────────────────
+        function openAddCalendar() {
+            const nameInput = document.getElementById('calNameInput');
+            const urlInput = document.getElementById('calUrlInput');
+            const colorInput = document.getElementById('calColorInput');
+            nameInput.value = '';
+            urlInput.value = '';
+            // Suggest the next palette color in rotation.
+            const suggested = CALENDAR_PALETTE[calendars.length % CALENDAR_PALETTE.length];
+            colorInput.value = suggested;
+
+            // Build the quick-pick palette swatches.
+            const row = document.getElementById('calPaletteRow');
+            row.innerHTML = CALENDAR_PALETTE.map(c => `
+                <div class="palette-swatch" style="background:${c};"
+                     onclick="document.getElementById('calColorInput').value='${c}'"></div>
+            `).join('');
+
+            document.getElementById('addCalendarModal').classList.add('visible');
+            setTimeout(() => nameInput.focus(), 100);
+        }
+
+        function closeAddCalendar() {
+            document.getElementById('addCalendarModal').classList.remove('visible');
+        }
+
+        function submitAddCalendar() {
+            const name = document.getElementById('calNameInput').value;
+            const url = document.getElementById('calUrlInput').value;
+            const color = document.getElementById('calColorInput').value;
+            if (!url.trim()) {
+                window.alert('Please enter an iCal URL.');
+                return;
+            }
+            addCalendar(name, url, color);
+            closeAddCalendar();
+        }
+
         // ── Calendar events ────────────────────────────────────
         // YYYY-MM-DD for a given day offset relative to today. Local-tz based
         // since calendar event `date` strings from the backend are wall-clock.
@@ -2101,9 +2330,29 @@
         }
 
         async function fetchCalendarEvents() {
+            // Only send enabled calendars that have a URL.
+            const feeds = calendars
+                .filter(c => c.enabled !== false && c.url)
+                .map(c => ({ id: c.id, url: c.url }));
+
+            // Nothing configured — clear any stale events and bail.
+            if (feeds.length === 0) {
+                calendarEvents = [];
+                if (currentView === 'today') {
+                    renderAllDayBanner();
+                    renderTasks();
+                }
+                return;
+            }
+
             try {
                 const res = await fetch('/api/calendar/events', {
-                    headers: { 'Accept': 'application/json' },
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ feeds }),
                 });
                 if (!res.ok) {
                     console.error('Calendar fetch failed:', res.status);
@@ -2112,8 +2361,13 @@
                 const data = await res.json();
                 calendarEvents = Array.isArray(data.events) ? data.events : [];
                 if (Array.isArray(data.errors) && data.errors.length) {
-                    // Don't block the UI on per-feed errors — just log them.
+                    // Don't block the UI on per-feed errors — just log them and
+                    // surface them in the settings list so the user can see which
+                    // calendar failed.
                     console.warn('Calendar feed warnings:', data.errors);
+                    annotateCalendarErrors(data.errors);
+                } else {
+                    annotateCalendarErrors([]);
                 }
                 if (currentView === 'today') {
                     renderAllDayBanner();
@@ -2122,6 +2376,19 @@
             } catch (err) {
                 console.error('Calendar fetch error:', err);
             }
+        }
+
+        // Stash the latest per-feed errors on the calendar objects (transient,
+        // not persisted) so the settings list can show a small warning.
+        function annotateCalendarErrors(errors) {
+            const byId = {};
+            for (const e of errors) byId[String(e.calendarId)] = e.error;
+            let changed = false;
+            for (const cal of calendars) {
+                const msg = byId[String(cal.id)] || null;
+                if (cal._error !== msg) { cal._error = msg; changed = true; }
+            }
+            if (changed) renderCalendarSettings();
         }
 
         // All-day events for a given day (inclusive of multi-day spans).
@@ -2161,11 +2428,13 @@
                     const dayN = Math.round((todayMs - startMs) / 86400000) + 1;
                     range = `<span class="all-day-event-range">Day ${dayN}/${total}</span>`;
                 }
+                const color = colorForEvent(ev);
+                const calName = nameForEvent(ev);
                 const url = ev.url ? escapeHtml(ev.url) : '';
                 const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
                 return `
-                    <div class="all-day-event" ${openAttr}>
-                        <span class="all-day-event-icon">📅</span>
+                    <div class="all-day-event" style="border-left-color:${color}; background:${color}1f;" ${openAttr}>
+                        <span class="all-day-event-cal" style="color:${color};">${escapeHtml(calName)}</span>
                         <span class="all-day-event-title">${escapeHtml(ev.title)}</span>
                         ${range}
                     </div>
@@ -2211,15 +2480,17 @@
         function renderEventCard(ev) {
             const time = timeFromIso(ev.start);
             const timeLabel = time ? formatTime12h(time) : '';
+            const color = colorForEvent(ev);
+            const calName = nameForEvent(ev);
             const url = ev.url ? escapeHtml(ev.url) : '';
             const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
             return `
                 <div class="task-item-wrapper event" ${openAttr}>
-                    <div class="task-item">
+                    <div class="task-item" style="border-left-color:${color}; background:linear-gradient(90deg, ${color}1a, var(--task-bg) 30%);">
                         <div class="task-text">
-                            <div class="task-time">${escapeHtml(timeLabel)}</div>
+                            <div class="task-time" style="color:${color};">${escapeHtml(timeLabel)}</div>
                             ${escapeHtml(ev.title)}
-                            <div class="event-source">📅 Calendar</div>
+                            <div class="event-source" style="color:${color};">${escapeHtml(calName)}</div>
                         </div>
                     </div>
                 </div>
@@ -2373,6 +2644,12 @@
                 const btn = e.target.closest('.action-menu-item');
                 if (btn) handleActionMenuClick(btn.dataset.action);
             });
+            const addCal = document.getElementById('addCalendarModal');
+            if (addCal) {
+                addCal.addEventListener('click', e => {
+                    if (e.target === addCal) closeAddCalendar();
+                });
+            }
         }
 
         // ── Board-task gesture handling ─────────────────────────
@@ -2753,44 +3030,6 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
-        }
-
-        function initPullToRefresh() {
-            const mobileView = document.querySelector('.mobile-view');
-            const indicator = document.getElementById('pullIndicator');
-            let startY = 0;
-            let pulling = false;
-
-            mobileView.addEventListener('touchstart', e => {
-                if (mobileView.scrollTop === 0) {
-                    startY = e.touches[0].clientY;
-                    pulling = true;
-                }
-            }, { passive: true });
-
-            mobileView.addEventListener('touchmove', e => {
-                if (!pulling) return;
-                const dy = e.touches[0].clientY - startY;
-                if (dy > 50) indicator.classList.add('visible');
-                else indicator.classList.remove('visible');
-            }, { passive: true });
-
-            mobileView.addEventListener('touchend', () => {
-                if (indicator.classList.contains('visible')) {
-                    indicator.textContent = '↻ Syncing...';
-                    // Pull-to-refresh now also re-fetches calendar events.
-                    // Run them in parallel; we don't care which finishes first.
-                    const calPromise = fetchCalendarEvents();
-                    const notionPromise = notionConnected
-                        ? syncFromNotion()
-                        : Promise.resolve();
-                    Promise.all([calPromise, notionPromise]).finally(() => {
-                        indicator.classList.remove('visible');
-                        indicator.textContent = '↓ Release to sync Notion';
-                    });
-                }
-                pulling = false;
-            });
         }
 
         // Initialize on load
