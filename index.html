@@ -2346,13 +2346,18 @@
             }
 
             try {
+                // Send the browser's IANA timezone so the server converts UTC
+                // event times to the user's local wall clock.
+                let tz;
+                try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { tz = undefined; }
+
                 const res = await fetch('/api/calendar/events', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({ feeds }),
+                    body: JSON.stringify({ feeds, tz }),
                 });
                 if (!res.ok) {
                     console.error('Calendar fetch failed:', res.status);
