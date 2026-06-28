@@ -135,6 +135,46 @@ function toUTCMs(p) {
 
 const pad2 = n => String(n).padStart(2, '0');
 
+// Default timezone for converting UTC ("Z") event times to wall-clock. The
+// endpoint overrides this with the client's IANA zone; this is the fallback
+// for the single-user owner.
+const DEFAULT_TZ = 'America/New_York';
+
+// Convert a UTC epoch-ms value to wall-clock parts in the given IANA timezone.
+// Uses Intl (built-in, DST-aware). Returns { year, month, day, hour, minute,
+// second }. Falls back to UTC parts if the zone is invalid.
+function localizeUTC(epochMs, tz) {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    });
+    const parts = {};
+    for (const p of dtf.formatToParts(new Date(epochMs))) {
+      if (p.type !== 'literal') parts[p.type] = p.value;
+    }
+    let hour = parseInt(parts.hour, 10);
+    // Intl can emit "24" for midnight in hour12:false on some engines.
+    if (hour === 24) hour = 0;
+    return {
+      year: parseInt(parts.year, 10),
+      month: parseInt(parts.month, 10),
+      day: parseInt(parts.day, 10),
+      hour,
+      minute: parseInt(parts.minute, 10),
+      second: parseInt(parts.second, 10),
+    };
+  } catch (e) {
+    const d = new Date(epochMs);
+    return {
+      year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(),
+      hour: d.getUTCHours(), minute: d.getUTCMinutes(), second: d.getUTCSeconds(),
+    };
+  }
+}
+
 function formatDate(p) {
   if (!p) return null;
   return `${p.year}-${pad2(p.month)}-${pad2(p.day)}`;
@@ -222,7 +262,7 @@ function fastForward(p, freq, interval, windowStartMs) {
 // Expand one VEVENT into concrete event instances inside the given window.
 // windowStartMs/windowEndMs are UTC epoch ms (treated as pretend-UTC for
 // floating times, see toUTCMs).
-function expandEvent(raw, windowStartMs, windowEndMs) {
+function expandEvent(raw, windowStartMs, windowEndMs, tz = DEFAULT_TZ) {
   const dtstart = raw.DTSTART;
   if (!dtstart) return [];
   const startParsed = parseDateValue(dtstart.value, dtstart.params);
@@ -285,12 +325,36 @@ function expandEvent(raw, windowStartMs, windowEndMs) {
 
     // Timed: emit only if start is inside window.
     if (instMs < windowStartMs || instMs > windowEndMs) return null;
+
+    // For UTC ("Z") times, convert to the target timezone's wall clock. BOTH
+    // the date and the time must come from the converted parts, because a UTC
+    // instant can land on a different calendar day locally (e.g. 02:00Z is the
+    // previous evening in US Eastern). For floating times (tz==='local'), the
+    // stored parts are already wall-clock — emit them as-is.
+    let startStr, endStr, outDate;
+    if (instParsed.tz === 'utc') {
+      const ls = localizeUTC(instMs, tz);
+      outDate = formatDate(ls);
+      startStr = `${formatDate(ls)}T${pad2(ls.hour)}:${pad2(ls.minute)}:${pad2(ls.second)}`;
+      if (instEndParsed) {
+        const le = localizeUTC(instMs + durationMs, tz);
+        endStr = `${formatDate(le)}T${pad2(le.hour)}:${pad2(le.minute)}:${pad2(le.second)}`;
+      } else {
+        endStr = null;
+      }
+    } else {
+      outDate = date;
+      startStr = formatDateTime(instParsed);
+      endStr = instEndParsed ? formatDateTime(instEndParsed) : null;
+    }
+
     return {
       uid, title, location, url,
       allDay: false,
-      date, endDate,
-      start: formatDateTime(instParsed),
-      end: instEndParsed ? formatDateTime(instEndParsed) : null,
+      date: outDate,
+      endDate: outDate,
+      start: startStr,
+      end: endStr,
     };
   };
 
@@ -392,7 +456,7 @@ function expandEvent(raw, windowStartMs, windowEndMs) {
 
 // ── High-level fetch+expand ────────────────────────────────────────────
 
-async function fetchAndExpand(url, windowStartMs, windowEndMs) {
+async function fetchAndExpand(url, windowStartMs, windowEndMs, tz = DEFAULT_TZ) {
   const res = await fetch(url, {
     headers: { 'Accept': 'text/calendar, text/plain, */*' },
   });
@@ -406,7 +470,7 @@ async function fetchAndExpand(url, windowStartMs, windowEndMs) {
   const out = [];
   for (const raw of raws) {
     try {
-      const expanded = expandEvent(raw, windowStartMs, windowEndMs);
+      const expanded = expandEvent(raw, windowStartMs, windowEndMs, tz);
       for (const ev of expanded) out.push(ev);
     } catch (e) {
       // One bad event shouldn't kill the feed. Log and move on.
@@ -430,6 +494,8 @@ module.exports = {
   toUTCMs,
   formatDate,
   formatDateTime,
+  localizeUTC,
+  DEFAULT_TZ,
   addDays,
   addMonths,
   addYears,
