@@ -1317,6 +1317,259 @@
         .desktop-settings-card .setting-label {
             margin-bottom: 12px;
         }
+
+        /* ── Desktop dashboard widgets ───────────────────────── */
+        .desktop-dash-header {
+            margin-bottom: 28px;
+        }
+
+        .desktop-dash-day {
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.1;
+        }
+
+        .desktop-dash-date {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .desktop-dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .desktop-widget {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .desktop-widget-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+
+        .desktop-widget-count {
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+
+        .desktop-widget-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .desktop-widget-empty {
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 8px 0;
+        }
+
+        .desktop-task-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--task-bg);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 4px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        .desktop-task-row .task-checkbox {
+            margin-top: 0;
+        }
+
+        .desktop-task-text {
+            flex: 1;
+            line-height: 1.35;
+            min-width: 0;
+        }
+
+        .desktop-task-text.completed {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .desktop-task-time {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-green);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-right: 8px;
+        }
+
+        .desktop-quick-add {
+            width: 100%;
+            margin-top: 12px;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .desktop-quick-add:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .desktop-cal-day {
+            margin-bottom: 6px;
+        }
+
+        .desktop-cal-day-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .desktop-cal-event {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--task-bg);
+            border-left: 3px solid #5B7BD9;
+            border-radius: 4px;
+            padding: 9px 12px;
+            font-size: 13px;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+
+        .desktop-cal-event-time {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            min-width: 62px;
+        }
+
+        .desktop-cal-event-title {
+            flex: 1;
+            line-height: 1.3;
+            min-width: 0;
+        }
+
+        .desktop-cal-event-cal {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        /* ── Desktop week grid ───────────────────────────────── */
+        /* Week view wants the full viewport width, not the 1100px cap. */
+        #desktopTabWeek {
+            max-width: none;
+        }
+
+        .desktop-week-grid {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            align-items: stretch;
+        }
+
+        .desktop-week-col {
+            flex: 0 0 250px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            min-height: 320px;
+        }
+
+        .desktop-week-col.today-col {
+            border-color: var(--accent-green);
+        }
+
+        .desktop-week-col-day {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .desktop-week-col.today-col .desktop-week-col-day {
+            color: var(--accent-green);
+        }
+
+        .desktop-week-col-date {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+            margin-bottom: 12px;
+        }
+
+        .desktop-week-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .desktop-task-row.small {
+            padding: 8px 10px;
+            font-size: 13px;
+        }
+
+        .desktop-cal-event.small {
+            padding: 7px 10px;
+            font-size: 12px;
+            margin-bottom: 0;
+        }
+
+        .desktop-cal-event.small .desktop-cal-event-time {
+            min-width: 0;
+        }
+
+        .desktop-week-add {
+            width: 100%;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        .desktop-week-add:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
     </style>
 </head>
 <body>
@@ -1488,8 +1741,32 @@
         </div>
         <div class="desktop-main">
             <div class="desktop-tab" id="desktopTabDashboard">
-                <div class="desktop-tab-title" id="desktopDashboardTitle">Dashboard</div>
-                <div class="desktop-placeholder">Command center widgets coming next: today's tasks, calendar, and more.</div>
+                <div class="desktop-dash-header">
+                    <div class="desktop-dash-day" id="desktopDashDay">&nbsp;</div>
+                    <div class="desktop-dash-date" id="desktopDashDate">&nbsp;</div>
+                </div>
+                <div class="desktop-dash-grid">
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title">
+                            <span>Today's Tasks</span>
+                            <span class="desktop-widget-count" id="desktopTodayCount"></span>
+                        </div>
+                        <div class="desktop-widget-body" id="desktopTodayList"></div>
+                        <input type="text" class="desktop-quick-add" id="desktopQuickAdd" placeholder="Add a task for today…" />
+                    </div>
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title"><span>Calendar</span></div>
+                        <div class="desktop-widget-body" id="desktopCalendarWidget"></div>
+                    </div>
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title"><span>Weather</span></div>
+                        <div class="desktop-widget-empty">Coming in phase 2.</div>
+                    </div>
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title"><span>Markets</span></div>
+                        <div class="desktop-widget-empty">Coming in phase 2.</div>
+                    </div>
+                </div>
             </div>
             <div class="desktop-tab" id="desktopTabToday">
                 <div class="desktop-tab-title">Today</div>
@@ -1497,7 +1774,7 @@
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
                 <div class="desktop-tab-title">Week</div>
-                <div class="desktop-placeholder">Week grid coming soon.</div>
+                <div class="desktop-week-grid" id="desktopWeekGrid"></div>
             </div>
             <div class="desktop-tab" id="desktopTabSettings">
                 <div class="desktop-tab-title">Settings</div>
@@ -1640,6 +1917,21 @@
                 console.error('Failed to load desktop tab preference:', err);
             }
             switchDesktopTab(tab);
+
+            // Quick-add on the dashboard: Enter creates a task for today.
+            // The input lives outside the re-rendered widget body so a
+            // background refresh never wipes in-progress typing.
+            const quickAdd = document.getElementById('desktopQuickAdd');
+            if (quickAdd) {
+                quickAdd.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && quickAdd.value.trim()) {
+                        addTask(quickAdd.value.trim());
+                        quickAdd.value = '';
+                    }
+                });
+            }
+
+            renderDesktopViews();
         }
 
         function switchDesktopTab(tab) {
@@ -1687,6 +1979,242 @@
                     btn.textContent = 'Pull from Notion';
                 }
             }
+        }
+
+        // ── Desktop dashboard widgets ───────────────────────────
+        // Rendered from the same `tasks` and `calendarEvents` globals the
+        // mobile views use — no separate data path. Re-rendered via a hook
+        // at the top of renderTasks(), which fires after every task
+        // mutation, Notion sync, and calendar refresh.
+        function renderDesktopDashboard() {
+            if (!document.body.classList.contains('desktop-mode')) return;
+            renderDesktopDashHeader();
+            renderDesktopTodayWidget();
+            renderDesktopCalendarWidget();
+        }
+
+        function renderDesktopDashHeader() {
+            const dayEl = document.getElementById('desktopDashDay');
+            const dateEl = document.getElementById('desktopDashDate');
+            if (!dayEl || !dateEl) return;
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const d = new Date();
+            dayEl.textContent = days[d.getDay()].toUpperCase();
+            dateEl.textContent = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+        }
+
+        function renderDesktopTodayWidget() {
+            const list = document.getElementById('desktopTodayList');
+            if (!list) return;
+
+            const dayTasks = tasks
+                .filter(t => t.dayOffset === 0)
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const countEl = document.getElementById('desktopTodayCount');
+            if (countEl) {
+                const done = dayTasks.filter(t => t.completed).length;
+                countEl.textContent = dayTasks.length ? `${done}/${dayTasks.length} done` : '';
+            }
+
+            if (dayTasks.length === 0) {
+                list.innerHTML = '<div class="desktop-widget-empty">No tasks for today. Add one below.</div>';
+                return;
+            }
+
+            list.innerHTML = dayTasks.map(task => {
+                const color = categoryColors[task.category] || '#888780';
+                const time = task.startTime
+                    ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
+                    : '';
+                return `
+                    <div class="desktop-task-row" ondblclick="openEditModal(${task.id})">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                        <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                        <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function desktopEventRow(ev, timeLabel, { compact = false } = {}) {
+            const color = colorForEvent(ev);
+            const calName = nameForEvent(ev);
+            const url = ev.url ? escapeHtml(ev.url) : '';
+            const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
+            // Compact rows (week columns) drop the calendar name to save
+            // width; the border color still identifies the feed.
+            const calLabel = compact
+                ? ''
+                : `<span class="desktop-cal-event-cal" style="color:${color};">${escapeHtml(calName)}</span>`;
+            return `
+                <div class="desktop-cal-event ${compact ? 'small' : ''}" style="border-left-color:${color};" ${openAttr} title="${escapeHtml(calName)}">
+                    <span class="desktop-cal-event-time" style="color:${color};">${escapeHtml(timeLabel)}</span>
+                    <span class="desktop-cal-event-title">${escapeHtml(ev.title)}</span>
+                    ${calLabel}
+                </div>
+            `;
+        }
+
+        // Merged view of the next 7 days of events across all enabled feeds,
+        // driven entirely by the existing calendarEvents cache.
+        function renderDesktopCalendarWidget() {
+            const el = document.getElementById('desktopCalendarWidget');
+            if (!el) return;
+
+            const activeFeeds = calendars.filter(c => c.enabled !== false && c.url);
+            if (activeFeeds.length === 0) {
+                el.innerHTML = '<div class="desktop-widget-empty">No calendars connected. Add iCal feeds in Settings.</div>';
+                return;
+            }
+
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const sections = [];
+
+            for (let i = 0; i <= 6; i++) {
+                const ymd = ymdForOffset(i);
+                const allDay = allDayEventsForDay(ymd);
+                const timed = timedEventsForDay(ymd);
+                if (allDay.length === 0 && timed.length === 0) continue;
+
+                const d = new Date();
+                d.setDate(d.getDate() + i);
+                const label = i === 0 ? 'Today'
+                    : i === 1 ? 'Tomorrow'
+                    : `${dayNames[d.getDay()]} ${monthNames[d.getMonth()]} ${d.getDate()}`;
+
+                const rows = [
+                    ...allDay.map(ev => desktopEventRow(ev, 'All day')),
+                    ...timed.map(ev => desktopEventRow(ev, formatTime12h(timeFromIso(ev.start)))),
+                ];
+                sections.push(`
+                    <div class="desktop-cal-day">
+                        <div class="desktop-cal-day-label">${escapeHtml(label)}</div>
+                        ${rows.join('')}
+                    </div>
+                `);
+            }
+
+            el.innerHTML = sections.length
+                ? sections.join('')
+                : '<div class="desktop-widget-empty">No events in the next 7 days.</div>';
+        }
+
+        // ── Desktop week grid ───────────────────────────────────
+        // Column skeletons (headers + add inputs) are built once per page
+        // load; only the inner task/event lists re-render afterwards, so
+        // in-progress typing in a day's add box survives background
+        // refreshes. Same pattern as the dashboard quick-add.
+        function renderDesktopWeek() {
+            const grid = document.getElementById('desktopWeekGrid');
+            if (!grid) return;
+
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            // One-time skeleton build.
+            if (!grid.dataset.built) {
+                const cols = [];
+                for (let i = 0; i <= 6; i++) {
+                    const d = new Date();
+                    d.setDate(d.getDate() + i);
+                    const dayLabel = i === 0 ? 'Today'
+                        : i === 1 ? 'Tomorrow'
+                        : dayNames[d.getDay()];
+                    const dateLabel = `${monthNames[d.getMonth()]} ${d.getDate()}`;
+                    cols.push(`
+                        <div class="desktop-week-col ${i === 0 ? 'today-col' : ''}">
+                            <div class="desktop-week-col-day">${escapeHtml(dayLabel)}</div>
+                            <div class="desktop-week-col-date">${escapeHtml(dateLabel)}</div>
+                            <div class="desktop-week-list" id="desktopWeekList${i}"></div>
+                            <input type="text" class="desktop-week-add" data-day-offset="${i}" placeholder="Add task…" />
+                        </div>
+                    `);
+                }
+                grid.innerHTML = cols.join('');
+                grid.dataset.built = '1';
+
+                // Delegated Enter handler for all seven add inputs.
+                grid.addEventListener('keypress', (e) => {
+                    if (e.key !== 'Enter') return;
+                    const input = e.target.closest('.desktop-week-add');
+                    if (!input || !input.value.trim()) return;
+                    desktopAddTaskForDay(Number(input.dataset.dayOffset), input.value);
+                    input.value = '';
+                });
+            }
+
+            // Fill each day's list: tasks in order with timed calendar events
+            // interleaved chronologically via the shared buildDayRenderList.
+            for (let i = 0; i <= 6; i++) {
+                const list = document.getElementById('desktopWeekList' + i);
+                if (!list) continue;
+
+                const dayTasks = tasks
+                    .filter(t => t.dayOffset === i)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                const ymd = ymdForOffset(i);
+                const allDay = allDayEventsForDay(ymd);
+                const merged = buildDayRenderList(dayTasks, timedEventsForDay(ymd));
+
+                const rows = [
+                    ...allDay.map(ev => desktopEventRow(ev, 'All day', { compact: true })),
+                    ...merged.map(item => {
+                        if (item.kind === 'event') {
+                            return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)), { compact: true });
+                        }
+                        const task = item.task;
+                        const color = categoryColors[task.category] || '#888780';
+                        const time = task.startTime
+                            ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
+                            : '';
+                        return `
+                            <div class="desktop-task-row small" ondblclick="openEditModal(${task.id})">
+                                <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                                <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                                <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
+                            </div>
+                        `;
+                    }),
+                ];
+
+                list.innerHTML = rows.length
+                    ? rows.join('')
+                    : '<div class="desktop-widget-empty">No tasks</div>';
+            }
+        }
+
+        // Create a task for a specific day offset. Mirrors addTask() exactly
+        // except the day is explicit instead of coming from currentDayOffset.
+        function desktopAddTaskForDay(dayOffset, text) {
+            const trimmed = String(text || '').trim();
+            if (!trimmed) return;
+            const task = {
+                id: Date.now(),
+                text: trimmed,
+                completed: false,
+                dayOffset: dayOffset,
+                category: 'Personal',
+                order: tasks.filter(t => t.dayOffset === dayOffset).length,
+                createdAt: new Date().toISOString()
+            };
+            tasks.push(task);
+            saveTasks();
+            renderTasks();
+            if (notionConnected) {
+                pushTaskToNotion(task);
+            }
+        }
+
+        // Single entry point the renderTasks hook and initDesktop call:
+        // refreshes every desktop view that displays task/event data.
+        function renderDesktopViews() {
+            if (!document.body.classList.contains('desktop-mode')) return;
+            renderDesktopDashboard();
+            renderDesktopWeek();
         }
 
         // Check Notion connection status (single-user / server-token mode)
@@ -1873,6 +2401,11 @@
         }
 
         function renderTasks() {
+            // Desktop views share the same data; refresh them on every task
+            // render. Placed at the top so the early-return (empty day) path
+            // is covered too. No-ops entirely when not in desktop mode.
+            renderDesktopViews();
+
             const list = document.getElementById('mobileTaskList');
             // Tasks are rendered in `order` ascending. Timed tasks are constrained
             // to chronological order via placeTimedTask() whenever a time is set
