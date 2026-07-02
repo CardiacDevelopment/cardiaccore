@@ -1570,6 +1570,58 @@
             outline: none;
             border-color: var(--accent-green);
         }
+
+        /* ── Desktop today tab ───────────────────────────────── */
+        .desktop-today-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .desktop-today-nav {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .desktop-today-nav:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .desktop-today-titles {
+            min-width: 280px;
+        }
+
+        .desktop-today-return {
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--accent-green);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            display: none;
+        }
+
+        .desktop-today-return.visible {
+            display: inline-block;
+        }
+
+        .desktop-today-panel {
+            max-width: 640px;
+        }
     </style>
 </head>
 <body>
@@ -1644,7 +1696,7 @@
 
         <div class="setting-item">
             <div class="setting-label">Sync</div>
-            <button class="setting-button" onclick="syncFromNotion()" id="syncBtn">
+            <button class="setting-button" onclick="syncAndReconcile()" id="syncBtn">
                 Pull from Notion
             </button>
         </div>
@@ -1769,8 +1821,23 @@
                 </div>
             </div>
             <div class="desktop-tab" id="desktopTabToday">
-                <div class="desktop-tab-title">Today</div>
-                <div class="desktop-placeholder">Today view coming soon.</div>
+                <div class="desktop-today-header">
+                    <button class="desktop-today-nav" onclick="desktopChangeToday(-1)" aria-label="Previous day">←</button>
+                    <div class="desktop-today-titles">
+                        <div class="desktop-dash-day" id="desktopTodayDay">&nbsp;</div>
+                        <div class="desktop-dash-date" id="desktopTodayDate">&nbsp;</div>
+                    </div>
+                    <button class="desktop-today-nav" onclick="desktopChangeToday(1)" aria-label="Next day">→</button>
+                    <button class="desktop-today-return" id="desktopTodayReturn" onclick="desktopChangeToday(0, true)">Back to today</button>
+                </div>
+                <div class="desktop-widget desktop-today-panel">
+                    <div class="desktop-widget-title">
+                        <span>Tasks</span>
+                        <span class="desktop-widget-count" id="desktopTodayTabCount"></span>
+                    </div>
+                    <div class="desktop-widget-body" id="desktopTodayTabList"></div>
+                    <input type="text" class="desktop-quick-add" id="desktopTodayTabAdd" placeholder="Add a task for this day…" />
+                </div>
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
                 <div class="desktop-tab-title">Week</div>
@@ -1859,6 +1926,7 @@
         // Initialize
         async function init() {
             loadTasks();
+            recomputeTaskDatesOnLoad();
             loadCollapsedCategories();
             loadCalendars();
             applyLightModePreference();
@@ -1868,6 +1936,9 @@
 
             // Check Notion connection status (uses server-side env-var token)
             await checkNotionStatus();
+            // The auto sync inside the status check refreshes offsets from
+            // Notion's Due Dates; lock dates to those fresh offsets.
+            reconcileDatesFromOffsets();
 
             // Handle add task input
             const addTaskInput = document.getElementById('addTaskInput');
@@ -1931,6 +2002,18 @@
                 });
             }
 
+            // Today tab add input: creates a task for whichever day is
+            // currently being viewed there.
+            const todayAdd = document.getElementById('desktopTodayTabAdd');
+            if (todayAdd) {
+                todayAdd.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && todayAdd.value.trim()) {
+                        desktopAddTaskForDay(desktopTodayOffset, todayAdd.value.trim());
+                        todayAdd.value = '';
+                    }
+                });
+            }
+
             renderDesktopViews();
         }
 
@@ -1973,6 +2056,7 @@
             }
             try {
                 await syncFromNotion();
+                reconcileDatesFromOffsets();
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -2201,6 +2285,7 @@
                 order: tasks.filter(t => t.dayOffset === dayOffset).length,
                 createdAt: new Date().toISOString()
             };
+            setTaskSchedule(task, dayOffset);
             tasks.push(task);
             saveTasks();
             renderTasks();
@@ -2209,12 +2294,84 @@
             }
         }
 
+        // ── Desktop today tab ───────────────────────────────────
+        // Has its own day offset, fully independent of the mobile view's
+        // currentDayOffset, so browsing days here never shifts mobile state.
+        let desktopTodayOffset = 0;
+
+        function desktopChangeToday(delta, reset = false) {
+            desktopTodayOffset = reset ? 0 : desktopTodayOffset + delta;
+            renderDesktopToday();
+        }
+
+        function renderDesktopToday() {
+            const dayEl = document.getElementById('desktopTodayDay');
+            const dateEl = document.getElementById('desktopTodayDate');
+            const list = document.getElementById('desktopTodayTabList');
+            if (!dayEl || !dateEl || !list) return;
+
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const d = new Date();
+            d.setDate(d.getDate() + desktopTodayOffset);
+
+            const label = desktopTodayOffset === 0 ? 'TODAY'
+                : desktopTodayOffset === 1 ? 'TOMORROW'
+                : desktopTodayOffset === -1 ? 'YESTERDAY'
+                : days[d.getDay()].toUpperCase();
+            dayEl.textContent = label;
+            dateEl.textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+
+            const returnBtn = document.getElementById('desktopTodayReturn');
+            if (returnBtn) returnBtn.classList.toggle('visible', desktopTodayOffset !== 0);
+
+            const dayTasks = tasks
+                .filter(t => t.dayOffset === desktopTodayOffset)
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const countEl = document.getElementById('desktopTodayTabCount');
+            if (countEl) {
+                const done = dayTasks.filter(t => t.completed).length;
+                countEl.textContent = dayTasks.length ? `${done}/${dayTasks.length} done` : '';
+            }
+
+            const ymd = ymdForOffset(desktopTodayOffset);
+            const allDay = allDayEventsForDay(ymd);
+            const merged = buildDayRenderList(dayTasks, timedEventsForDay(ymd));
+
+            const rows = [
+                ...allDay.map(ev => desktopEventRow(ev, 'All day')),
+                ...merged.map(item => {
+                    if (item.kind === 'event') {
+                        return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)));
+                    }
+                    const task = item.task;
+                    const color = categoryColors[task.category] || '#888780';
+                    const time = task.startTime
+                        ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
+                        : '';
+                    return `
+                        <div class="desktop-task-row" ondblclick="openEditModal(${task.id})">
+                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                            <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                            <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
+                        </div>
+                    `;
+                }),
+            ];
+
+            list.innerHTML = rows.length
+                ? rows.join('')
+                : '<div class="desktop-widget-empty">No tasks for this day. Add one below.</div>';
+        }
+
         // Single entry point the renderTasks hook and initDesktop call:
         // refreshes every desktop view that displays task/event data.
         function renderDesktopViews() {
             if (!document.body.classList.contains('desktop-mode')) return;
             renderDesktopDashboard();
             renderDesktopWeek();
+            renderDesktopToday();
         }
 
         // Check Notion connection status (single-user / server-token mode)
@@ -2478,6 +2635,7 @@
                 order: tasks.filter(t => t.dayOffset === currentDayOffset).length,
                 createdAt: new Date().toISOString()
             };
+            setTaskSchedule(task, currentDayOffset);
             tasks.push(task);
             saveTasks();
             renderTasks();
@@ -2651,7 +2809,7 @@
             let changed = false;
             for (const task of tasks) {
                 if (!task.completed && task.dayOffset != null && task.dayOffset < 0 && task.dayOffset !== 999) {
-                    task.dayOffset = 0;
+                    setTaskSchedule(task, 0);
                     changed = true;
                     // Push to Notion if connected so the rollover is reflected there too.
                     if (notionConnected) pushTaskToNotion(task);
@@ -2828,6 +2986,7 @@
                 text: trimmed,
                 completed: false,
                 dayOffset: 999, // unscheduled — lives in Someday until scheduled
+                dueDate: null,  // floats on the board, no date until placed
                 category: cat,
                 order: tasks.filter(t => t.dayOffset === 999).length,
                 createdAt: new Date().toISOString(),
@@ -3159,6 +3318,78 @@
             return `${y}-${m}-${day}`;
         }
 
+        // ── Absolute date foundation ────────────────────────────
+        // Scheduled tasks carry dueDate ('YYYY-MM-DD') as the source of
+        // truth; dayOffset is derived from it on every load so offsets
+        // never drift as days pass. Unscheduled tasks (Someday, 999)
+        // have no dueDate and float on the board exactly as before.
+
+        function offsetFromYmd(ymd) {
+            if (!ymd || typeof ymd !== 'string') return null;
+            const parts = ymd.split('-').map(Number);
+            if (parts.length !== 3 || parts.some(isNaN)) return null;
+            // Construct as LOCAL midnight. new Date('YYYY-MM-DD') parses
+            // as UTC and would shift the day in western timezones.
+            const due = new Date(parts[0], parts[1] - 1, parts[2]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.round((due - today) / 86400000);
+        }
+
+        // The one sanctioned way to change a task's day. Keeps dueDate
+        // and dayOffset in lockstep.
+        function setTaskSchedule(task, dayOffset) {
+            task.dayOffset = dayOffset;
+            task.dueDate = (dayOffset == null || dayOffset === 999)
+                ? null
+                : ymdForOffset(dayOffset);
+        }
+
+        // Run once at load, before rollover: corrects every offset from
+        // its stored date, and migrates pre existing scheduled tasks that
+        // predate dueDate by deriving a date from their current offset.
+        function recomputeTaskDatesOnLoad() {
+            let changed = false;
+            for (const task of tasks) {
+                if (task.dueDate) {
+                    const offset = offsetFromYmd(task.dueDate);
+                    if (offset != null && task.dayOffset !== offset) {
+                        task.dayOffset = offset;
+                        changed = true;
+                    }
+                } else if (task.dayOffset != null && task.dayOffset !== 999) {
+                    task.dueDate = ymdForOffset(task.dayOffset);
+                    changed = true;
+                }
+            }
+            if (changed) saveTasks();
+        }
+
+        // After a Notion sync, remote offsets are freshly computed from
+        // the real Due Dates, so deriving dueDate from dayOffset here is
+        // exact. Only ever called immediately after a sync (or the load
+        // time recompute), never on offsets that could be stale.
+        function reconcileDatesFromOffsets() {
+            let changed = false;
+            for (const task of tasks) {
+                const expected = (task.dayOffset == null || task.dayOffset === 999)
+                    ? null
+                    : ymdForOffset(task.dayOffset);
+                if ((task.dueDate || null) !== expected) {
+                    task.dueDate = expected;
+                    changed = true;
+                }
+            }
+            if (changed) saveTasks();
+        }
+
+        // Manual sync entry point: syncs, then locks dates to the fresh
+        // offsets. syncFromNotion itself stays byte identical.
+        async function syncAndReconcile(opts) {
+            await syncFromNotion(opts);
+            reconcileDatesFromOffsets();
+        }
+
         // Extract "HH:MM" from an ISO-like "YYYY-MM-DDTHH:MM:SS" string.
         function timeFromIso(iso) {
             if (!iso) return '';
@@ -3424,7 +3655,7 @@
         function assignTaskDay(taskId, dayOffset) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) { closeLongpressPicker(); return; }
-            task.dayOffset = dayOffset;
+            setTaskSchedule(task, dayOffset);
             task.order = tasks.filter(t => t.dayOffset === dayOffset).length;
             saveTasks();
             renderActiveView();
@@ -3561,7 +3792,7 @@
         function scheduleBoardTaskToToday(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
-            task.dayOffset = 0;
+            setTaskSchedule(task, 0);
             task.order = tasks.filter(t => t.dayOffset === 0).length;
             saveTasks();
             renderTaskBoard();
@@ -3701,7 +3932,7 @@
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             // Move to the day after whichever day is currently showing
-            task.dayOffset = currentDayOffset + 1;
+            setTaskSchedule(task, currentDayOffset + 1);
             task.order = tasks.filter(t => t.dayOffset === task.dayOffset).length;
             saveTasks();
             renderActiveView();
@@ -3711,7 +3942,7 @@
         function unscheduleTask(taskId) {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
-            task.dayOffset = 999;
+            setTaskSchedule(task, 999);
             task.order = 0;
             saveTasks();
             renderActiveView();
