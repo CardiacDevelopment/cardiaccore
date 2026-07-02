@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
     <title>Cardiac Core</title>
+    <script>
+        // Immediate viewport check BEFORE first paint to prevent mobile
+        // layout flash on wide screens. The class is confirmed by JS in
+        // initDesktop() later; this just hides mobile chrome early.
+        if (window.matchMedia('(min-width: 1024px)').matches) {
+            document.documentElement.classList.add('desktop-mode-early');
+        }
+    </script>
     <link rel="icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="icon_32.png">
 <link rel="apple-touch-icon" href="icon_180.png">
@@ -1213,6 +1221,17 @@
             display: none !important;
         }
 
+        /* Early hide: prevents mobile flash before JS init runs */
+        .desktop-mode-early .header,
+        .desktop-mode-early .day-nav,
+        .desktop-mode-early .mobile-view,
+        .desktop-mode-early .task-board-view,
+        .desktop-mode-early .bottom-nav,
+        .desktop-mode-early .add-task-input,
+        .desktop-mode-early .settings-panel {
+            display: none !important;
+        }
+
         .desktop-sidebar {
             width: 220px;
             flex-shrink: 0;
@@ -1387,7 +1406,7 @@
             align-items: center;
             gap: 10px;
             background: var(--task-bg);
-            border-left: 3px solid var(--accent-green);
+            border-left: 3px solid #888780;
             border-radius: 4px;
             padding: 10px 12px;
             font-size: 14px;
@@ -1395,6 +1414,28 @@
 
         .desktop-task-row .task-checkbox {
             margin-top: 0;
+        }
+
+        .desktop-task-unsched {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .desktop-task-row:hover .desktop-task-unsched {
+            opacity: 1;
+        }
+
+        .desktop-task-unsched:hover {
+            color: #E24B4A;
+            background: #E24B4A22;
         }
 
         .desktop-task-text {
@@ -1481,6 +1522,106 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             flex-shrink: 0;
+        }
+
+        /* ── Weather widget ──────────────────────────────────── */
+        .weather-current {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .weather-temp {
+            font-size: 36px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .weather-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .weather-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .weather-icon {
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        .weather-forecast {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .weather-forecast-day {
+            flex: 1;
+            text-align: center;
+            background: var(--task-bg);
+            border-radius: 6px;
+            padding: 8px 4px;
+        }
+
+        .weather-forecast-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .weather-forecast-icon {
+            font-size: 20px;
+            margin: 4px 0;
+        }
+
+        .weather-forecast-temps {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .weather-forecast-temps strong {
+            color: var(--text-primary);
+        }
+
+        /* ── Market widget ───────────────────────────────────── */
+        .market-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--task-bg);
+            border-radius: 6px;
+        }
+
+        .market-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .market-price {
+            font-size: 14px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .market-change {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .market-change.up { color: #00cc52; }
+        .market-change.down { color: #E24B4A; }
+
+        .market-label {
+            font-size: 10px;
+            color: var(--text-secondary);
         }
 
         /* ── Desktop week grid ───────────────────────────────── */
@@ -1579,12 +1720,12 @@
 
         .desktop-month-layout {
             display: flex;
-            gap: 20px;
-            align-items: flex-start;
+            flex-direction: column;
+            gap: 24px;
         }
 
         .desktop-month-main {
-            flex: 1;
+            width: 100%;
             min-width: 0;
         }
 
@@ -1768,27 +1909,36 @@
         }
 
         .desktop-month-board {
-            width: 260px;
-            flex-shrink: 0;
-            max-height: calc(100vh - 140px);
-            overflow-y: auto;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
+            width: 100%;
+            max-height: none;
+            overflow-y: visible;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
         }
 
         .desktop-month-board-title {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            width: 100%;
+            flex-shrink: 0;
         }
 
         .desktop-month-board-cat {
-            margin-bottom: 14px;
+            flex: 0 0 220px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 0;
         }
 
         .desktop-month-board-cat-header {
@@ -1800,7 +1950,9 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 6px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .desktop-board-task {
@@ -2106,11 +2258,15 @@
                     </div>
                     <div class="desktop-widget">
                         <div class="desktop-widget-title"><span>Weather</span></div>
-                        <div class="desktop-widget-empty">Coming in phase 2.</div>
+                        <div class="desktop-widget-body" id="desktopWeatherWidget">
+                            <div class="desktop-widget-empty">Set your location in Settings to see weather.</div>
+                        </div>
                     </div>
                     <div class="desktop-widget">
                         <div class="desktop-widget-title"><span>Markets</span></div>
-                        <div class="desktop-widget-empty">Coming in phase 2.</div>
+                        <div class="desktop-widget-body" id="desktopMarketsWidget">
+                            <div class="desktop-widget-empty">Loading…</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2196,6 +2352,16 @@
                         </div>
                     </div>
                     <div class="desktop-settings-card">
+                        <div class="setting-label">Weather Location</div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="desktopWeatherCityInput" placeholder="City name…"
+                                   style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
+                            <button class="setting-button" onclick="searchWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
+                        </div>
+                        <div id="desktopWeatherResults" style="margin-top:8px;"></div>
+                        <div class="sync-status" id="desktopWeatherStatus"></div>
+                    </div>
+                    <div class="desktop-settings-card">
                         <div class="setting-label">Data</div>
                         <button class="setting-button" onclick="exportTasks()">Export Tasks</button>
                     </div>
@@ -2254,6 +2420,7 @@
             recomputeTaskDatesOnLoad();
             loadCollapsedCategories();
             loadCalendars();
+            loadCheckedCalendarEvents();
             applyLightModePreference();
             rolloverOverdueTasks();
             updateDateDisplay();
@@ -2340,6 +2507,16 @@
             }
 
             renderDesktopViews();
+
+            // Weather: load cache, fetch fresh data, refresh every 15 min.
+            loadWeatherCache();
+            fetchWeather();
+            setInterval(fetchWeather, 15 * 60 * 1000);
+
+            // Markets: load cache, fetch fresh data, refresh every 5 min.
+            loadMarketCache();
+            fetchMarketQuotes();
+            setInterval(fetchMarketQuotes, MARKET_REFRESH_MS);
         }
 
         function switchDesktopTab(tab) {
@@ -2400,6 +2577,229 @@
             renderDesktopDashHeader();
             renderDesktopTodayWidget();
             renderDesktopCalendarWidget();
+            // Weather and market widgets manage their own refresh timers
+            // and only re-render from cache here so they do not fire new
+            // network requests on every task change.
+            renderWeatherFromCache();
+            renderMarketsFromCache();
+        }
+
+        // ── Weather widget (Open-Meteo, free, no API key) ───────
+        const WEATHER_CACHE_KEY = 'cardiacWeatherCache';
+        const WEATHER_LOC_KEY = 'cardiacWeatherLocation';
+        let weatherCache = null;
+
+        // WMO weather code to emoji and description.
+        function weatherCodeToInfo(code) {
+            if (code === 0) return { icon: '☀️', desc: 'Clear' };
+            if (code <= 3) return { icon: '⛅', desc: 'Partly cloudy' };
+            if (code <= 49) return { icon: '🌫️', desc: 'Foggy' };
+            if (code <= 59) return { icon: '🌧️', desc: 'Drizzle' };
+            if (code <= 69) return { icon: '🌧️', desc: 'Rain' };
+            if (code <= 79) return { icon: '🌨️', desc: 'Snow' };
+            if (code <= 84) return { icon: '🌧️', desc: 'Showers' };
+            if (code <= 94) return { icon: '🌨️', desc: 'Snow showers' };
+            if (code <= 99) return { icon: '⛈️', desc: 'Thunderstorm' };
+            return { icon: '🌤️', desc: 'Unknown' };
+        }
+
+        function getWeatherLocation() {
+            try {
+                const raw = localStorage.getItem(WEATHER_LOC_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch { return null; }
+        }
+
+        function setWeatherLocation(loc) {
+            localStorage.setItem(WEATHER_LOC_KEY, JSON.stringify(loc));
+            const status = document.getElementById('desktopWeatherStatus');
+            if (status) status.textContent = `Location set to ${loc.name}`;
+            fetchWeather();
+        }
+
+        async function searchWeatherCity() {
+            const input = document.getElementById('desktopWeatherCityInput');
+            const results = document.getElementById('desktopWeatherResults');
+            if (!input || !results) return;
+            const q = input.value.trim();
+            if (!q) return;
+
+            results.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">Searching…</div>';
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en`);
+                const data = await res.json();
+                if (!data.results || data.results.length === 0) {
+                    results.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No results found.</div>';
+                    return;
+                }
+                results.innerHTML = data.results.map(r => {
+                    const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
+                    return `<button class="setting-button" style="margin-bottom:4px; text-align:left; font-size:13px;"
+                                onclick='setWeatherLocation(${JSON.stringify({ lat: r.latitude, lon: r.longitude, name: label }).replace(/'/g, "&#39;")})'>${escapeHtml(label)}</button>`;
+                }).join('');
+            } catch (err) {
+                results.innerHTML = `<div style="font-size:12px; color:var(--text-secondary);">Error: ${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        async function fetchWeather() {
+            const loc = getWeatherLocation();
+            if (!loc) return;
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=5`;
+                const res = await fetch(url);
+                const data = await res.json();
+                weatherCache = { data, ts: Date.now(), name: loc.name };
+                try { localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(weatherCache)); } catch {}
+                renderWeatherWidget(weatherCache);
+            } catch (err) {
+                console.error('Weather fetch error:', err);
+            }
+        }
+
+        function loadWeatherCache() {
+            try {
+                const raw = localStorage.getItem(WEATHER_CACHE_KEY);
+                if (raw) weatherCache = JSON.parse(raw);
+            } catch {}
+        }
+
+        function renderWeatherFromCache() {
+            if (weatherCache) renderWeatherWidget(weatherCache);
+            else {
+                const el = document.getElementById('desktopWeatherWidget');
+                if (!el) return;
+                const loc = getWeatherLocation();
+                if (!loc) {
+                    el.innerHTML = '<div class="desktop-widget-empty">Set your location in Settings to see weather.</div>';
+                } else {
+                    el.innerHTML = '<div class="desktop-widget-empty">Loading weather…</div>';
+                }
+            }
+        }
+
+        function renderWeatherWidget(cache) {
+            const el = document.getElementById('desktopWeatherWidget');
+            if (!el || !cache || !cache.data) return;
+            const d = cache.data;
+            const cur = d.current;
+            const daily = d.daily;
+            const info = weatherCodeToInfo(cur.weather_code);
+
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let forecastHtml = '';
+            if (daily && daily.time) {
+                // Skip today (index 0), show next 4 days.
+                forecastHtml = '<div class="weather-forecast">';
+                for (let i = 1; i < Math.min(daily.time.length, 5); i++) {
+                    const dt = new Date(daily.time[i] + 'T00:00:00');
+                    const fi = weatherCodeToInfo(daily.weather_code[i]);
+                    forecastHtml += `
+                        <div class="weather-forecast-day">
+                            <div class="weather-forecast-label">${dayNames[dt.getDay()]}</div>
+                            <div class="weather-forecast-icon">${fi.icon}</div>
+                            <div class="weather-forecast-temps"><strong>${Math.round(daily.temperature_2m_max[i])}°</strong> / ${Math.round(daily.temperature_2m_min[i])}°</div>
+                        </div>
+                    `;
+                }
+                forecastHtml += '</div>';
+            }
+
+            el.innerHTML = `
+                <div class="weather-current">
+                    <div class="weather-icon">${info.icon}</div>
+                    <div>
+                        <div class="weather-temp">${Math.round(cur.temperature_2m)}°F</div>
+                        <div class="weather-desc">${info.desc}</div>
+                    </div>
+                    <div style="margin-left:auto; text-align:right;">
+                        <div class="weather-detail">Humidity: ${cur.relative_humidity_2m}%</div>
+                        <div class="weather-detail">Wind: ${Math.round(cur.wind_speed_10m)} mph</div>
+                    </div>
+                </div>
+                ${forecastHtml}
+                <div style="font-size:10px; color:var(--text-secondary); margin-top:8px;">${escapeHtml(cache.name || '')}</div>
+            `;
+        }
+
+        // ── Market widget (S&P, Dow, Nasdaq) ────────────────────
+        const MARKET_CACHE_KEY = 'cardiacMarketCache';
+        const MARKET_REFRESH_MS = 5 * 60 * 1000; // 5 min
+        let marketCache = null;
+
+        function loadMarketCache() {
+            try {
+                const raw = localStorage.getItem(MARKET_CACHE_KEY);
+                if (raw) marketCache = JSON.parse(raw);
+            } catch {}
+        }
+
+        async function fetchMarketQuotes() {
+            try {
+                const res = await fetch('/api/market/quotes');
+                if (!res.ok) throw new Error(`${res.status}`);
+                const data = await res.json();
+                marketCache = { quotes: data.quotes, ts: Date.now() };
+                try { localStorage.setItem(MARKET_CACHE_KEY, JSON.stringify(marketCache)); } catch {}
+                renderMarketsFromCache();
+            } catch (err) {
+                console.error('Market fetch error:', err);
+                // Show stale cache or error
+                renderMarketsFromCache();
+            }
+        }
+
+        function renderMarketsFromCache() {
+            const el = document.getElementById('desktopMarketsWidget');
+            if (!el) return;
+
+            if (!marketCache || !marketCache.quotes) {
+                el.innerHTML = '<div class="desktop-widget-empty">Loading market data…</div>';
+                return;
+            }
+
+            const q = marketCache.quotes;
+            el.innerHTML = q.map(item => {
+                const changeClass = item.change >= 0 ? 'up' : 'down';
+                const arrow = item.change >= 0 ? '▲' : '▼';
+                const changeStr = `${arrow} ${Math.abs(item.change).toFixed(2)} (${Math.abs(item.changePct).toFixed(2)}%)`;
+                return `
+                    <div class="market-row">
+                        <div>
+                            <div class="market-name">${escapeHtml(item.name)}</div>
+                            <div class="market-label">${escapeHtml(item.symbol)}</div>
+                        </div>
+                        <div>
+                            <div class="market-price">${Number(item.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            <div class="market-change ${changeClass}">${changeStr}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const age = Date.now() - (marketCache.ts || 0);
+            const mins = Math.round(age / 60000);
+            const label = mins < 1 ? 'Just now' : `${mins}m ago`;
+            el.innerHTML += `<div style="font-size:10px; color:var(--text-secondary); margin-top:6px; text-align:right;">Updated ${label}</div>`;
+        }
+
+
+        // Shared helper: renders a desktop task row with category colored
+        // border, checkbox, time label, unschedule button, and category dot.
+        function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask' } = {}) {
+            const color = categoryColors[task.category] || '#888780';
+            const time = task.startTime
+                ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
+                : '';
+            const cls = small ? 'desktop-task-row small' : 'desktop-task-row';
+            return `
+                <div class="${cls}" style="border-left-color:${color}" ondblclick="openEditModal(${task.id})">
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="${toggleFn}(${task.id})"></div>
+                    <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                    <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move to board">✕</button>
+                    <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
+                </div>
+            `;
         }
 
         function renderDesktopDashHeader() {
@@ -2432,35 +2832,61 @@
                 return;
             }
 
-            list.innerHTML = dayTasks.map(task => {
-                const color = categoryColors[task.category] || '#888780';
-                const time = task.startTime
-                    ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
-                    : '';
-                return `
-                    <div class="desktop-task-row" ondblclick="openEditModal(${task.id})">
-                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-                        <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
-                        <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
-                    </div>
-                `;
-            }).join('');
+            list.innerHTML = dayTasks.map(task => desktopTaskRowHtml(task)).join('');
+        }
+
+        // ── Calendar event checkoff ─────────────────────────────
+        // Purely local (not synced). Persisted in localStorage so checked
+        // events stay checked across refreshes within the same day.
+        const CAL_CHECKED_KEY = 'cardiacCheckedCalendarEvents';
+        let checkedCalendarEvents = new Set();
+
+        function loadCheckedCalendarEvents() {
+            try {
+                const raw = localStorage.getItem(CAL_CHECKED_KEY);
+                if (raw) checkedCalendarEvents = new Set(JSON.parse(raw));
+            } catch { checkedCalendarEvents = new Set(); }
+        }
+
+        function saveCheckedCalendarEvents() {
+            try {
+                localStorage.setItem(CAL_CHECKED_KEY, JSON.stringify([...checkedCalendarEvents]));
+            } catch {}
+        }
+
+        function toggleCalendarEventCheck(uid) {
+            if (checkedCalendarEvents.has(uid)) {
+                checkedCalendarEvents.delete(uid);
+            } else {
+                checkedCalendarEvents.add(uid);
+            }
+            saveCheckedCalendarEvents();
+            renderDesktopViews();
+        }
+
+        // Stable key for an event: prefer uid, fall back to start+title hash.
+        function calEventKey(ev) {
+            return ev.uid || `${ev.start || ''}_${ev.title || ''}`;
         }
 
         function desktopEventRow(ev, timeLabel, { compact = false } = {}) {
             const color = colorForEvent(ev);
             const calName = nameForEvent(ev);
             const url = ev.url ? escapeHtml(ev.url) : '';
+            const key = calEventKey(ev);
+            const isChecked = checkedCalendarEvents.has(key);
             const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
             // Compact rows (week columns) drop the calendar name to save
             // width; the border color still identifies the feed.
             const calLabel = compact
                 ? ''
                 : `<span class="desktop-cal-event-cal" style="color:${color};">${escapeHtml(calName)}</span>`;
+            const checkedStyle = isChecked ? 'opacity:0.45; text-decoration:line-through;' : '';
             return `
-                <div class="desktop-cal-event ${compact ? 'small' : ''}" style="border-left-color:${color};" ${openAttr} title="${escapeHtml(calName)}">
+                <div class="desktop-cal-event ${compact ? 'small' : ''}" style="border-left-color:${color}; ${checkedStyle}">
+                    <div class="task-checkbox ${isChecked ? 'checked' : ''}" style="border-color:${color}; flex-shrink:0; ${isChecked ? 'background:' + color + ';' : ''}" onclick="event.stopPropagation(); toggleCalendarEventCheck('${escapeHtml(key)}')"></div>
                     <span class="desktop-cal-event-time" style="color:${color};">${escapeHtml(timeLabel)}</span>
-                    <span class="desktop-cal-event-title">${escapeHtml(ev.title)}</span>
+                    <span class="desktop-cal-event-title" ${openAttr} style="cursor:${url ? 'pointer' : 'default'}">${escapeHtml(ev.title)}</span>
                     ${calLabel}
                 </div>
             `;
@@ -2576,17 +3002,7 @@
                             return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)), { compact: true });
                         }
                         const task = item.task;
-                        const color = categoryColors[task.category] || '#888780';
-                        const time = task.startTime
-                            ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
-                            : '';
-                        return `
-                            <div class="desktop-task-row small" ondblclick="openEditModal(${task.id})">
-                                <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-                                <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
-                                <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
-                            </div>
-                        `;
+                        return desktopTaskRowHtml(task, { small: true });
                     }),
                 ];
 
@@ -2671,17 +3087,7 @@
                         return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)));
                     }
                     const task = item.task;
-                    const color = categoryColors[task.category] || '#888780';
-                    const time = task.startTime
-                        ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
-                        : '';
-                    return `
-                        <div class="desktop-task-row" ondblclick="openEditModal(${task.id})">
-                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
-                            <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
-                            <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
-                        </div>
-                    `;
+                    return desktopTaskRowHtml(task);
                 }),
             ];
 
@@ -2868,13 +3274,11 @@
             }
 
             const cats = [...knownOrder, ...Object.keys(groups).filter(c => !knownOrder.includes(c))];
-            let html = '<div class="desktop-month-board-title">Unscheduled Tasks</div>';
+            let html = '';
 
-            let hasAny = false;
             for (const cat of cats) {
                 const items = groups[cat];
                 if (!items || items.length === 0) continue;
-                hasAny = true;
                 const color = categoryColors[cat] || '#888780';
                 html += `<div class="desktop-month-board-cat">
                     <div class="desktop-month-board-cat-header">
@@ -2895,8 +3299,8 @@
                 </div>`;
             }
 
-            if (!hasAny) {
-                html += '<div class="desktop-widget-empty">No unscheduled tasks. Add some from the board view or any add input.</div>';
+            if (!html) {
+                html = '<div class="desktop-widget-empty" style="padding:20px;">No unscheduled tasks.</div>';
             }
 
             el.innerHTML = html;
@@ -2999,17 +3403,7 @@
                 rows.push(desktopEventRow(ev, 'All day'));
             }
             for (const t of dayTasks) {
-                const color = categoryColors[t.category] || '#888780';
-                const time = t.startTime
-                    ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(t.startTime))}</span>`
-                    : '';
-                rows.push(`
-                    <div class="desktop-task-row" ondblclick="openEditModal(${t.id})">
-                        <div class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="monthDetailToggle(${t.id})"></div>
-                        <div class="desktop-task-text ${t.completed ? 'completed' : ''}">${time}${escapeHtml(t.text)}</div>
-                        <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(t.category)}"></span>
-                    </div>
-                `);
+                rows.push(desktopTaskRowHtml(t, { toggleFn: 'monthDetailToggle' }));
             }
             for (const ev of timed) {
                 rows.push(desktopEventRow(ev, formatTime12h(timeFromIso(ev.start))));
@@ -3534,6 +3928,11 @@
                 boardView.classList.add('active');
                 renderTaskBoard();
             } else {
+                // Switching to "today" resets the day offset so the user
+                // always lands on the real today, not wherever they last
+                // navigated with the day strip arrows.
+                currentDayOffset = 0;
+                updateDateDisplay();
                 mobileView.classList.remove('hidden');
                 boardView.classList.remove('active');
                 renderTasks();
