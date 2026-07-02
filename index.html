@@ -1571,6 +1571,299 @@
             border-color: var(--accent-green);
         }
 
+
+        /* ── Desktop month grid ──────────────────────────────── */
+        #desktopTabMonth {
+            max-width: none;
+        }
+
+        .desktop-month-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .desktop-month-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .desktop-month-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .desktop-month-title {
+            font-size: 22px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 220px;
+        }
+
+        .desktop-month-nav {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .desktop-month-nav:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .desktop-month-today-btn {
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--accent-green);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .desktop-month-jump {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .desktop-month-jump select,
+        .desktop-month-jump input[type="number"] {
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .desktop-month-jump input[type="number"] {
+            width: 80px;
+        }
+
+        .desktop-month-jump select:focus,
+        .desktop-month-jump input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .desktop-month-dow {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .desktop-month-dow-cell {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            padding: 6px 0;
+        }
+
+        .desktop-month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .desktop-month-cell {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            min-height: 90px;
+            padding: 6px;
+            cursor: pointer;
+            transition: border-color 0.15s ease;
+            position: relative;
+        }
+
+        .desktop-month-cell:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .desktop-month-cell.today-cell {
+            border-color: var(--accent-green);
+        }
+
+        .desktop-month-cell.other-month {
+            opacity: 0.35;
+        }
+
+        .desktop-month-cell.drag-over {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 102, 0.05);
+        }
+
+        .desktop-month-cell-num {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .desktop-month-cell.today-cell .desktop-month-cell-num {
+            color: var(--accent-green);
+        }
+
+        .desktop-month-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }
+
+        .desktop-month-chip.task-chip {
+            background: var(--task-bg);
+        }
+
+        .desktop-month-chip.task-chip.done {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .desktop-month-chip.event-chip {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .desktop-month-chip .chip-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .desktop-month-overflow {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+
+        .desktop-month-board {
+            width: 260px;
+            flex-shrink: 0;
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .desktop-month-board-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .desktop-month-board-cat {
+            margin-bottom: 14px;
+        }
+
+        .desktop-month-board-cat-header {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .desktop-board-task {
+            background: var(--task-bg);
+            border-left: 3px solid var(--accent-green);
+            border-radius: 4px;
+            padding: 8px 10px;
+            font-size: 12px;
+            margin-bottom: 4px;
+            cursor: grab;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .desktop-board-task:hover {
+            background: #2a2a2a;
+        }
+
+        .desktop-board-task.armed {
+            box-shadow: 0 0 0 2px var(--accent-green);
+        }
+
+        .desktop-board-task.dragging {
+            opacity: 0.5;
+        }
+
+        .desktop-month-detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            padding: 20px;
+        }
+
+        .desktop-month-detail-overlay.visible {
+            display: flex;
+        }
+
+        .desktop-month-detail {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .desktop-month-detail-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .desktop-month-detail-title {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
         /* ── Desktop today tab ───────────────────────────────── */
         .desktop-today-header {
             display: flex;
@@ -1785,6 +2078,7 @@
             <button class="desktop-nav-item" id="desktopNavDashboard" onclick="switchDesktopTab('dashboard')">Dashboard</button>
             <button class="desktop-nav-item" id="desktopNavToday" onclick="switchDesktopTab('today')">Today</button>
             <button class="desktop-nav-item" id="desktopNavWeek" onclick="switchDesktopTab('week')">Week</button>
+            <button class="desktop-nav-item" id="desktopNavMonth" onclick="switchDesktopTab('month')">Month</button>
             <button class="desktop-nav-item" id="desktopNavSettings" onclick="switchDesktopTab('settings')">Settings</button>
             <div class="desktop-sidebar-status">
                 <div class="status-dot disconnected" id="desktopStatusDot"></div>
@@ -1843,6 +2137,37 @@
                 <div class="desktop-tab-title">Week</div>
                 <div class="desktop-week-grid" id="desktopWeekGrid"></div>
             </div>
+            <div class="desktop-tab" id="desktopTabMonth">
+                <div class="desktop-month-layout">
+                    <div class="desktop-month-main">
+                        <div class="desktop-month-header" id="monthHeader"></div>
+                        <div class="desktop-month-dow">
+                            <div class="desktop-month-dow-cell">Sun</div>
+                            <div class="desktop-month-dow-cell">Mon</div>
+                            <div class="desktop-month-dow-cell">Tue</div>
+                            <div class="desktop-month-dow-cell">Wed</div>
+                            <div class="desktop-month-dow-cell">Thu</div>
+                            <div class="desktop-month-dow-cell">Fri</div>
+                            <div class="desktop-month-dow-cell">Sat</div>
+                        </div>
+                        <div class="desktop-month-grid" id="monthGrid"></div>
+                    </div>
+                    <div class="desktop-month-board" id="monthBoard"></div>
+                </div>
+            </div>
+
+            <!-- Day detail overlay (month view click) -->
+            <div class="desktop-month-detail-overlay" id="monthDetailOverlay">
+                <div class="desktop-month-detail">
+                    <div class="desktop-month-detail-header">
+                        <div class="desktop-month-detail-title" id="monthDetailTitle"></div>
+                        <button class="close-btn" onclick="closeMonthDetail()">×</button>
+                    </div>
+                    <div class="desktop-widget-body" id="monthDetailBody"></div>
+                    <input type="text" class="desktop-quick-add" id="monthDetailAdd" placeholder="Add a task for this day…" style="margin-top:12px;" />
+                </div>
+            </div>
+
             <div class="desktop-tab" id="desktopTabSettings">
                 <div class="desktop-tab-title">Settings</div>
                 <div class="desktop-settings-grid">
@@ -2018,7 +2343,7 @@
         }
 
         function switchDesktopTab(tab) {
-            const valid = ['dashboard', 'today', 'week', 'settings'];
+            const valid = ['dashboard', 'today', 'week', 'month', 'settings'];
             if (!valid.includes(tab)) tab = 'dashboard';
 
             for (const t of valid) {
@@ -2372,6 +2697,357 @@
             renderDesktopDashboard();
             renderDesktopWeek();
             renderDesktopToday();
+            renderDesktopMonth();
+        }
+
+        // ── Desktop month grid ──────────────────────────────────
+        // True calendar grid with month/year navigation and the ability
+        // to jump years ahead. The board panel beside the grid shows
+        // unscheduled tasks that can be placed via drag or click.
+        let monthViewYear = new Date().getFullYear();
+        let monthViewMonth = new Date().getMonth(); // 0 indexed
+        let monthArmedTaskId = null; // click to assign state
+        let monthDetailYmd = null;   // currently open day detail
+
+        const MONTH_NAMES_FULL = ['January','February','March','April','May','June',
+                                  'July','August','September','October','November','December'];
+
+        function desktopMonthNav(delta) {
+            monthViewMonth += delta;
+            if (monthViewMonth > 11) { monthViewMonth = 0; monthViewYear++; }
+            if (monthViewMonth < 0) { monthViewMonth = 11; monthViewYear--; }
+            renderDesktopMonth();
+        }
+
+        function desktopMonthToday() {
+            const now = new Date();
+            monthViewYear = now.getFullYear();
+            monthViewMonth = now.getMonth();
+            renderDesktopMonth();
+        }
+
+        function desktopMonthJump() {
+            const sel = document.getElementById('monthJumpMonth');
+            const inp = document.getElementById('monthJumpYear');
+            if (sel) monthViewMonth = Number(sel.value);
+            if (inp && inp.value) monthViewYear = Number(inp.value);
+            renderDesktopMonth();
+        }
+
+        function renderDesktopMonth() {
+            if (!document.body.classList.contains('desktop-mode')) return;
+            renderMonthHeader();
+            renderMonthGrid();
+            renderMonthBoard();
+        }
+
+        function renderMonthHeader() {
+            const el = document.getElementById('monthHeader');
+            if (!el) return;
+            const monthOpts = MONTH_NAMES_FULL.map((n, i) =>
+                `<option value="${i}" ${i === monthViewMonth ? 'selected' : ''}>${n}</option>`
+            ).join('');
+            el.innerHTML = `
+                <button class="desktop-month-nav" onclick="desktopMonthNav(-1)">←</button>
+                <div class="desktop-month-title">${MONTH_NAMES_FULL[monthViewMonth]} ${monthViewYear}</div>
+                <button class="desktop-month-nav" onclick="desktopMonthNav(1)">→</button>
+                <button class="desktop-month-today-btn" onclick="desktopMonthToday()">Today</button>
+                <div class="desktop-month-jump">
+                    <select id="monthJumpMonth" onchange="desktopMonthJump()">${monthOpts}</select>
+                    <input type="number" id="monthJumpYear" value="${monthViewYear}" min="2020" max="2099" onchange="desktopMonthJump()" />
+                </div>
+            `;
+        }
+
+        // Map of YYYY-MM-DD to dayOffset for the currently displayed month.
+        function monthYmdToOffset(ymd) {
+            return offsetFromYmd(ymd);
+        }
+
+        function renderMonthGrid() {
+            const grid = document.getElementById('monthGrid');
+            if (!grid) return;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayYmd = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            // First day of displayed month and how many leading blanks.
+            const first = new Date(monthViewYear, monthViewMonth, 1);
+            const startDow = first.getDay(); // 0=Sun
+            const daysInMonth = new Date(monthViewYear, monthViewMonth + 1, 0).getDate();
+
+            // Leading days from previous month.
+            const prevMonthDays = new Date(monthViewYear, monthViewMonth, 0).getDate();
+            const cells = [];
+
+            for (let i = startDow - 1; i >= 0; i--) {
+                const day = prevMonthDays - i;
+                const m = monthViewMonth === 0 ? 12 : monthViewMonth;
+                const y = monthViewMonth === 0 ? monthViewYear - 1 : monthViewYear;
+                const ymd = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                cells.push({ day, ymd, other: true });
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const ymd = `${monthViewYear}-${String(monthViewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                cells.push({ day: d, ymd, other: false });
+            }
+
+            // Trailing days to fill last row.
+            const remaining = 7 - (cells.length % 7);
+            if (remaining < 7) {
+                for (let d = 1; d <= remaining; d++) {
+                    const m = monthViewMonth === 11 ? 1 : monthViewMonth + 2;
+                    const y = monthViewMonth === 11 ? monthViewYear + 1 : monthViewYear;
+                    const ymd = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    cells.push({ day: d, ymd, other: true });
+                }
+            }
+
+            const MAX_CHIPS = 4;
+
+            grid.innerHTML = cells.map(cell => {
+                const isToday = cell.ymd === todayYmd;
+                const offset = monthYmdToOffset(cell.ymd);
+
+                // Tasks for this day.
+                const dayTasks = offset != null
+                    ? tasks.filter(t => t.dueDate === cell.ymd || (t.dayOffset === offset && !t.dueDate))
+                        .sort((a, b) => (a.order || 0) - (b.order || 0))
+                    : [];
+
+                // Calendar events.
+                const allDay = allDayEventsForDay(cell.ymd);
+                const timed = timedEventsForDay(cell.ymd);
+
+                const items = [];
+                for (const ev of allDay) {
+                    const c = colorForEvent(ev);
+                    items.push(`<div class="desktop-month-chip event-chip"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(ev.title)}</div>`);
+                }
+                for (const t of dayTasks) {
+                    const c = categoryColors[t.category] || '#888780';
+                    items.push(`<div class="desktop-month-chip task-chip ${t.completed ? 'done' : ''}"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(t.text)}</div>`);
+                }
+                for (const ev of timed) {
+                    const c = colorForEvent(ev);
+                    items.push(`<div class="desktop-month-chip event-chip"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(ev.title)}</div>`);
+                }
+
+                const visible = items.slice(0, MAX_CHIPS).join('');
+                const overflow = items.length > MAX_CHIPS
+                    ? `<div class="desktop-month-overflow">+${items.length - MAX_CHIPS} more</div>`
+                    : '';
+
+                return `<div class="desktop-month-cell ${isToday ? 'today-cell' : ''} ${cell.other ? 'other-month' : ''}"
+                             data-ymd="${cell.ymd}"
+                             onclick="handleMonthCellClick('${cell.ymd}')"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleMonthDrop(event, '${cell.ymd}')">
+                    <div class="desktop-month-cell-num">${cell.day}</div>
+                    ${visible}${overflow}
+                </div>`;
+            }).join('');
+        }
+
+        function renderMonthBoard() {
+            const el = document.getElementById('monthBoard');
+            if (!el) return;
+
+            const isUnscheduled = t => (t.dayOffset == null || t.dayOffset === 999) && !t.completed;
+            const groups = {};
+            const knownOrder = Object.keys(categoryColors);
+            for (const cat of knownOrder) groups[cat] = [];
+            for (const task of tasks) {
+                if (!isUnscheduled(task)) continue;
+                const cat = task.category || 'Brain Dump';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(task);
+            }
+
+            const cats = [...knownOrder, ...Object.keys(groups).filter(c => !knownOrder.includes(c))];
+            let html = '<div class="desktop-month-board-title">Unscheduled Tasks</div>';
+
+            let hasAny = false;
+            for (const cat of cats) {
+                const items = groups[cat];
+                if (!items || items.length === 0) continue;
+                hasAny = true;
+                const color = categoryColors[cat] || '#888780';
+                html += `<div class="desktop-month-board-cat">
+                    <div class="desktop-month-board-cat-header">
+                        <span class="chip-dot" style="background:${color}; width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
+                        ${escapeHtml(cat)} (${items.length})
+                    </div>
+                    ${items.map(t => `
+                        <div class="desktop-board-task ${monthArmedTaskId === t.id ? 'armed' : ''}"
+                             data-task-id="${t.id}"
+                             draggable="true"
+                             style="border-left-color: ${color}"
+                             onclick="toggleMonthArm(${t.id})"
+                             ondragstart="handleMonthDragStart(event, ${t.id})"
+                             ondragend="handleMonthDragEnd(event)">
+                            ${escapeHtml(t.text)}
+                        </div>
+                    `).join('')}
+                </div>`;
+            }
+
+            if (!hasAny) {
+                html += '<div class="desktop-widget-empty">No unscheduled tasks. Add some from the board view or any add input.</div>';
+            }
+
+            el.innerHTML = html;
+        }
+
+        // Drag and drop: board task onto a month cell.
+        let monthDragTaskId = null;
+
+        function handleMonthDragStart(e, taskId) {
+            monthDragTaskId = taskId;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', String(taskId));
+            e.target.classList.add('dragging');
+        }
+
+        function handleMonthDragEnd(e) {
+            monthDragTaskId = null;
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.desktop-month-cell.drag-over').forEach(c => c.classList.remove('drag-over'));
+        }
+
+        function handleMonthDrop(e, ymd) {
+            e.preventDefault();
+            const cell = e.currentTarget;
+            cell.classList.remove('drag-over');
+            const taskId = monthDragTaskId || Number(e.dataTransfer.getData('text/plain'));
+            if (!taskId) return;
+            placeTaskOnDate(taskId, ymd);
+        }
+
+        // Click to assign: click a board task to arm it, then click a cell.
+        function toggleMonthArm(taskId) {
+            monthArmedTaskId = monthArmedTaskId === taskId ? null : taskId;
+            renderMonthBoard();
+        }
+
+        function handleMonthCellClick(ymd) {
+            if (monthArmedTaskId) {
+                placeTaskOnDate(monthArmedTaskId, ymd);
+                monthArmedTaskId = null;
+                return;
+            }
+            openMonthDetail(ymd);
+        }
+
+        // Shared: place a task on a specific YYYY-MM-DD date.
+        function placeTaskOnDate(taskId, ymd) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            const offset = offsetFromYmd(ymd);
+            if (offset == null) return;
+            task.dueDate = ymd;
+            task.dayOffset = offset;
+            task.order = tasks.filter(t => t.dueDate === ymd || t.dayOffset === offset).length;
+            saveTasks();
+            renderDesktopViews();
+            if (notionConnected) pushTaskToNotion(task);
+        }
+
+        // Day detail overlay: full view of a day's tasks and events.
+        function openMonthDetail(ymd) {
+            monthDetailYmd = ymd;
+            const overlay = document.getElementById('monthDetailOverlay');
+            if (!overlay) return;
+
+            const parts = ymd.split('-').map(Number);
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            document.getElementById('monthDetailTitle').textContent =
+                `${dayNames[d.getDay()]}, ${MONTH_NAMES_FULL[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+
+            renderMonthDetailBody(ymd);
+
+            const addInput = document.getElementById('monthDetailAdd');
+            addInput.value = '';
+            addInput.onkeypress = (e) => {
+                if (e.key === 'Enter' && addInput.value.trim()) {
+                    monthDetailAddTask(ymd, addInput.value.trim());
+                    addInput.value = '';
+                }
+            };
+
+            overlay.classList.add('visible');
+        }
+
+        function renderMonthDetailBody(ymd) {
+            const body = document.getElementById('monthDetailBody');
+            if (!body) return;
+            const offset = offsetFromYmd(ymd);
+
+            const dayTasks = tasks
+                .filter(t => t.dueDate === ymd || (offset != null && t.dayOffset === offset && !t.dueDate))
+                .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            const allDay = allDayEventsForDay(ymd);
+            const timed = timedEventsForDay(ymd);
+
+            const rows = [];
+            for (const ev of allDay) {
+                rows.push(desktopEventRow(ev, 'All day'));
+            }
+            for (const t of dayTasks) {
+                const color = categoryColors[t.category] || '#888780';
+                const time = t.startTime
+                    ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(t.startTime))}</span>`
+                    : '';
+                rows.push(`
+                    <div class="desktop-task-row" ondblclick="openEditModal(${t.id})">
+                        <div class="task-checkbox ${t.completed ? 'checked' : ''}" onclick="monthDetailToggle(${t.id})"></div>
+                        <div class="desktop-task-text ${t.completed ? 'completed' : ''}">${time}${escapeHtml(t.text)}</div>
+                        <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(t.category)}"></span>
+                    </div>
+                `);
+            }
+            for (const ev of timed) {
+                rows.push(desktopEventRow(ev, formatTime12h(timeFromIso(ev.start))));
+            }
+
+            body.innerHTML = rows.length
+                ? rows.join('')
+                : '<div class="desktop-widget-empty">Nothing scheduled for this day.</div>';
+        }
+
+        function monthDetailToggle(taskId) {
+            toggleTask(taskId);
+            if (monthDetailYmd) renderMonthDetailBody(monthDetailYmd);
+        }
+
+        function monthDetailAddTask(ymd, text) {
+            const offset = offsetFromYmd(ymd);
+            if (offset == null) return;
+            const task = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                dayOffset: offset,
+                dueDate: ymd,
+                category: 'Personal',
+                order: tasks.filter(t => t.dayOffset === offset).length,
+                createdAt: new Date().toISOString()
+            };
+            tasks.push(task);
+            saveTasks();
+            renderDesktopViews();
+            renderMonthDetailBody(ymd);
+            if (notionConnected) pushTaskToNotion(task);
+        }
+
+        function closeMonthDetail() {
+            document.getElementById('monthDetailOverlay').classList.remove('visible');
+            monthDetailYmd = null;
         }
 
         // Check Notion connection status (single-user / server-token mode)
@@ -3717,6 +4393,12 @@
                 const btn = e.target.closest('.action-menu-item');
                 if (btn) handleActionMenuClick(btn.dataset.action);
             });
+            const monthOverlay = document.getElementById('monthDetailOverlay');
+            if (monthOverlay) {
+                monthOverlay.addEventListener('click', e => {
+                    if (e.target === monthOverlay) closeMonthDetail();
+                });
+            }
             const addCal = document.getElementById('addCalendarModal');
             if (addCal) {
                 addCal.addEventListener('click', e => {
