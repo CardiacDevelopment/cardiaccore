@@ -2073,12 +2073,12 @@
         }
 
         /* ══════════════════════════════════════════════════════
-           BRIEFING TAB — scoped entirely under #desktopTabBriefing
+           BRIEFING TAB — scoped entirely under #desktopTabHub
            Editorial dark-green palette, Barlow Condensed for display type.
            All rules are ancestor-scoped so they can't leak into the rest
            of the app.
            ══════════════════════════════════════════════════════ */
-        #desktopTabBriefing {
+        #desktopTabHub {
             --br-green-50:  #eaf3de;
             --br-green-100: #c0dd97;
             --br-green-200: #97c459;
@@ -2102,7 +2102,7 @@
             padding: 0;
             overflow-y: auto;
         }
-        #desktopTabBriefing .briefing {
+        #desktopTabHub .briefing {
             font-family: 'Barlow', -apple-system, sans-serif;
             font-size: 15px;
             line-height: 1.6;
@@ -2112,7 +2112,7 @@
         }
 
         /* Hero */
-        #desktopTabBriefing .briefing-hero {
+        #desktopTabHub .briefing-hero {
             background: linear-gradient(135deg, var(--br-green-900) 0%, var(--br-bg) 60%);
             border-bottom: 1px solid var(--br-border-bright);
             margin: 0 -2rem 2.5rem;
@@ -2122,7 +2122,7 @@
             align-items: end;
             gap: 2rem;
         }
-        #desktopTabBriefing .briefing-hero-eyebrow {
+        #desktopTabHub .briefing-hero-eyebrow {
             font-family: 'Barlow Condensed', sans-serif;
             font-size: 0.72rem;
             letter-spacing: 0.18em;
@@ -2131,7 +2131,7 @@
             font-weight: 600;
             margin-bottom: 0.6rem;
         }
-        #desktopTabBriefing .briefing-hero-title {
+        #desktopTabHub .briefing-hero-title {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 900;
             font-size: clamp(2.2rem, 4vw, 3.6rem);
@@ -2140,32 +2140,32 @@
             letter-spacing: 0.03em;
             color: var(--br-text-bright);
         }
-        #desktopTabBriefing .briefing-hero-title span {
+        #desktopTabHub .briefing-hero-title span {
             color: var(--br-green-200);
         }
-        #desktopTabBriefing .briefing-hero-tagline {
+        #desktopTabHub .briefing-hero-tagline {
             margin-top: 0.9rem;
             font-size: 0.9rem;
             color: var(--br-text-muted);
             max-width: 520px;
         }
-        #desktopTabBriefing .briefing-hero-stats {
+        #desktopTabHub .briefing-hero-stats {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
             text-align: right;
         }
-        #desktopTabBriefing .briefing-hero-stat {
+        #desktopTabHub .briefing-hero-stat {
             font-family: 'Barlow Condensed', sans-serif;
         }
-        #desktopTabBriefing .briefing-hero-stat-value {
+        #desktopTabHub .briefing-hero-stat-value {
             font-weight: 700;
             font-size: 1.5rem;
             color: var(--br-green-100);
             line-height: 1;
             margin-bottom: 2px;
         }
-        #desktopTabBriefing .briefing-hero-stat-label {
+        #desktopTabHub .briefing-hero-stat-label {
             font-size: 0.68rem;
             letter-spacing: 0.14em;
             text-transform: uppercase;
@@ -2174,7 +2174,7 @@
         }
 
         /* Section headers (collapsible) */
-        #desktopTabBriefing .briefing-section-header {
+        #desktopTabHub .briefing-section-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -2182,14 +2182,14 @@
             padding-bottom: 0.5rem;
             border-bottom: 1px solid var(--br-border-bright);
         }
-        #desktopTabBriefing .briefing-collapsible {
+        #desktopTabHub .briefing-collapsible {
             cursor: pointer;
             user-select: none;
         }
-        #desktopTabBriefing .briefing-collapsible:hover .briefing-section-label {
+        #desktopTabHub .briefing-collapsible:hover .briefing-section-label {
             color: var(--br-green-100);
         }
-        #desktopTabBriefing .briefing-section-label {
+        #desktopTabHub .briefing-section-label {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 1rem;
@@ -2198,39 +2198,39 @@
             color: var(--br-green-200);
             white-space: nowrap;
         }
-        #desktopTabBriefing .briefing-section-line {
+        #desktopTabHub .briefing-section-line {
             flex: 1;
             height: 1px;
             background: var(--br-border);
         }
-        #desktopTabBriefing .briefing-section-count {
+        #desktopTabHub .briefing-section-count {
             font-size: 0.68rem;
             color: var(--br-text-dim);
             letter-spacing: 0.08em;
             font-weight: 600;
             white-space: nowrap;
         }
-        #desktopTabBriefing .briefing-collapse-arrow {
+        #desktopTabHub .briefing-collapse-arrow {
             font-size: 0.85rem;
             color: var(--br-text-dim);
             transition: transform 0.22s ease;
             flex-shrink: 0;
             line-height: 1;
         }
-        #desktopTabBriefing .briefing-section-header.collapsed .briefing-collapse-arrow {
+        #desktopTabHub .briefing-section-header.collapsed .briefing-collapse-arrow {
             transform: rotate(-90deg);
         }
-        #desktopTabBriefing .briefing-collapse-body {
+        #desktopTabHub .briefing-collapse-body {
             overflow: hidden;
             transition: max-height 0.28s ease, opacity 0.22s ease;
             max-height: 4000px;
             opacity: 1;
         }
-        #desktopTabBriefing .briefing-collapse-body.hidden {
+        #desktopTabHub .briefing-collapse-body.hidden {
             max-height: 0;
             opacity: 0;
         }
-        #desktopTabBriefing .briefing-section-mini {
+        #desktopTabHub .briefing-section-mini {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
@@ -2243,38 +2243,38 @@
         }
 
         /* Cards (generic) */
-        #desktopTabBriefing .briefing-card {
+        #desktopTabHub .briefing-card {
             background: var(--br-card);
             border: 1px solid var(--br-border-bright);
             border-radius: 6px;
             padding: 1.25rem 1.5rem;
         }
-        #desktopTabBriefing .briefing-empty {
+        #desktopTabHub .briefing-empty {
             color: var(--br-text-dim);
             font-size: 0.85rem;
             padding: 0.5rem 0;
         }
 
         /* Weather + Markets row */
-        #desktopTabBriefing .briefing-wxmk-row {
+        #desktopTabHub .briefing-wxmk-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
-        #desktopTabBriefing .briefing-weather {
+        #desktopTabHub .briefing-weather {
             display: grid;
             grid-template-columns: auto 1fr auto;
             gap: 1rem;
             align-items: center;
         }
-        #desktopTabBriefing .briefing-weather-icon {
+        #desktopTabHub .briefing-weather-icon {
             width: 52px; height: 52px;
             background: var(--br-green-800);
             border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem;
         }
-        #desktopTabBriefing .briefing-weather-loc {
+        #desktopTabHub .briefing-weather-loc {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 1rem;
@@ -2282,23 +2282,23 @@
             text-transform: uppercase;
             color: var(--br-text-bright);
         }
-        #desktopTabBriefing .briefing-weather-desc {
+        #desktopTabHub .briefing-weather-desc {
             font-size: 0.8rem;
             color: var(--br-text-muted);
             margin-top: 2px;
         }
-        #desktopTabBriefing .briefing-weather-temp {
+        #desktopTabHub .briefing-weather-temp {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 900;
             font-size: 2.4rem;
             color: var(--br-green-100);
             line-height: 1;
         }
-        #desktopTabBriefing .briefing-weather-unit {
+        #desktopTabHub .briefing-weather-unit {
             font-size: 1rem;
             color: var(--br-text-dim);
         }
-        #desktopTabBriefing .briefing-weather-details {
+        #desktopTabHub .briefing-weather-details {
             grid-column: 1 / -1;
             display: flex;
             flex-wrap: wrap;
@@ -2307,14 +2307,14 @@
             margin-top: 0.25rem;
             border-top: 1px solid var(--br-border);
         }
-        #desktopTabBriefing .briefing-weather-detail {
+        #desktopTabHub .briefing-weather-detail {
             font-size: 0.72rem;
             color: var(--br-text-dim);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             font-weight: 600;
         }
-        #desktopTabBriefing .briefing-weather-detail span {
+        #desktopTabHub .briefing-weather-detail span {
             color: var(--br-text-muted);
             margin-left: 4px;
             font-weight: 400;
@@ -2323,18 +2323,18 @@
         }
 
         /* Market grid */
-        #desktopTabBriefing .briefing-market-grid {
+        #desktopTabHub .briefing-market-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 0.75rem;
         }
-        #desktopTabBriefing .briefing-market-item {
+        #desktopTabHub .briefing-market-item {
             padding: 0.75rem;
             background: var(--br-surface);
             border-radius: 4px;
             border: 1px solid var(--br-border);
         }
-        #desktopTabBriefing .briefing-market-ticker {
+        #desktopTabHub .briefing-market-ticker {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
@@ -2343,38 +2343,38 @@
             text-transform: uppercase;
             margin-bottom: 4px;
         }
-        #desktopTabBriefing .briefing-market-value {
+        #desktopTabHub .briefing-market-value {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 1.2rem;
             color: var(--br-text-bright);
             line-height: 1;
         }
-        #desktopTabBriefing .briefing-market-change {
+        #desktopTabHub .briefing-market-change {
             font-size: 0.75rem;
             margin-top: 3px;
             font-weight: 600;
         }
-        #desktopTabBriefing .briefing-market-change.up { color: var(--br-up); }
-        #desktopTabBriefing .briefing-market-change.down { color: var(--br-down); }
+        #desktopTabHub .briefing-market-change.up { color: var(--br-up); }
+        #desktopTabHub .briefing-market-change.down { color: var(--br-down); }
 
         /* Sports cards */
-        #desktopTabBriefing .briefing-sports-grid {
+        #desktopTabHub .briefing-sports-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
         }
-        #desktopTabBriefing .briefing-sport-card {
+        #desktopTabHub .briefing-sport-card {
             background: var(--br-card);
             border: 1px solid var(--br-border);
             border-radius: 6px;
             overflow: hidden;
             transition: border-color 0.15s;
         }
-        #desktopTabBriefing .briefing-sport-card:hover {
+        #desktopTabHub .briefing-sport-card:hover {
             border-color: var(--br-border-bright);
         }
-        #desktopTabBriefing .briefing-sport-header {
+        #desktopTabHub .briefing-sport-header {
             background: var(--br-surface);
             border-bottom: 1px solid var(--br-border);
             padding: 0.7rem 1.1rem;
@@ -2383,7 +2383,7 @@
             justify-content: space-between;
             gap: 0.5rem;
         }
-        #desktopTabBriefing .briefing-sport-name {
+        #desktopTabHub .briefing-sport-name {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 0.82rem;
@@ -2391,7 +2391,7 @@
             text-transform: uppercase;
             color: var(--br-green-100);
         }
-        #desktopTabBriefing .briefing-sport-badge {
+        #desktopTabHub .briefing-sport-badge {
             font-size: 0.62rem;
             font-weight: 600;
             letter-spacing: 0.1em;
@@ -2403,10 +2403,10 @@
             padding: 2px 7px;
             white-space: nowrap;
         }
-        #desktopTabBriefing .briefing-sport-body {
+        #desktopTabHub .briefing-sport-body {
             padding: 1rem 1.1rem;
         }
-        #desktopTabBriefing .briefing-sport-score {
+        #desktopTabHub .briefing-sport-score {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 900;
             font-size: 1.8rem;
@@ -2414,20 +2414,20 @@
             color: var(--br-green-100);
             letter-spacing: 0.03em;
         }
-        #desktopTabBriefing .briefing-sport-score .result {
+        #desktopTabHub .briefing-sport-score .result {
             font-size: 0.9rem;
             margin-right: 0.4rem;
             color: var(--br-text-muted);
             letter-spacing: 0.1em;
         }
-        #desktopTabBriefing .briefing-sport-score .result.win { color: var(--br-green-200); }
-        #desktopTabBriefing .briefing-sport-score .result.loss { color: var(--br-down); }
-        #desktopTabBriefing .briefing-sport-meta {
+        #desktopTabHub .briefing-sport-score .result.win { color: var(--br-green-200); }
+        #desktopTabHub .briefing-sport-score .result.loss { color: var(--br-down); }
+        #desktopTabHub .briefing-sport-meta {
             font-size: 0.78rem;
             color: var(--br-text-muted);
             margin-top: 0.5rem;
         }
-        #desktopTabBriefing .briefing-sport-next {
+        #desktopTabHub .briefing-sport-next {
             font-size: 0.75rem;
             color: var(--br-text-dim);
             margin-top: 0.75rem;
@@ -2436,25 +2436,25 @@
         }
 
         /* News grid + sender cards */
-        #desktopTabBriefing .briefing-news-grid {
+        #desktopTabHub .briefing-news-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
-        #desktopTabBriefing .briefing-news-full {
+        #desktopTabHub .briefing-news-full {
             grid-column: 1 / -1;
         }
-        #desktopTabBriefing .briefing-sender-card {
+        #desktopTabHub .briefing-sender-card {
             background: var(--br-card);
             border: 1px solid var(--br-border);
             border-radius: 6px;
             overflow: hidden;
             transition: border-color 0.15s;
         }
-        #desktopTabBriefing .briefing-sender-card:hover {
+        #desktopTabHub .briefing-sender-card:hover {
             border-color: var(--br-border-bright);
         }
-        #desktopTabBriefing .briefing-sender-header {
+        #desktopTabHub .briefing-sender-header {
             background: var(--br-surface);
             border-bottom: 1px solid var(--br-border);
             padding: 0.7rem 1.1rem;
@@ -2463,7 +2463,7 @@
             justify-content: space-between;
             gap: 0.5rem;
         }
-        #desktopTabBriefing .briefing-sender-name {
+        #desktopTabHub .briefing-sender-name {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 0.82rem;
@@ -2471,7 +2471,7 @@
             text-transform: uppercase;
             color: var(--br-green-100);
         }
-        #desktopTabBriefing .briefing-sender-badge {
+        #desktopTabHub .briefing-sender-badge {
             font-size: 0.62rem;
             font-weight: 600;
             letter-spacing: 0.1em;
@@ -2483,10 +2483,10 @@
             padding: 2px 7px;
             white-space: nowrap;
         }
-        #desktopTabBriefing .briefing-sender-body {
+        #desktopTabHub .briefing-sender-body {
             padding: 1rem 1.1rem;
         }
-        #desktopTabBriefing .briefing-sender-headline {
+        #desktopTabHub .briefing-sender-headline {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 600;
             font-size: 1.05rem;
@@ -2494,20 +2494,20 @@
             line-height: 1.25;
             margin-bottom: 0.5rem;
         }
-        #desktopTabBriefing .briefing-sender-snippet {
+        #desktopTabHub .briefing-sender-snippet {
             font-size: 0.85rem;
             color: var(--br-text-muted);
             line-height: 1.55;
             margin-bottom: 0.75rem;
         }
-        #desktopTabBriefing .briefing-sender-received {
+        #desktopTabHub .briefing-sender-received {
             font-size: 0.68rem;
             color: var(--br-text-dim);
             letter-spacing: 0.08em;
             text-transform: uppercase;
             margin-bottom: 0.75rem;
         }
-        #desktopTabBriefing .briefing-sender-link {
+        #desktopTabHub .briefing-sender-link {
             font-size: 0.75rem;
             font-weight: 600;
             letter-spacing: 0.1em;
@@ -2520,13 +2520,13 @@
             border-bottom: 1px solid transparent;
             transition: border-color 0.15s;
         }
-        #desktopTabBriefing .briefing-sender-link:hover {
+        #desktopTabHub .briefing-sender-link:hover {
             border-color: var(--br-green-200);
         }
-        #desktopTabBriefing .briefing-sender-link::after { content: " →"; }
+        #desktopTabHub .briefing-sender-link::after { content: " →"; }
 
         /* Sources bar */
-        #desktopTabBriefing .briefing-sources {
+        #desktopTabHub .briefing-sources {
             background: var(--br-surface);
             border: 1px solid var(--br-border-bright);
             border-radius: 6px;
@@ -2534,7 +2534,7 @@
             margin-top: 2.5rem;
             margin-bottom: 0.5rem;
         }
-        #desktopTabBriefing .briefing-sources-label {
+        #desktopTabHub .briefing-sources-label {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
@@ -2543,7 +2543,7 @@
             color: var(--br-green-400);
             margin-bottom: 0.75rem;
         }
-        #desktopTabBriefing .briefing-sources-list {
+        #desktopTabHub .briefing-sources-list {
             list-style: none;
             display: flex;
             flex-wrap: wrap;
@@ -2551,35 +2551,35 @@
             padding: 0;
             margin: 0;
         }
-        #desktopTabBriefing .briefing-sources-list li {
+        #desktopTabHub .briefing-sources-list li {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 0.8rem;
             color: var(--br-text-muted);
         }
-        #desktopTabBriefing .briefing-source-dot {
+        #desktopTabHub .briefing-source-dot {
             width: 6px; height: 6px;
             border-radius: 50%;
             background: var(--br-green-400);
             flex-shrink: 0;
         }
-        #desktopTabBriefing .briefing-source-dot.dim {
+        #desktopTabHub .briefing-source-dot.dim {
             background: var(--br-text-dim);
         }
 
         /* Footer */
-        #desktopTabBriefing .briefing-footer {
+        #desktopTabHub .briefing-footer {
             text-align: center;
             padding: 2.5rem 1rem 1rem;
             color: var(--br-text-muted);
         }
-        #desktopTabBriefing .briefing-footer-cross {
+        #desktopTabHub .briefing-footer-cross {
             font-size: 1.6rem;
             color: var(--br-green-200);
             margin-bottom: 0.75rem;
         }
-        #desktopTabBriefing .briefing-footer-message {
+        #desktopTabHub .briefing-footer-message {
             font-family: 'Barlow Condensed', sans-serif;
             font-weight: 700;
             font-size: 1rem;
@@ -2588,17 +2588,17 @@
             color: var(--br-text-bright);
             margin-bottom: 0.35rem;
         }
-        #desktopTabBriefing .briefing-footer-sub {
+        #desktopTabHub .briefing-footer-sub {
             font-size: 0.85rem;
             color: var(--br-text-muted);
         }
-        #desktopTabBriefing .briefing-footer-rule {
+        #desktopTabHub .briefing-footer-rule {
             width: 40px;
             height: 1px;
             background: var(--br-border-bright);
             margin: 1.25rem auto;
         }
-        #desktopTabBriefing .briefing-footer-copy {
+        #desktopTabHub .briefing-footer-copy {
             font-size: 0.68rem;
             letter-spacing: 0.14em;
             text-transform: uppercase;
@@ -2608,22 +2608,203 @@
 
         /* Responsive: single column when the desktop main area is narrow */
         @media (max-width: 1180px) {
-            #desktopTabBriefing .briefing-wxmk-row,
-            #desktopTabBriefing .briefing-news-grid,
-            #desktopTabBriefing .briefing-sports-grid {
+            #desktopTabHub .briefing-wxmk-row,
+            #desktopTabHub .briefing-news-grid,
+            #desktopTabHub .briefing-sports-grid {
                 grid-template-columns: 1fr;
             }
-            #desktopTabBriefing .briefing-hero {
+            #desktopTabHub .briefing-hero {
                 grid-template-columns: 1fr;
             }
-            #desktopTabBriefing .briefing-hero-stats {
+            #desktopTabHub .briefing-hero-stats {
                 flex-direction: row;
                 text-align: left;
             }
-            #desktopTabBriefing .briefing-market-grid {
+            #desktopTabHub .briefing-market-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
+
+        /* ══════════════════════════════════════════════════════
+           DESKTOP EDITORIAL THEME
+           Flips the base color palette and display typography for
+           the entire desktop dashboard to match the news template
+           look. Mobile (body without .desktop-mode) keeps its
+           original neon-green identity — untouched.
+           ══════════════════════════════════════════════════════ */
+
+        /* Palette + base font override. Because .desktop-* styles use CSS
+           variables, this single block re-skins every widget, tab, and
+           card the dashboard renders. */
+        body.desktop-mode {
+            --bg-primary:      #141a0f;      /* was #1a1a1a */
+            --bg-secondary:    #0d1008;      /* was #0a0a0a */
+            --text-primary:    #f0f5e8;      /* was #ffffff */
+            --text-secondary:  #8aab60;      /* was #888888 */
+            --border-color:    rgba(99,153,34,0.18);   /* was #333 */
+            --task-bg:         #1a2213;      /* was #252525 */
+            --accent-green:    #97c459;      /* was #00ff66 — editorial green */
+            --accent-green-dark: #639922;    /* was #00cc52 */
+
+            font-family: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0d1008 !important;
+            color: #f0f5e8 !important;
+        }
+
+        /* Display type — Barlow Condensed with letterspacing wherever
+           the dashboard uses uppercase headers. */
+        body.desktop-mode .desktop-logo,
+        body.desktop-mode .desktop-nav-item,
+        body.desktop-mode .desktop-dash-day,
+        body.desktop-mode .desktop-dash-date,
+        body.desktop-mode .desktop-tab-title,
+        body.desktop-mode .desktop-widget-title,
+        body.desktop-mode .setting-label {
+            font-family: 'Barlow Condensed', -apple-system, sans-serif;
+        }
+
+        /* Logo — bigger, editorial letterspacing */
+        body.desktop-mode .desktop-logo {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 0.14em;
+            color: #97c459;
+        }
+
+        /* Sidebar nav items — condensed, uppercase, editorial */
+        body.desktop-mode .desktop-nav-item {
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 12px;
+            border-radius: 4px;
+            padding: 11px 12px;
+        }
+        body.desktop-mode .desktop-nav-item.active {
+            background: rgba(99,153,34,0.14);
+            color: #97c459;
+            border-left: 3px solid #97c459;
+            padding-left: 9px;
+        }
+
+        /* Dashboard day heading — big, condensed, editorial */
+        body.desktop-mode .desktop-dash-day {
+            font-size: 44px;
+            font-weight: 900;
+            letter-spacing: 0.03em;
+            color: #f0f5e8;
+            line-height: 0.95;
+        }
+        body.desktop-mode .desktop-dash-date {
+            font-size: 12px;
+            color: #97c459;
+            letter-spacing: 0.18em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        /* Tab title (Week, Month, Settings) — matches section-header pattern */
+        body.desktop-mode .desktop-tab-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: #97c459;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(99,153,34,0.45);
+            margin-bottom: 20px;
+        }
+
+        /* Widget title — editorial section label */
+        body.desktop-mode .desktop-widget-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #639922;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(99,153,34,0.18);
+            margin-bottom: 14px;
+        }
+
+        /* Widgets — subtle green border, slight lift */
+        body.desktop-mode .desktop-widget {
+            background: #1a2213;
+            border: 1px solid rgba(99,153,34,0.18);
+            border-radius: 6px;
+        }
+        body.desktop-mode .desktop-widget:hover {
+            border-color: rgba(99,153,34,0.35);
+        }
+
+        /* Sidebar chrome */
+        body.desktop-mode .desktop-sidebar {
+            background: #141a0f;
+            border-right: 1px solid rgba(99,153,34,0.18);
+        }
+
+        /* Settings labels */
+        body.desktop-mode .setting-label {
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #639922;
+        }
+
+        /* Settings cards match widgets */
+        body.desktop-mode .desktop-settings-card {
+            background: #1a2213;
+            border: 1px solid rgba(99,153,34,0.18);
+            border-radius: 6px;
+        }
+
+        /* Buttons inside desktop settings — editorial */
+        body.desktop-mode .desktop-settings-card .setting-button {
+            background: #0d1008;
+            border: 1px solid rgba(99,153,34,0.28);
+            color: #f0f5e8;
+            letter-spacing: 0.06em;
+        }
+        body.desktop-mode .desktop-settings-card .setting-button:hover {
+            background: #141a0f;
+            border-color: rgba(99,153,34,0.5);
+        }
+        body.desktop-mode .desktop-settings-card .setting-button.accent {
+            background: #639922;
+            border-color: #639922;
+            color: #f0f5e8;
+        }
+        body.desktop-mode .desktop-settings-card .setting-button.accent:hover {
+            background: #97c459;
+            border-color: #97c459;
+            color: #0d1008;
+        }
+
+        /* Status dot in sidebar — editorial green when connected */
+        body.desktop-mode .desktop-sidebar-status .status-dot {
+            background: #97c459;
+        }
+        body.desktop-mode .desktop-sidebar-status .status-dot.disconnected {
+            background: #5a7540;
+        }
+
+        /* Quick add inputs — sit inside widgets */
+        body.desktop-mode .desktop-quick-add {
+            background: #0d1008;
+            border: 1px solid rgba(99,153,34,0.28);
+            color: #f0f5e8;
+        }
+        body.desktop-mode .desktop-quick-add:focus {
+            border-color: #97c459;
+            outline: none;
+        }
+
+        /* Task rows on the dashboard use the accent green for their left
+           border via var(--accent-green), which now correctly resolves
+           to editorial green. Category dots use their own explicit
+           colors and are unchanged. */
     </style>
 </head>
 <body>
@@ -2785,7 +2966,7 @@
         <div class="desktop-sidebar">
             <div class="desktop-logo">Cardiac Core</div>
             <button class="desktop-nav-item" id="desktopNavDashboard" onclick="switchDesktopTab('dashboard')">Dashboard</button>
-            <button class="desktop-nav-item" id="desktopNavBriefing" onclick="switchDesktopTab('briefing')">Briefing</button>
+            <button class="desktop-nav-item" id="desktopNavHub" onclick="switchDesktopTab('hub')">Hub</button>
             <button class="desktop-nav-item" id="desktopNavToday" onclick="switchDesktopTab('today')">Today</button>
             <button class="desktop-nav-item" id="desktopNavWeek" onclick="switchDesktopTab('week')">Week</button>
             <button class="desktop-nav-item" id="desktopNavMonth" onclick="switchDesktopTab('month')">Month</button>
@@ -2829,10 +3010,10 @@
                 </div>
             </div>
             <!-- ── BRIEFING TAB ─────────────────────────────────── -->
-            <!-- Editorial dark-green look, scoped entirely under #desktopTabBriefing.
+            <!-- Editorial dark-green look, scoped entirely under #desktopTabHub.
                  Data sources: weather (Open Meteo), markets (/api/market/quotes),
                  sports (ESPN public JSON, client side), news (/api/gmail/newsletters). -->
-            <div class="desktop-tab" id="desktopTabBriefing">
+            <div class="desktop-tab" id="desktopTabHub">
                 <div class="briefing">
 
                     <!-- Hero -->
@@ -3147,7 +3328,9 @@
         }
 
         function switchDesktopTab(tab) {
-            const valid = ['dashboard', 'briefing', 'today', 'week', 'month', 'settings'];
+            const valid = ['dashboard', 'hub', 'today', 'week', 'month', 'settings'];
+            // Migrate anyone who saved the old 'briefing' tab name.
+            if (tab === 'briefing') tab = 'hub';
             if (!valid.includes(tab)) tab = 'dashboard';
 
             for (const t of valid) {
@@ -3164,9 +3347,9 @@
                 console.error('Failed to save desktop tab preference:', err);
             }
 
-            // Lazy-render the Briefing tab the first time it's opened, then
+            // Lazy-render the Hub tab the first time it's opened, then
             // let its own timers keep it fresh. Safe to call repeatedly.
-            if (tab === 'briefing' && typeof renderBriefing === 'function') {
+            if (tab === 'hub' && typeof renderBriefing === 'function') {
                 renderBriefing();
             }
         }
@@ -5871,7 +6054,7 @@
 
                 // Wire collapsible sections. Uses the same pattern the mobile
                 // board view uses, scoped to this tab so it can't leak.
-                document.querySelectorAll('#desktopTabBriefing .briefing-collapsible').forEach(header => {
+                document.querySelectorAll('#desktopTabHub .briefing-collapsible').forEach(header => {
                     header.addEventListener('click', () => {
                         const targetId = header.getAttribute('data-briefing-target');
                         const body = targetId ? document.getElementById(targetId) : null;
