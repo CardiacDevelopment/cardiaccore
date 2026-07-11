@@ -21,6 +21,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cardiac Core">
 <meta name="theme-color" content="#0a0a0a">
+    <!-- Barlow / Barlow Condensed used inside the Briefing tab only -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -2067,6 +2071,559 @@
         .desktop-today-panel {
             max-width: 640px;
         }
+
+        /* ══════════════════════════════════════════════════════
+           BRIEFING TAB — scoped entirely under #desktopTabBriefing
+           Editorial dark-green palette, Barlow Condensed for display type.
+           All rules are ancestor-scoped so they can't leak into the rest
+           of the app.
+           ══════════════════════════════════════════════════════ */
+        #desktopTabBriefing {
+            --br-green-50:  #eaf3de;
+            --br-green-100: #c0dd97;
+            --br-green-200: #97c459;
+            --br-green-400: #639922;
+            --br-green-700: #2e550d;
+            --br-green-800: #27500a;
+            --br-green-900: #173404;
+            --br-bg:      #0d1008;
+            --br-surface: #141a0f;
+            --br-card:    #1a2213;
+            --br-border:  rgba(99,153,34,0.18);
+            --br-border-bright: rgba(99,153,34,0.45);
+            --br-text-bright: #f0f5e8;
+            --br-text-muted:  #8aab60;
+            --br-text-dim:    #5a7540;
+            --br-up:   #5acc3b;
+            --br-down: #e05050;
+
+            background: var(--br-bg);
+            color: var(--br-text-bright);
+            padding: 0;
+            overflow-y: auto;
+        }
+        #desktopTabBriefing .briefing {
+            font-family: 'Barlow', -apple-system, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+        }
+
+        /* Hero */
+        #desktopTabBriefing .briefing-hero {
+            background: linear-gradient(135deg, var(--br-green-900) 0%, var(--br-bg) 60%);
+            border-bottom: 1px solid var(--br-border-bright);
+            margin: 0 -2rem 2.5rem;
+            padding: 2.5rem 2rem 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: end;
+            gap: 2rem;
+        }
+        #desktopTabBriefing .briefing-hero-eyebrow {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            color: var(--br-green-200);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+        #desktopTabBriefing .briefing-hero-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: clamp(2.2rem, 4vw, 3.6rem);
+            line-height: 0.92;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--br-text-bright);
+        }
+        #desktopTabBriefing .briefing-hero-title span {
+            color: var(--br-green-200);
+        }
+        #desktopTabBriefing .briefing-hero-tagline {
+            margin-top: 0.9rem;
+            font-size: 0.9rem;
+            color: var(--br-text-muted);
+            max-width: 520px;
+        }
+        #desktopTabBriefing .briefing-hero-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            text-align: right;
+        }
+        #desktopTabBriefing .briefing-hero-stat {
+            font-family: 'Barlow Condensed', sans-serif;
+        }
+        #desktopTabBriefing .briefing-hero-stat-value {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--br-green-100);
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        #desktopTabBriefing .briefing-hero-stat-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--br-text-dim);
+            font-weight: 600;
+        }
+
+        /* Section headers (collapsible) */
+        #desktopTabBriefing .briefing-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 2.5rem 0 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--br-border-bright);
+        }
+        #desktopTabBriefing .briefing-collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+        #desktopTabBriefing .briefing-collapsible:hover .briefing-section-label {
+            color: var(--br-green-100);
+        }
+        #desktopTabBriefing .briefing-section-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--br-green-200);
+            white-space: nowrap;
+        }
+        #desktopTabBriefing .briefing-section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--br-border);
+        }
+        #desktopTabBriefing .briefing-section-count {
+            font-size: 0.68rem;
+            color: var(--br-text-dim);
+            letter-spacing: 0.08em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        #desktopTabBriefing .briefing-collapse-arrow {
+            font-size: 0.85rem;
+            color: var(--br-text-dim);
+            transition: transform 0.22s ease;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        #desktopTabBriefing .briefing-section-header.collapsed .briefing-collapse-arrow {
+            transform: rotate(-90deg);
+        }
+        #desktopTabBriefing .briefing-collapse-body {
+            overflow: hidden;
+            transition: max-height 0.28s ease, opacity 0.22s ease;
+            max-height: 4000px;
+            opacity: 1;
+        }
+        #desktopTabBriefing .briefing-collapse-body.hidden {
+            max-height: 0;
+            opacity: 0;
+        }
+        #desktopTabBriefing .briefing-section-mini {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.68rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--br-green-400);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--br-border);
+        }
+
+        /* Cards (generic) */
+        #desktopTabBriefing .briefing-card {
+            background: var(--br-card);
+            border: 1px solid var(--br-border-bright);
+            border-radius: 6px;
+            padding: 1.25rem 1.5rem;
+        }
+        #desktopTabBriefing .briefing-empty {
+            color: var(--br-text-dim);
+            font-size: 0.85rem;
+            padding: 0.5rem 0;
+        }
+
+        /* Weather + Markets row */
+        #desktopTabBriefing .briefing-wxmk-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        #desktopTabBriefing .briefing-weather {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+        #desktopTabBriefing .briefing-weather-icon {
+            width: 52px; height: 52px;
+            background: var(--br-green-800);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem;
+        }
+        #desktopTabBriefing .briefing-weather-loc {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--br-text-bright);
+        }
+        #desktopTabBriefing .briefing-weather-desc {
+            font-size: 0.8rem;
+            color: var(--br-text-muted);
+            margin-top: 2px;
+        }
+        #desktopTabBriefing .briefing-weather-temp {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 2.4rem;
+            color: var(--br-green-100);
+            line-height: 1;
+        }
+        #desktopTabBriefing .briefing-weather-unit {
+            font-size: 1rem;
+            color: var(--br-text-dim);
+        }
+        #desktopTabBriefing .briefing-weather-details {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            padding-top: 0.75rem;
+            margin-top: 0.25rem;
+            border-top: 1px solid var(--br-border);
+        }
+        #desktopTabBriefing .briefing-weather-detail {
+            font-size: 0.72rem;
+            color: var(--br-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+        #desktopTabBriefing .briefing-weather-detail span {
+            color: var(--br-text-muted);
+            margin-left: 4px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        /* Market grid */
+        #desktopTabBriefing .briefing-market-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+        }
+        #desktopTabBriefing .briefing-market-item {
+            padding: 0.75rem;
+            background: var(--br-surface);
+            border-radius: 4px;
+            border: 1px solid var(--br-border);
+        }
+        #desktopTabBriefing .briefing-market-ticker {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            color: var(--br-text-dim);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        #desktopTabBriefing .briefing-market-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--br-text-bright);
+            line-height: 1;
+        }
+        #desktopTabBriefing .briefing-market-change {
+            font-size: 0.75rem;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+        #desktopTabBriefing .briefing-market-change.up { color: var(--br-up); }
+        #desktopTabBriefing .briefing-market-change.down { color: var(--br-down); }
+
+        /* Sports cards */
+        #desktopTabBriefing .briefing-sports-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+        #desktopTabBriefing .briefing-sport-card {
+            background: var(--br-card);
+            border: 1px solid var(--br-border);
+            border-radius: 6px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+        #desktopTabBriefing .briefing-sport-card:hover {
+            border-color: var(--br-border-bright);
+        }
+        #desktopTabBriefing .briefing-sport-header {
+            background: var(--br-surface);
+            border-bottom: 1px solid var(--br-border);
+            padding: 0.7rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        #desktopTabBriefing .briefing-sport-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--br-green-100);
+        }
+        #desktopTabBriefing .briefing-sport-badge {
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--br-green-400);
+            background: rgba(99,153,34,0.12);
+            border: 1px solid rgba(99,153,34,0.3);
+            border-radius: 3px;
+            padding: 2px 7px;
+            white-space: nowrap;
+        }
+        #desktopTabBriefing .briefing-sport-body {
+            padding: 1rem 1.1rem;
+        }
+        #desktopTabBriefing .briefing-sport-score {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 1.8rem;
+            line-height: 1;
+            color: var(--br-green-100);
+            letter-spacing: 0.03em;
+        }
+        #desktopTabBriefing .briefing-sport-score .result {
+            font-size: 0.9rem;
+            margin-right: 0.4rem;
+            color: var(--br-text-muted);
+            letter-spacing: 0.1em;
+        }
+        #desktopTabBriefing .briefing-sport-score .result.win { color: var(--br-green-200); }
+        #desktopTabBriefing .briefing-sport-score .result.loss { color: var(--br-down); }
+        #desktopTabBriefing .briefing-sport-meta {
+            font-size: 0.78rem;
+            color: var(--br-text-muted);
+            margin-top: 0.5rem;
+        }
+        #desktopTabBriefing .briefing-sport-next {
+            font-size: 0.75rem;
+            color: var(--br-text-dim);
+            margin-top: 0.75rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--br-border);
+        }
+
+        /* News grid + sender cards */
+        #desktopTabBriefing .briefing-news-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        #desktopTabBriefing .briefing-news-full {
+            grid-column: 1 / -1;
+        }
+        #desktopTabBriefing .briefing-sender-card {
+            background: var(--br-card);
+            border: 1px solid var(--br-border);
+            border-radius: 6px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+        #desktopTabBriefing .briefing-sender-card:hover {
+            border-color: var(--br-border-bright);
+        }
+        #desktopTabBriefing .briefing-sender-header {
+            background: var(--br-surface);
+            border-bottom: 1px solid var(--br-border);
+            padding: 0.7rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        #desktopTabBriefing .briefing-sender-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--br-green-100);
+        }
+        #desktopTabBriefing .briefing-sender-badge {
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--br-green-400);
+            background: rgba(99,153,34,0.12);
+            border: 1px solid rgba(99,153,34,0.3);
+            border-radius: 3px;
+            padding: 2px 7px;
+            white-space: nowrap;
+        }
+        #desktopTabBriefing .briefing-sender-body {
+            padding: 1rem 1.1rem;
+        }
+        #desktopTabBriefing .briefing-sender-headline {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--br-text-bright);
+            line-height: 1.25;
+            margin-bottom: 0.5rem;
+        }
+        #desktopTabBriefing .briefing-sender-snippet {
+            font-size: 0.85rem;
+            color: var(--br-text-muted);
+            line-height: 1.55;
+            margin-bottom: 0.75rem;
+        }
+        #desktopTabBriefing .briefing-sender-received {
+            font-size: 0.68rem;
+            color: var(--br-text-dim);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        #desktopTabBriefing .briefing-sender-link {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--br-green-200);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.15s;
+        }
+        #desktopTabBriefing .briefing-sender-link:hover {
+            border-color: var(--br-green-200);
+        }
+        #desktopTabBriefing .briefing-sender-link::after { content: " →"; }
+
+        /* Sources bar */
+        #desktopTabBriefing .briefing-sources {
+            background: var(--br-surface);
+            border: 1px solid var(--br-border-bright);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            margin-top: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        #desktopTabBriefing .briefing-sources-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.68rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--br-green-400);
+            margin-bottom: 0.75rem;
+        }
+        #desktopTabBriefing .briefing-sources-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.25rem;
+            padding: 0;
+            margin: 0;
+        }
+        #desktopTabBriefing .briefing-sources-list li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--br-text-muted);
+        }
+        #desktopTabBriefing .briefing-source-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--br-green-400);
+            flex-shrink: 0;
+        }
+        #desktopTabBriefing .briefing-source-dot.dim {
+            background: var(--br-text-dim);
+        }
+
+        /* Footer */
+        #desktopTabBriefing .briefing-footer {
+            text-align: center;
+            padding: 2.5rem 1rem 1rem;
+            color: var(--br-text-muted);
+        }
+        #desktopTabBriefing .briefing-footer-cross {
+            font-size: 1.6rem;
+            color: var(--br-green-200);
+            margin-bottom: 0.75rem;
+        }
+        #desktopTabBriefing .briefing-footer-message {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--br-text-bright);
+            margin-bottom: 0.35rem;
+        }
+        #desktopTabBriefing .briefing-footer-sub {
+            font-size: 0.85rem;
+            color: var(--br-text-muted);
+        }
+        #desktopTabBriefing .briefing-footer-rule {
+            width: 40px;
+            height: 1px;
+            background: var(--br-border-bright);
+            margin: 1.25rem auto;
+        }
+        #desktopTabBriefing .briefing-footer-copy {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--br-text-dim);
+            font-weight: 600;
+        }
+
+        /* Responsive: single column when the desktop main area is narrow */
+        @media (max-width: 1180px) {
+            #desktopTabBriefing .briefing-wxmk-row,
+            #desktopTabBriefing .briefing-news-grid,
+            #desktopTabBriefing .briefing-sports-grid {
+                grid-template-columns: 1fr;
+            }
+            #desktopTabBriefing .briefing-hero {
+                grid-template-columns: 1fr;
+            }
+            #desktopTabBriefing .briefing-hero-stats {
+                flex-direction: row;
+                text-align: left;
+            }
+            #desktopTabBriefing .briefing-market-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
     </style>
 </head>
 <body>
@@ -2228,6 +2785,7 @@
         <div class="desktop-sidebar">
             <div class="desktop-logo">Cardiac Core</div>
             <button class="desktop-nav-item" id="desktopNavDashboard" onclick="switchDesktopTab('dashboard')">Dashboard</button>
+            <button class="desktop-nav-item" id="desktopNavBriefing" onclick="switchDesktopTab('briefing')">Briefing</button>
             <button class="desktop-nav-item" id="desktopNavToday" onclick="switchDesktopTab('today')">Today</button>
             <button class="desktop-nav-item" id="desktopNavWeek" onclick="switchDesktopTab('week')">Week</button>
             <button class="desktop-nav-item" id="desktopNavMonth" onclick="switchDesktopTab('month')">Month</button>
@@ -2270,6 +2828,75 @@
                     </div>
                 </div>
             </div>
+            <!-- ── BRIEFING TAB ─────────────────────────────────── -->
+            <!-- Editorial dark-green look, scoped entirely under #desktopTabBriefing.
+                 Data sources: weather (Open Meteo), markets (/api/market/quotes),
+                 sports (ESPN public JSON, client side), news (/api/gmail/newsletters). -->
+            <div class="desktop-tab" id="desktopTabBriefing">
+                <div class="briefing">
+
+                    <!-- Hero -->
+                    <div class="briefing-hero">
+                        <div class="briefing-hero-main">
+                            <div class="briefing-hero-eyebrow">Cardiac News · Daily Digest</div>
+                            <div class="briefing-hero-title" id="briefingHeroTitle">&nbsp;</div>
+                            <div class="briefing-hero-tagline">Everything you need to start your day, in one screen.</div>
+                        </div>
+                        <div class="briefing-hero-stats" id="briefingHeroStats"></div>
+                    </div>
+
+                    <!-- Weather + Markets row -->
+                    <div class="briefing-wxmk-row">
+                        <div class="briefing-card">
+                            <div class="briefing-section-mini">Weather</div>
+                            <div class="briefing-weather" id="briefingWeather">
+                                <div class="briefing-empty">Set your location in Settings to see weather.</div>
+                            </div>
+                        </div>
+                        <div class="briefing-card">
+                            <div class="briefing-section-mini">Markets</div>
+                            <div class="briefing-market-grid" id="briefingMarkets">
+                                <div class="briefing-empty">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sports scores (Braves, UGA, Ravens) -->
+                    <div class="briefing-section-header briefing-collapsible" data-briefing-target="briefingSportsBody">
+                        <span class="briefing-section-label">Sports</span>
+                        <span class="briefing-section-line"></span>
+                        <span class="briefing-section-count">Braves · UGA · Ravens</span>
+                        <span class="briefing-collapse-arrow">▾</span>
+                    </div>
+                    <div class="briefing-collapse-body" id="briefingSportsBody">
+                        <div class="briefing-sports-grid" id="briefingSports">
+                            <div class="briefing-empty">Loading scores…</div>
+                        </div>
+                    </div>
+
+                    <!-- News, categorized. Rendered dynamically by renderBriefingNews(). -->
+                    <div id="briefingNewsRoot">
+                        <div class="briefing-empty" style="padding:40px 20px; text-align:center;">Loading newsletters…</div>
+                    </div>
+
+                    <!-- Sources bar -->
+                    <div class="briefing-sources">
+                        <div class="briefing-sources-label">Active Sources</div>
+                        <ul class="briefing-sources-list" id="briefingSourcesList"></ul>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="briefing-footer">
+                        <div class="briefing-footer-cross">✝</div>
+                        <div class="briefing-footer-message">Stay right with God. Nothing else matters.</div>
+                        <div class="briefing-footer-sub">Have a great day.</div>
+                        <div class="briefing-footer-rule"></div>
+                        <div class="briefing-footer-copy">Cardiac Core · Briefing</div>
+                    </div>
+
+                </div>
+            </div>
+
             <div class="desktop-tab" id="desktopTabToday">
                 <div class="desktop-today-header">
                     <button class="desktop-today-nav" onclick="desktopChangeToday(-1)" aria-label="Previous day">←</button>
@@ -2520,7 +3147,7 @@
         }
 
         function switchDesktopTab(tab) {
-            const valid = ['dashboard', 'today', 'week', 'month', 'settings'];
+            const valid = ['dashboard', 'briefing', 'today', 'week', 'month', 'settings'];
             if (!valid.includes(tab)) tab = 'dashboard';
 
             for (const t of valid) {
@@ -2535,6 +3162,12 @@
                 localStorage.setItem('cardiacDesktopTab', tab);
             } catch (err) {
                 console.error('Failed to save desktop tab preference:', err);
+            }
+
+            // Lazy-render the Briefing tab the first time it's opened, then
+            // let its own timers keep it fresh. Safe to call repeatedly.
+            if (tab === 'briefing' && typeof renderBriefing === 'function') {
+                renderBriefing();
             }
         }
 
@@ -5184,6 +5817,449 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
+        }
+
+        // ══════════════════════════════════════════════════════
+        // BRIEFING TAB — data + render
+        // Zero dependency on Notion sacred functions. Weather and markets
+        // read directly from the existing globals populated by the Dashboard
+        // widgets, so we don't duplicate fetches. News comes from
+        // /api/gmail/newsletters. Sports comes from ESPN's public JSON.
+        // ══════════════════════════════════════════════════════
+
+        // State — kept local to this section to avoid polluting the app's globals.
+        const briefingState = {
+            newsletters: null,     // last successful /api/gmail/newsletters response
+            newsErrors: [],
+            sports: null,          // { braves, uga, ravens }
+            lastNewsFetch: 0,
+            lastSportsFetch: 0,
+            initialized: false,
+            newsRefreshTimer: null,
+            sportsRefreshTimer: null,
+        };
+
+        const BRIEFING_NEWS_TTL_MS = 15 * 60 * 1000;   // 15 min
+        const BRIEFING_SPORTS_TTL_MS = 10 * 60 * 1000; // 10 min
+
+        // ESPN team endpoints. Team codes are ESPN abbreviations.
+        const BRIEFING_TEAMS = [
+            { key: 'braves',  label: 'Atlanta Braves',       badge: 'MLB',           sportPath: 'baseball/mlb',                  team: 'atl', matchAbbr: 'ATL' },
+            { key: 'uga',     label: 'UGA Bulldogs',         badge: 'NCAAF',         sportPath: 'football/college-football',     team: '61',  matchAbbr: 'UGA' },
+            { key: 'ravens',  label: 'Baltimore Ravens',     badge: 'NFL',           sportPath: 'football/nfl',                  team: 'bal', matchAbbr: 'BAL' },
+        ];
+
+        // Called by switchDesktopTab when the Briefing tab opens.
+        // First call bootstraps data + timers; subsequent calls just repaint.
+        function renderBriefing() {
+            renderBriefingHero();
+            renderBriefingWeather();
+            renderBriefingMarkets();
+            renderBriefingSources();
+
+            if (!briefingState.initialized) {
+                briefingState.initialized = true;
+
+                // Kick off async loaders. Each renders itself on completion.
+                loadBriefingNewsletters();
+                loadBriefingSports();
+
+                // Keep them fresh while the app is open. Times are conservative
+                // — the CDN cache on /api/gmail/newsletters already smooths spikes.
+                briefingState.newsRefreshTimer = setInterval(loadBriefingNewsletters, BRIEFING_NEWS_TTL_MS);
+                briefingState.sportsRefreshTimer = setInterval(loadBriefingSports, BRIEFING_SPORTS_TTL_MS);
+
+                // Wire collapsible sections. Uses the same pattern the mobile
+                // board view uses, scoped to this tab so it can't leak.
+                document.querySelectorAll('#desktopTabBriefing .briefing-collapsible').forEach(header => {
+                    header.addEventListener('click', () => {
+                        const targetId = header.getAttribute('data-briefing-target');
+                        const body = targetId ? document.getElementById(targetId) : null;
+                        if (!body) return;
+                        const isHidden = body.classList.toggle('hidden');
+                        header.classList.toggle('collapsed', isHidden);
+                    });
+                });
+            } else {
+                // Cheap repaint on every tab open using cached data. If the
+                // cache is stale we'll refetch below.
+                if (briefingState.newsletters) renderBriefingNews();
+                if (briefingState.sports) renderBriefingSports();
+
+                const now = Date.now();
+                if (now - briefingState.lastNewsFetch > BRIEFING_NEWS_TTL_MS) loadBriefingNewsletters();
+                if (now - briefingState.lastSportsFetch > BRIEFING_SPORTS_TTL_MS) loadBriefingSports();
+            }
+        }
+
+        function renderBriefingHero() {
+            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const d = new Date();
+            const titleEl = document.getElementById('briefingHeroTitle');
+            if (titleEl) {
+                // Two-line format: "TUESDAY / JULY 11" — the second word in a
+                // brand color for editorial polish.
+                titleEl.innerHTML = `${days[d.getDay()].toUpperCase()}<br><span>${months[d.getMonth()].toUpperCase()} ${d.getDate()}</span>`;
+            }
+
+            // Hero stats: today's task count + calendar events count.
+            const todayTaskCount = Array.isArray(tasks)
+                ? tasks.filter(t => t.dayOffset === 0 && !t.completed).length
+                : 0;
+            const todayCalCount = Array.isArray(calendarEvents)
+                ? countTodayCalendarEvents()
+                : 0;
+
+            const statsEl = document.getElementById('briefingHeroStats');
+            if (statsEl) {
+                statsEl.innerHTML = `
+                    <div class="briefing-hero-stat">
+                        <div class="briefing-hero-stat-value">${todayTaskCount}</div>
+                        <div class="briefing-hero-stat-label">Tasks Today</div>
+                    </div>
+                    <div class="briefing-hero-stat">
+                        <div class="briefing-hero-stat-value">${todayCalCount}</div>
+                        <div class="briefing-hero-stat-label">Calendar Events</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Count calendar events that fall on today. Defensive — the calendar
+        // event shape uses .start (ISO), which the existing dashboard widget
+        // also assumes; we mirror that here.
+        function countTodayCalendarEvents() {
+            const today = new Date();
+            const y = today.getFullYear(), m = today.getMonth(), d = today.getDate();
+            let n = 0;
+            for (const ev of calendarEvents || []) {
+                const start = ev.start ? new Date(ev.start) : null;
+                if (!start || isNaN(start)) continue;
+                if (start.getFullYear() === y && start.getMonth() === m && start.getDate() === d) n++;
+            }
+            return n;
+        }
+
+        // Weather bridge — reads from the existing `weatherData` global that
+        // the Dashboard's weather widget already populates. If empty, shows
+        // the same empty state the dashboard shows.
+        function renderBriefingWeather() {
+            const el = document.getElementById('briefingWeather');
+            if (!el) return;
+            const w = typeof weatherData !== 'undefined' ? weatherData : null;
+            if (!w || !w.current) {
+                el.innerHTML = `<div class="briefing-empty">Set your location in Settings to see weather.</div>`;
+                return;
+            }
+            const c = w.current;
+            const icon = weatherEmojiFor ? weatherEmojiFor(c.weatherCode, c.isDay) : '☀';
+            const desc = weatherDescriptionFor ? weatherDescriptionFor(c.weatherCode, c.isDay) : '';
+            const loc = (w.locationName || 'Location').toString();
+            const temp = Math.round(c.temperatureF ?? c.temperature ?? 0);
+            const feels = c.apparentTemperatureF != null ? Math.round(c.apparentTemperatureF) : null;
+            const hi = w.daily?.highF != null ? Math.round(w.daily.highF) : null;
+            const lo = w.daily?.lowF != null ? Math.round(w.daily.lowF) : null;
+            const wind = c.windSpeedMph != null ? Math.round(c.windSpeedMph) : null;
+            const humidity = c.relativeHumidity != null ? Math.round(c.relativeHumidity) : null;
+
+            const details = [];
+            if (feels != null) details.push(`Feels<span>${feels}°</span>`);
+            if (hi != null && lo != null) details.push(`Hi / Lo<span>${hi}° / ${lo}°</span>`);
+            if (wind != null) details.push(`Wind<span>${wind} mph</span>`);
+            if (humidity != null) details.push(`Humidity<span>${humidity}%</span>`);
+
+            el.innerHTML = `
+                <div class="briefing-weather-icon">${icon}</div>
+                <div>
+                    <div class="briefing-weather-loc">${escapeHtml(loc)}</div>
+                    <div class="briefing-weather-desc">${escapeHtml(desc)}</div>
+                </div>
+                <div class="briefing-weather-temp">${temp}<span class="briefing-weather-unit">°F</span></div>
+                <div class="briefing-weather-details">
+                    ${details.map(d => `<div class="briefing-weather-detail">${d}</div>`).join('')}
+                </div>
+            `;
+        }
+
+        // Markets bridge — reads the existing `marketQuotes` global that
+        // the Dashboard's markets widget populates from /api/market/quotes.
+        function renderBriefingMarkets() {
+            const el = document.getElementById('briefingMarkets');
+            if (!el) return;
+            const quotes = typeof marketQuotes !== 'undefined' ? marketQuotes : null;
+            if (!Array.isArray(quotes) || quotes.length === 0) {
+                el.innerHTML = `<div class="briefing-empty">Loading…</div>`;
+                return;
+            }
+            el.innerHTML = quotes.map(q => {
+                const price = q.price != null ? q.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+                const changeVal = q.change != null ? q.change.toFixed(2) : '0.00';
+                const changePct = q.changePct != null ? q.changePct.toFixed(2) : '0.00';
+                const dir = (q.change || 0) >= 0 ? 'up' : 'down';
+                const arrow = (q.change || 0) >= 0 ? '▲' : '▼';
+                return `
+                    <div class="briefing-market-item">
+                        <div class="briefing-market-ticker">${escapeHtml(q.name || q.symbol)}</div>
+                        <div class="briefing-market-value">${price}</div>
+                        <div class="briefing-market-change ${dir}">${arrow} ${changeVal} (${changePct}%)</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fetch and render newsletters.
+        async function loadBriefingNewsletters() {
+            try {
+                const res = await fetch('/api/gmail/newsletters', {
+                    headers: { 'Accept': 'application/json' },
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.error || `HTTP ${res.status}`);
+                }
+                const data = await res.json();
+                briefingState.newsletters = data;
+                briefingState.newsErrors = data.errors || [];
+                briefingState.lastNewsFetch = Date.now();
+                renderBriefingNews();
+            } catch (err) {
+                console.error('Briefing: newsletters fetch failed:', err);
+                const root = document.getElementById('briefingNewsRoot');
+                if (root && !briefingState.newsletters) {
+                    root.innerHTML = `
+                        <div class="briefing-empty" style="padding:40px 20px; text-align:center;">
+                            Could not load newsletters: ${escapeHtml(err.message)}<br>
+                            <span style="font-size:0.75rem;">Check Google OAuth env vars in Vercel.</span>
+                        </div>`;
+                }
+            }
+        }
+
+        function renderBriefingNews() {
+            const root = document.getElementById('briefingNewsRoot');
+            if (!root || !briefingState.newsletters) return;
+            const byCat = briefingState.newsletters.byCategory || {};
+            const categories = Object.keys(byCat).filter(k => byCat[k] && byCat[k].length);
+            if (categories.length === 0) {
+                root.innerHTML = `<div class="briefing-empty" style="padding:40px 20px; text-align:center;">No newsletters found in the last 2 days.</div>`;
+                return;
+            }
+            root.innerHTML = categories.map(cat => {
+                const items = byCat[cat];
+                const senders = items.map(i => i.senderName).join(' · ');
+                const bodyId = 'briefingCat_' + cat.replace(/[^a-z0-9]/gi, '_');
+                const cards = items.map(item => `
+                    <div class="briefing-sender-card">
+                        <div class="briefing-sender-header">
+                            <span class="briefing-sender-name">${escapeHtml(item.senderName)}</span>
+                            <span class="briefing-sender-badge">${escapeHtml(item.badge || '')}</span>
+                        </div>
+                        <div class="briefing-sender-body">
+                            <div class="briefing-sender-headline">${escapeHtml(item.subject)}</div>
+                            <div class="briefing-sender-received">${formatBriefingReceived(item.receivedAt)}</div>
+                            <div class="briefing-sender-snippet">${escapeHtml(item.snippet || '')}</div>
+                            <a class="briefing-sender-link" href="${escapeHtml(item.gmailUrl)}" target="_blank" rel="noopener">View in Gmail</a>
+                        </div>
+                    </div>
+                `).join('');
+                return `
+                    <div class="briefing-section-header briefing-collapsible" data-briefing-target="${bodyId}">
+                        <span class="briefing-section-label">${escapeHtml(cat)}</span>
+                        <span class="briefing-section-line"></span>
+                        <span class="briefing-section-count">${escapeHtml(senders)}</span>
+                        <span class="briefing-collapse-arrow">▾</span>
+                    </div>
+                    <div class="briefing-collapse-body" id="${bodyId}">
+                        <div class="briefing-news-grid">${cards}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Re-wire the collapsible handlers on the newly rendered headers.
+            root.querySelectorAll('.briefing-collapsible').forEach(header => {
+                header.addEventListener('click', () => {
+                    const targetId = header.getAttribute('data-briefing-target');
+                    const body = targetId ? document.getElementById(targetId) : null;
+                    if (!body) return;
+                    const isHidden = body.classList.toggle('hidden');
+                    header.classList.toggle('collapsed', isHidden);
+                });
+            });
+
+            // Sources bar reflects the actual sender list we just rendered.
+            renderBriefingSources();
+        }
+
+        function formatBriefingReceived(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d)) return '';
+            const now = new Date();
+            const sameDay =
+                d.getFullYear() === now.getFullYear() &&
+                d.getMonth() === now.getMonth() &&
+                d.getDate() === now.getDate();
+            const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+            if (sameDay) return `Today · ${time}`;
+            const yest = new Date(now); yest.setDate(now.getDate() - 1);
+            const isYesterday =
+                d.getFullYear() === yest.getFullYear() &&
+                d.getMonth() === yest.getMonth() &&
+                d.getDate() === yest.getDate();
+            if (isYesterday) return `Yesterday · ${time}`;
+            const dateStr = d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+            return `${dateStr} · ${time}`;
+        }
+
+        // Sports — client side ESPN calls. Failures on one team don't block others.
+        async function loadBriefingSports() {
+            const results = {};
+            await Promise.all(BRIEFING_TEAMS.map(async (t) => {
+                try {
+                    const url = `https://site.api.espn.com/apis/site/v2/sports/${t.sportPath}/teams/${t.team}/schedule`;
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`ESPN ${res.status}`);
+                    const data = await res.json();
+                    results[t.key] = parseEspnSchedule(data, t);
+                } catch (err) {
+                    results[t.key] = { error: err.message };
+                }
+            }));
+            briefingState.sports = results;
+            briefingState.lastSportsFetch = Date.now();
+            renderBriefingSports();
+        }
+
+        // Parse an ESPN team schedule payload into { lastGame, nextGame }.
+        function parseEspnSchedule(data, team) {
+            const events = Array.isArray(data.events) ? data.events.slice() : [];
+            const now = Date.now();
+            let lastGame = null, nextGame = null;
+
+            // Sort ascending by date.
+            events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+            for (const e of events) {
+                const eventTime = new Date(e.date).getTime();
+                const comp = e.competitions?.[0];
+                if (!comp) continue;
+                const competitors = comp.competitors || [];
+                if (competitors.length < 2) continue;
+
+                // Identify our team by abbreviation. Fall back to team display name match.
+                const me = competitors.find(c =>
+                    (c.team?.abbreviation && c.team.abbreviation.toUpperCase() === team.matchAbbr) ||
+                    (c.team?.displayName && c.team.displayName.toLowerCase().includes(team.label.split(' ').pop().toLowerCase()))
+                );
+                const them = competitors.find(c => c !== me);
+                if (!me || !them) continue;
+
+                const completed = !!comp.status?.type?.completed;
+                if (completed && eventTime <= now) {
+                    const myScore = Number(me.score?.value ?? me.score) || 0;
+                    const theirScore = Number(them.score?.value ?? them.score) || 0;
+                    let result = 'T';
+                    if (myScore > theirScore) result = 'W';
+                    else if (myScore < theirScore) result = 'L';
+                    lastGame = {
+                        result,
+                        myScore,
+                        theirScore,
+                        opponentAbbr: them.team?.abbreviation || '?',
+                        opponentName: them.team?.displayName || them.team?.name || '',
+                        home: me.homeAway === 'home',
+                        date: e.date,
+                    };
+                } else if (!completed && eventTime > now && !nextGame) {
+                    nextGame = {
+                        opponentAbbr: them.team?.abbreviation || '?',
+                        opponentName: them.team?.displayName || them.team?.name || '',
+                        home: me.homeAway === 'home',
+                        date: e.date,
+                    };
+                }
+            }
+            return { lastGame, nextGame };
+        }
+
+        function renderBriefingSports() {
+            const el = document.getElementById('briefingSports');
+            if (!el) return;
+            if (!briefingState.sports) {
+                el.innerHTML = `<div class="briefing-empty">Loading scores…</div>`;
+                return;
+            }
+            el.innerHTML = BRIEFING_TEAMS.map(t => {
+                const s = briefingState.sports[t.key];
+                if (!s || s.error) {
+                    return `
+                        <div class="briefing-sport-card">
+                            <div class="briefing-sport-header">
+                                <span class="briefing-sport-name">${escapeHtml(t.label)}</span>
+                                <span class="briefing-sport-badge">${escapeHtml(t.badge)}</span>
+                            </div>
+                            <div class="briefing-sport-body">
+                                <div class="briefing-empty">Scores unavailable.</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                const last = s.lastGame;
+                const next = s.nextGame;
+
+                let mainHtml = '';
+                if (last) {
+                    const resultClass = last.result === 'W' ? 'win' : last.result === 'L' ? 'loss' : '';
+                    const vs = last.home ? 'vs' : '@';
+                    const dateStr = new Date(last.date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    mainHtml = `
+                        <div class="briefing-sport-score">
+                            <span class="result ${resultClass}">${last.result}</span>
+                            ${last.myScore}–${last.theirScore}
+                        </div>
+                        <div class="briefing-sport-meta">${vs} ${escapeHtml(last.opponentAbbr)} · ${dateStr}</div>
+                    `;
+                } else {
+                    mainHtml = `<div class="briefing-empty">No recent games.</div>`;
+                }
+
+                let nextHtml = '';
+                if (next) {
+                    const vs = next.home ? 'vs' : '@';
+                    const dt = new Date(next.date);
+                    const dateStr = dt.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+                    const timeStr = dt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    nextHtml = `<div class="briefing-sport-next">Next: ${vs} ${escapeHtml(next.opponentAbbr)} · ${dateStr} ${timeStr}</div>`;
+                }
+
+                return `
+                    <div class="briefing-sport-card">
+                        <div class="briefing-sport-header">
+                            <span class="briefing-sport-name">${escapeHtml(t.label)}</span>
+                            <span class="briefing-sport-badge">${escapeHtml(t.badge)}</span>
+                        </div>
+                        <div class="briefing-sport-body">
+                            ${mainHtml}
+                            ${nextHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderBriefingSources() {
+            const el = document.getElementById('briefingSourcesList');
+            if (!el) return;
+            const items = briefingState.newsletters?.items || [];
+            // Distinct sender names, sorted alphabetically.
+            const names = [...new Set(items.map(i => i.senderName))].sort();
+            const errored = (briefingState.newsErrors || []).map(e => e.senderName);
+            const html = [
+                ...names.map(n => `<li><span class="briefing-source-dot"></span>${escapeHtml(n)}</li>`),
+                ...errored.map(n => `<li><span class="briefing-source-dot dim"></span><span style="opacity:0.5;">${escapeHtml(n)} (no data)</span></li>`),
+            ];
+            el.innerHTML = html.length ? html.join('') : `<li><span class="briefing-source-dot dim"></span>No active sources yet.</li>`;
         }
 
         // Initialize on load
