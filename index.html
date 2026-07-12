@@ -7648,6 +7648,30 @@
             renderHabitsActive();
         }
 
+        // Remove duplicate local habits that share the same Notion page id,
+        // keeping the first and repointing any logs to it. Guards against
+        // duplicates left behind by the old id-only merge.
+        function dedupeHabitsByNotionId() {
+            const seen = new Map();
+            const kept = [];
+            for (const h of habits) {
+                if (!h.notionId) { kept.push(h); continue; }
+                const existing = seen.get(h.notionId);
+                if (existing) {
+                    // Fold this duplicate into the kept one.
+                    for (const l of habitLogs) if (l.habitId === h.id) l.habitId = existing.id;
+                } else {
+                    seen.set(h.notionId, h);
+                    kept.push(h);
+                }
+            }
+            if (kept.length !== habits.length) {
+                habits = kept;
+                saveHabits();
+                saveHabitLogs();
+            }
+        }
+
         // ---- Notion sync (client) --------------------------------------
         // All no-ops when not connected, exactly like the task sync.
         async function syncHabitsFromNotion({ silent = true } = {}) {
@@ -7660,13 +7684,26 @@
                 const remoteLogs = Array.isArray(data.logs) ? data.logs : [];
 
                 for (const rh of remoteHabits) {
-                    const idx = habits.findIndex(h => h.notionId === rh.notionId);
+                    let idx = habits.findIndex(h => h.notionId === rh.notionId);
+                    if (idx < 0) {
+                        // No id match — adopt a not-yet-linked local habit with
+                        // the same name (e.g. a seeded example) instead of pushing
+                        // a duplicate. This is the core fix for habits appearing
+                        // twice: seeded habits have notionId===null, so an
+                        // id-only match always missed and re-appended the remote.
+                        idx = habits.findIndex(h => !h.notionId && !h.archived
+                            && h.name && rh.name
+                            && h.name.trim().toLowerCase() === rh.name.trim().toLowerCase());
+                    }
                     if (idx >= 0) {
                         habits[idx] = { ...habits[idx], ...rh, id: habits[idx].id };
                     } else if (!rh.archived) {
                         habits.push({ ...rh, id: genHabitId() });
                     }
                 }
+                // Collapse any pre-existing local duplicates (from earlier buggy
+                // syncs) that now share a notionId, repointing their logs.
+                dedupeHabitsByNotionId();
                 for (const rl of remoteLogs) {
                     const habit = habits.find(h => h.notionId === rl.habitNotionId);
                     if (!habit) continue;
@@ -7696,6 +7733,9 @@
                         await pushHabitToNotion(h); // sets h.notionId on success
                     }
                 }
+                // Adopting notionIds above can leave two local rows sharing one
+                // id (e.g. two seeded copies) — collapse them again.
+                dedupeHabitsByNotionId();
                 saveHabits();
                 for (const l of habitLogs) {
                     if (l.notionId) continue;
