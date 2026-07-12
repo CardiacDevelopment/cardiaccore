@@ -7618,7 +7618,7 @@
         async function syncHabitsFromNotion({ silent = true } = {}) {
             if (!notionConnected) return;
             try {
-                const res = await fetch('/api/habits/sync', { headers: { 'Accept': 'application/json' } });
+                const res = await fetch('/api/habits', { headers: { 'Accept': 'application/json' } });
                 if (!res.ok) return;
                 const data = await res.json();
                 const remoteHabits = Array.isArray(data.habits) ? data.habits : [];
@@ -7654,10 +7654,10 @@
         async function pushHabitToNotion(habit) {
             if (!notionConnected || !habit) return;
             try {
-                const res = await fetch('/api/habits/push-habit', {
+                const res = await fetch('/api/habits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(habit),
+                    body: JSON.stringify({ action: 'push', habit }),
                 });
                 if (!res.ok) { console.error('pushHabit failed', await res.text()); return; }
                 const data = await res.json();
@@ -7673,10 +7673,10 @@
             const habit = habits.find(h => h.id === log.habitId);
             if (!habit || !habit.notionId) return; // need the habit synced first
             try {
-                const res = await fetch('/api/habits/log-habit', {
+                const res = await fetch('/api/habits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...log, habitNotionId: habit.notionId }),
+                    body: JSON.stringify({ action: 'log', log: { ...log, habitNotionId: habit.notionId } }),
                 });
                 if (!res.ok) { console.error('logHabit failed', await res.text()); return; }
                 const data = await res.json();
@@ -7690,10 +7690,10 @@
         async function archiveHabitInNotion(notionId) {
             if (!notionConnected || !notionId) return;
             try {
-                await fetch('/api/habits/archive-habit', {
+                await fetch('/api/habits', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ notionId }),
+                    body: JSON.stringify({ action: 'archive', notionId }),
                 });
             } catch (e) { console.error('archiveHabitInNotion', e); }
         }

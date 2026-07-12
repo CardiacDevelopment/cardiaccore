@@ -61,11 +61,14 @@ real date so `sync` can pull the last 150 days; `Period` carries the exact
 period key (including weekly `W…` keys). `log-habit` upserts by notionId, else
 by `(HabitId, Period)` to avoid duplicate rows.
 
-Endpoints mirror `api/notion/*`:
-- **`api/habits/sync.js`** — `GET`, returns `{ habits, logs }` (logs from last 150 days).
-- **`api/habits/push-habit.js`** — `POST`, create/update a habit.
-- **`api/habits/log-habit.js`** — `POST`, upsert a daily/weekly log.
-- **`api/habits/archive-habit.js`** — `POST`, archive a habit page.
+All habit operations live in **one** serverless function to stay within
+Vercel's Hobby-plan 12-function-per-deployment limit:
+
+- **`api/habits/index.js`** (`/api/habits`):
+  - `GET` → sync, returns `{ habits, logs }` (logs from last 150 days)
+  - `POST {action:'push', habit}` → create/update a habit
+  - `POST {action:'log', log}` → upsert a daily/weekly log
+  - `POST {action:'archive', notionId}` → archive a habit page
 - **`api/_lib/habits.js`** — config + page↔habit/log converters.
 
 ### Environment variables
@@ -81,10 +84,7 @@ habit tracker runs fully offline (per-device) and the sync calls no-op.
 |------|--------|
 | `index.html` | Habits module: header ◎ icon, mobile overlay + desktop `Habits` tab, Today/History views, log sheet, add/edit modal, 110-icon picker, client Notion sync; scoped CSS |
 | `api/_lib/habits.js` | New: habit/log Notion config + converters |
-| `api/habits/sync.js` | New: `GET` pull habits + recent logs |
-| `api/habits/push-habit.js` | New: `POST` create/update habit |
-| `api/habits/log-habit.js` | New: `POST` upsert habit log |
-| `api/habits/archive-habit.js` | New: `POST` archive habit |
+| `api/habits/index.js` | New: single `/api/habits` function — `GET` sync + `POST` push/log/archive by action (one function to respect the Hobby 12-function limit) |
 | `HABITS_SETUP.md` | New: Notion + Vercel activation guide |
 
 ---

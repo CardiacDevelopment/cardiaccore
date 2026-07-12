@@ -64,5 +64,6 @@ sync habits + logs on load and after every change, exactly like your tasks.
   Notion page ID; `Period` = `YYYY-MM-DD` for daily habits or `W` + week-start
   date for weekly habits; `Day` is the real date used to fetch the last 150 days
   on sync.
-- Endpoints: `api/habits/sync.js`, `push-habit.js`, `log-habit.js`,
-  `archive-habit.js` — same design as `api/notion/*`.
+- Endpoint: a single `api/habits/index.js` (`/api/habits`) — `GET` for sync,
+  `POST {action}` for push/log/archive. Consolidated into one function to stay
+  under Vercel's Hobby-plan 12-function limit.
