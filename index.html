@@ -1425,17 +1425,22 @@
             margin-top: 0;
         }
 
+        /* "Move back to board" affordance. Deliberately NOT an ✕ / red —
+           that read as delete. A labeled neutral pill that greens on hover. */
         .desktop-task-unsched {
             background: none;
-            border: none;
+            border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
             cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 9px;
+            border-radius: 50px;
             flex-shrink: 0;
-            opacity: 0;
-            transition: opacity 0.15s ease;
+            opacity: 0.35;
+            transition: opacity 0.15s ease, color 0.15s ease,
+                        border-color 0.15s ease, background 0.15s ease;
         }
 
         .desktop-task-row:hover .desktop-task-unsched {
@@ -1443,8 +1448,9 @@
         }
 
         .desktop-task-unsched:hover {
-            color: #E24B4A;
-            background: #E24B4A22;
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.12);
         }
 
         .desktop-task-text {
@@ -1928,6 +1934,47 @@
             display: flex;
             gap: 16px;
             overflow-x: auto;
+        }
+
+        /* ── Desktop drag-and-drop affordances ─────────────────── */
+        /* Draggable task rows/chips get a grab cursor and fade while dragging. */
+        .desktop-task-row[draggable="true"],
+        .desktop-month-chip.task-chip[draggable="true"],
+        .desktop-board-task[draggable="true"] {
+            cursor: grab;
+        }
+        .desktop-task-row.dragging,
+        .desktop-month-chip.dragging,
+        .desktop-board-task.dragging {
+            opacity: 0.4;
+        }
+        /* Drop-target highlights. */
+        .desktop-week-col.drag-over {
+            outline: 2px dashed var(--accent-green);
+            outline-offset: -2px;
+            background: rgba(151, 196, 89, 0.06);
+        }
+        .desktop-month-board.drag-over {
+            outline: 2px dashed var(--accent-green);
+            outline-offset: 4px;
+            border-radius: 10px;
+        }
+        /* "Drag to Someday" strip on the Week view. */
+        .desktop-week-someday {
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+        .desktop-week-someday.drag-over {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.1);
         }
 
         .desktop-month-board-title {
@@ -3502,6 +3549,10 @@
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
                 <div class="desktop-tab-title">Week</div>
+                <div class="desktop-week-someday" id="weekSomedayDrop"
+                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                     ondragleave="this.classList.remove('drag-over')"
+                     ondrop="handleUnscheduleDrop(event)">↩ Drag a task here to move it to the Someday board</div>
                 <div class="desktop-week-grid" id="desktopWeekGrid"></div>
             </div>
             <div class="desktop-tab" id="desktopTabMonth">
@@ -3519,7 +3570,10 @@
                         </div>
                         <div class="desktop-month-grid" id="monthGrid"></div>
                     </div>
-                    <div class="desktop-month-board" id="monthBoard"></div>
+                    <div class="desktop-month-board" id="monthBoard"
+                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="handleUnscheduleDrop(event)"></div>
                 </div>
             </div>
 
@@ -4056,10 +4110,13 @@
                 : '';
             const cls = small ? 'desktop-task-row small' : 'desktop-task-row';
             return `
-                <div class="${cls}" style="border-left-color:${color}" ondblclick="openEditModal(${task.id})">
+                <div class="${cls}" style="border-left-color:${color}" ondblclick="openEditModal(${task.id})"
+                     draggable="true"
+                     ondragstart="handleMonthDragStart(event, ${task.id})"
+                     ondragend="handleMonthDragEnd(event)">
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="${toggleFn}(${task.id})"></div>
                     <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
-                    <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move to board">✕</button>
+                    <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move back to the Someday board">↩ Board</button>
                     <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
                 </div>
             `;
@@ -4223,7 +4280,10 @@
                         : dayNames[d.getDay()];
                     const dateLabel = `${monthNames[d.getMonth()]} ${d.getDate()}`;
                     cols.push(`
-                        <div class="desktop-week-col ${i === 0 ? 'today-col' : ''}">
+                        <div class="desktop-week-col ${i === 0 ? 'today-col' : ''}"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleWeekDrop(event, ${i})">
                             <div class="desktop-week-col-day">${escapeHtml(dayLabel)}</div>
                             <div class="desktop-week-col-date">${escapeHtml(dateLabel)}</div>
                             <div class="desktop-week-list" id="desktopWeekList${i}"></div>
@@ -4497,7 +4557,10 @@
                 }
                 for (const t of dayTasks) {
                     const c = categoryColors[t.category] || '#888780';
-                    items.push(`<div class="desktop-month-chip task-chip ${t.completed ? 'done' : ''}"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(t.text)}</div>`);
+                    items.push(`<div class="desktop-month-chip task-chip ${t.completed ? 'done' : ''}"
+                                     draggable="true" data-task-id="${t.id}"
+                                     ondragstart="event.stopPropagation(); handleMonthDragStart(event, ${t.id})"
+                                     ondragend="handleMonthDragEnd(event)"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(t.text)}</div>`);
                 }
                 for (const ev of timed) {
                     const c = colorForEvent(ev);
@@ -4592,6 +4655,30 @@
             const taskId = monthDragTaskId || Number(e.dataTransfer.getData('text/plain'));
             if (!taskId) return;
             placeTaskOnDate(taskId, ymd);
+        }
+
+        // Shared drag id resolver — falls back to the dataTransfer payload if
+        // the in-memory id was cleared (e.g. dragend fired first).
+        function draggedTaskId(e) {
+            return monthDragTaskId || Number(e.dataTransfer.getData('text/plain')) || null;
+        }
+
+        // Reschedule a dragged task onto a Week-view day column (offset 0..6).
+        function handleWeekDrop(e, offset) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = draggedTaskId(e);
+            if (taskId) placeTaskOnDate(taskId, ymdForOffset(offset));
+        }
+
+        // Drop a scheduled task onto a "Someday board" zone to unschedule it —
+        // the drag-based alternative to the ↩ Board button, available on the
+        // Week view (drop strip) and Month view (board panel).
+        function handleUnscheduleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = draggedTaskId(e);
+            if (taskId) unscheduleTask(taskId);
         }
 
         // Click to assign: click a board task to arm it, then click a cell.
