@@ -116,8 +116,8 @@
         .mobile-view {
             display: block;
             overflow-y: auto;
-            /* header ~68px + bottom-nav ~110px */
-            height: calc(100vh - 178px);
+            /* header ~74px + bottom-nav ~148px (taller pill bar) */
+            height: calc(100vh - 222px);
         }
 
         .day-column {
@@ -144,14 +144,14 @@
             background: var(--task-bg);
             border-left: 3px solid var(--accent-green);
             border-bottom: none;
-            padding: 13px 14px 13px 14px;
+            padding: 16px 16px 16px 16px;
             border-radius: 4px;
-            font-size: 15px;
+            font-size: 16px;
             color: var(--text-primary);
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             transition: background 0.15s ease;
         }
 
@@ -440,7 +440,7 @@
             align-items: center;
             gap: 0;
             overflow-x: auto;
-            padding: 10px 16px 6px;
+            padding: 14px 16px 8px;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
@@ -450,17 +450,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 6px 14px;
+            padding: 9px 16px;
             cursor: pointer;
             flex-shrink: 0;
             border-radius: 6px;
-            min-width: 52px;
+            min-width: 56px;
             transition: background 0.15s ease;
             -webkit-tap-highlight-color: transparent;
         }
 
         .day-strip-item .ds-date {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--bg-secondary);
             line-height: 1;
@@ -491,54 +491,51 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 6px 20px 10px;
+            padding: 10px 18px 16px;
         }
 
+        /* TODAY / SOMEDAY are pill-shaped so it's obvious they're tappable.
+           Default = translucent dark pill on the green bar; active = solid
+           dark pill with green text, mirroring the day-strip active pill. */
         .nav-item {
-            background: none;
+            background: rgba(0, 0, 0, 0.14);
             border: none;
             color: var(--bg-primary);
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 12px 28px;
+            border-radius: 50px;
             position: relative;
             -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s ease, color 0.15s ease;
         }
 
-        /* Active indicator dot under label */
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 4px;
-            background: var(--bg-primary);
-            border-radius: 50%;
+        .nav-item.active {
+            background: var(--bg-secondary);
+            color: var(--accent-green);
         }
 
         .nav-item:active {
-            opacity: 0.7;
+            transform: scale(0.96);
         }
 
         .add-task-btn {
-            width: 42px;
-            height: 42px;
+            width: 52px;
+            height: 52px;
             background: var(--bg-primary);
             border: none;
             border-radius: 50%;
             color: var(--accent-green);
-            font-size: 26px;
+            font-size: 30px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .add-task-btn:active {
@@ -553,7 +550,7 @@
             display: none;
             padding: 20px 20px 20px;
             overflow-y: auto;
-            height: calc(100vh - 178px);
+            height: calc(100vh - 222px);
         }
 
         .task-board-view.active {
@@ -573,8 +570,9 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 12px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 4px 0;
+            font-size: 14px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-secondary);
@@ -584,8 +582,8 @@
         }
 
         .category-group-header .category-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
         }
 
         .category-group-chevron {
@@ -610,10 +608,10 @@
             background: none;
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            font-size: 16px;
+            font-size: 20px;
             line-height: 1;
             cursor: pointer;
             display: flex;
@@ -621,6 +619,7 @@
             justify-content: center;
             padding: 0;
             flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .category-group-add:active {
