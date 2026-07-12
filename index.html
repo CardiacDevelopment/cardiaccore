@@ -5729,10 +5729,7 @@
             // Nothing configured — clear any stale events and bail.
             if (feeds.length === 0) {
                 calendarEvents = [];
-                if (currentView === 'today') {
-                    renderAllDayBanner();
-                    renderTasks();
-                }
+                repaintAfterCalendar();
                 return;
             }
 
@@ -5751,7 +5748,13 @@
                     body: JSON.stringify({ feeds, tz }),
                 });
                 if (!res.ok) {
+                    // Total request failure — keep whatever events we had, but
+                    // surface it on every enabled calendar in Settings so it
+                    // doesn't just silently look "not synced".
                     console.error('Calendar fetch failed:', res.status);
+                    annotateCalendarErrors(feeds.map(f => ({
+                        calendarId: f.id, error: `Sync failed (HTTP ${res.status})`,
+                    })));
                     return;
                 }
                 const data = await res.json();
@@ -5765,12 +5768,26 @@
                 } else {
                     annotateCalendarErrors([]);
                 }
-                if (currentView === 'today') {
-                    renderAllDayBanner();
-                    renderTasks();
-                }
+                repaintAfterCalendar();
             } catch (err) {
+                // Network error / offline — surface it rather than swallowing.
                 console.error('Calendar fetch error:', err);
+                annotateCalendarErrors(feeds.map(f => ({
+                    calendarId: f.id, error: 'Sync failed (network error)',
+                })));
+            }
+        }
+
+        // Repaint every surface that reads calendarEvents, regardless of which
+        // view/tab is active. renderTasks() cascades into renderDesktopViews();
+        // the News (Hub) hero shows a live calendar-event count, so refresh it
+        // too when that tab has been opened at least once.
+        function repaintAfterCalendar() {
+            renderAllDayBanner();
+            renderTasks();
+            if (typeof briefingState !== 'undefined' && briefingState.initialized
+                && typeof renderBriefingHero === 'function') {
+                renderBriefingHero();
             }
         }
 
