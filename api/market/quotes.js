@@ -1,5 +1,5 @@
 // Vercel serverless function: /api/market/quotes
-// Returns S&P 500, Dow Jones, and Nasdaq composite quotes.
+// Returns a configurable set of quotes (currently Vanguard ETFs).
 // Proxies Yahoo Finance server-to-server to avoid browser CORS issues.
 // No API key required.
 
@@ -14,10 +14,12 @@ function applyCors(req, res) {
   return false;
 }
 
+// Vanguard ETFs. Names kept short so they fit the widget rows.
 const SYMBOLS = [
-  { symbol: '^GSPC', name: 'S&P 500' },
-  { symbol: '^DJI',  name: 'Dow Jones' },
-  { symbol: '^IXIC', name: 'Nasdaq' },
+  { symbol: 'VTI',  name: 'Total Stock Market' },
+  { symbol: 'VOO',  name: 'S&P 500' },
+  { symbol: 'VXUS', name: 'Total International' },
+  { symbol: 'BND',  name: 'Total Bond Market' },
 ];
 
 async function fetchQuote(symbol) {

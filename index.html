@@ -3369,7 +3369,7 @@
         <div class="desktop-sidebar">
             <div class="desktop-logo">Cardiac Core</div>
             <button class="desktop-nav-item" id="desktopNavDashboard" onclick="switchDesktopTab('dashboard')">Dashboard</button>
-            <button class="desktop-nav-item" id="desktopNavHub" onclick="switchDesktopTab('hub')">Hub</button>
+            <button class="desktop-nav-item" id="desktopNavHub" onclick="switchDesktopTab('hub')">Cardiac News</button>
             <button class="desktop-nav-item" id="desktopNavToday" onclick="switchDesktopTab('today')">Today</button>
             <button class="desktop-nav-item" id="desktopNavWeek" onclick="switchDesktopTab('week')">Week</button>
             <button class="desktop-nav-item" id="desktopNavMonth" onclick="switchDesktopTab('month')">Month</button>
@@ -3961,6 +3961,10 @@
                 ${forecastHtml}
                 <div style="font-size:10px; color:var(--text-secondary); margin-top:8px;">${escapeHtml(cache.name || '')}</div>
             `;
+
+            // Keep the Cardiac News page's weather card in sync with the same
+            // cache — it renders lazily on tab open, so repaint it here too.
+            if (typeof renderBriefingWeather === 'function') renderBriefingWeather();
         }
 
         // ── Market widget (S&P, Dow, Nasdaq) ────────────────────
@@ -4022,6 +4026,10 @@
             const mins = Math.round(age / 60000);
             const label = mins < 1 ? 'Just now' : `${mins}m ago`;
             el.innerHTML += `<div style="font-size:10px; color:var(--text-secondary); margin-top:6px; text-align:right;">Updated ${label}</div>`;
+
+            // Keep the Cardiac News page's markets card in sync with the same
+            // cache — it renders lazily on tab open, so repaint it here too.
+            if (typeof renderBriefingMarkets === 'function') renderBriefingMarkets();
         }
 
 
@@ -6549,30 +6557,31 @@
             return n;
         }
 
-        // Weather bridge — reads from the existing `weatherData` global that
-        // the Dashboard's weather widget already populates. If empty, shows
-        // the same empty state the dashboard shows.
+        // Weather bridge — reads the same `weatherCache` global that the
+        // Dashboard's weather widget populates from Open-Meteo (shape:
+        // { data: {current, daily}, ts, name }). If empty, shows the same
+        // empty state the dashboard shows.
         function renderBriefingWeather() {
             const el = document.getElementById('briefingWeather');
             if (!el) return;
-            const w = typeof weatherData !== 'undefined' ? weatherData : null;
-            if (!w || !w.current) {
+            const w = (typeof weatherCache !== 'undefined') ? weatherCache : null;
+            if (!w || !w.data || !w.data.current) {
                 el.innerHTML = `<div class="briefing-empty">Set your location in Settings to see weather.</div>`;
                 return;
             }
-            const c = w.current;
-            const icon = weatherEmojiFor ? weatherEmojiFor(c.weatherCode, c.isDay) : '☀';
-            const desc = weatherDescriptionFor ? weatherDescriptionFor(c.weatherCode, c.isDay) : '';
-            const loc = (w.locationName || 'Location').toString();
-            const temp = Math.round(c.temperatureF ?? c.temperature ?? 0);
-            const feels = c.apparentTemperatureF != null ? Math.round(c.apparentTemperatureF) : null;
-            const hi = w.daily?.highF != null ? Math.round(w.daily.highF) : null;
-            const lo = w.daily?.lowF != null ? Math.round(w.daily.lowF) : null;
-            const wind = c.windSpeedMph != null ? Math.round(c.windSpeedMph) : null;
-            const humidity = c.relativeHumidity != null ? Math.round(c.relativeHumidity) : null;
+            const c = w.data.current;
+            const daily = w.data.daily;
+            const info = weatherCodeToInfo(c.weather_code);
+            const icon = info.icon;
+            const desc = info.desc;
+            const loc = (w.name || 'Location').toString();
+            const temp = Math.round(c.temperature_2m ?? 0);
+            const hi = daily && daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[0]) : null;
+            const lo = daily && daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[0]) : null;
+            const wind = c.wind_speed_10m != null ? Math.round(c.wind_speed_10m) : null;
+            const humidity = c.relative_humidity_2m != null ? Math.round(c.relative_humidity_2m) : null;
 
             const details = [];
-            if (feels != null) details.push(`Feels<span>${feels}°</span>`);
             if (hi != null && lo != null) details.push(`Hi / Lo<span>${hi}° / ${lo}°</span>`);
             if (wind != null) details.push(`Wind<span>${wind} mph</span>`);
             if (humidity != null) details.push(`Humidity<span>${humidity}%</span>`);
@@ -6590,12 +6599,14 @@
             `;
         }
 
-        // Markets bridge — reads the existing `marketQuotes` global that
-        // the Dashboard's markets widget populates from /api/market/quotes.
+        // Markets bridge — reads the same `marketCache` global that the
+        // Dashboard's markets widget populates from /api/market/quotes
+        // (shape: { quotes: [...], ts }).
         function renderBriefingMarkets() {
             const el = document.getElementById('briefingMarkets');
             if (!el) return;
-            const quotes = typeof marketQuotes !== 'undefined' ? marketQuotes : null;
+            const quotes = (typeof marketCache !== 'undefined' && marketCache && Array.isArray(marketCache.quotes))
+                ? marketCache.quotes : null;
             if (!Array.isArray(quotes) || quotes.length === 0) {
                 el.innerHTML = `<div class="briefing-empty">Loading…</div>`;
                 return;
