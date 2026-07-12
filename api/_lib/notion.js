@@ -37,6 +37,17 @@ async function notionFetch(path, { token, method = 'GET', body } = {}) {
   return data;
 }
 
+// The "Select" option in the user's Notion DB is misspelled "Aquisitions".
+// The app (and its category colors) uses the correct "Acquisitions". Map
+// between the two at the API boundary so the typo in Notion doesn't render a
+// second, near-identical category group on the board. Reading canonicalizes
+// to the app's spelling; writing translates back to Notion's existing option
+// name so we reuse it instead of creating a new "Acquisitions" option.
+const CATEGORY_FROM_NOTION = { 'Aquisitions': 'Acquisitions' };
+const CATEGORY_TO_NOTION = { 'Acquisitions': 'Aquisitions' };
+const canonicalCategory = name => CATEGORY_FROM_NOTION[name] || name;
+const notionCategoryName = name => CATEGORY_TO_NOTION[name] || name;
+
 // Convert a Notion page object into our task shape.
 // Property names match the schema in user memory: Task, Due Date, Status, Select, Project.
 function pageToTask(page) {
@@ -53,7 +64,7 @@ function pageToTask(page) {
   const completed = status === 'Done';
 
   // "Select" in user's schema is actually multi-select (categories).
-  const categories = (props['Select']?.multi_select || []).map(s => s.name);
+  const categories = (props['Select']?.multi_select || []).map(s => canonicalCategory(s.name));
   const category = categories[0] || 'Brain Dump';
 
   const project = props['Project']?.select?.name || null;
@@ -93,7 +104,7 @@ function taskToProperties(task) {
     props['Status'] = { status: { name: task.completed ? 'Done' : 'Not started' } };
   }
   if (task.category) {
-    props['Select'] = { multi_select: [{ name: task.category }] };
+    props['Select'] = { multi_select: [{ name: notionCategoryName(task.category) }] };
   }
   if (task.dayOffset != null && task.dayOffset !== 999) {
     const d = new Date();

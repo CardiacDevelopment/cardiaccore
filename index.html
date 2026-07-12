@@ -3636,12 +3636,27 @@
             'Estate': '#BA7517',
             'Acquisitions': '#7F77DD',
             'Growth': '#1D9E75',
-            'Research': '#888780'
+            'Research': '#888780',
+            'COGHQ': '#C65A9C'
         };
+
+        // Notion has a legacy misspelled "Aquisitions" category option; the app
+        // uses the correct "Acquisitions". Rewrite any locally-cached tasks so
+        // they don't render a second, near-identical board group before the
+        // next Notion sync canonicalizes them. (The API boundary in
+        // api/_lib/notion.js handles the sync direction.)
+        function canonicalizeTaskCategories() {
+            let changed = false;
+            for (const t of tasks) {
+                if (t.category === 'Aquisitions') { t.category = 'Acquisitions'; changed = true; }
+            }
+            if (changed) saveTasks();
+        }
 
         // Initialize
         async function init() {
             loadTasks();
+            canonicalizeTaskCategories();
             recomputeTaskDatesOnLoad();
             loadCollapsedCategories();
             loadCalendars();
