@@ -1410,6 +1410,55 @@
             padding: 8px 0;
         }
 
+        /* ── Dashboard Habits widget ───────────────────────────── */
+        .dash-habits {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .dash-habits-ring {
+            flex-shrink: 0;
+            cursor: pointer;
+            line-height: 0;
+        }
+        .dash-habits-list {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .dash-habit-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .dash-habit-row.done .dash-habit-name {
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+        .dash-habit-icon { flex-shrink: 0; width: 18px; text-align: center; }
+        .dash-habit-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .dash-habit-check { color: var(--accent-green); font-weight: 700; flex-shrink: 0; }
+        .dash-habit-more { font-size: 12px; color: var(--text-secondary); }
+        .dash-habit-link {
+            background: none;
+            border: none;
+            color: var(--accent-green);
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+            font-family: inherit;
+        }
+
         .desktop-task-row {
             display: flex;
             align-items: center;
@@ -3457,6 +3506,15 @@
                             <div class="desktop-widget-empty">Loading…</div>
                         </div>
                     </div>
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title">
+                            <span>Habits</span>
+                            <span class="desktop-widget-count" id="desktopHabitsCount"></span>
+                        </div>
+                        <div class="desktop-widget-body" id="desktopHabitsWidget">
+                            <div class="desktop-widget-empty">No habits yet.</div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <!-- ── BRIEFING TAB ─────────────────────────────────── -->
@@ -3891,6 +3949,50 @@
             // network requests on every task change.
             renderWeatherFromCache();
             renderMarketsFromCache();
+            renderDesktopHabitsWidget();
+        }
+
+        // Dashboard habits card: today's daily-completion ring + a compact list
+        // of due daily habits. Read-only summary; clicking opens the full
+        // habit tracker. Reuses the habit module's helpers.
+        function renderDesktopHabitsWidget() {
+            const el = document.getElementById('desktopHabitsWidget');
+            const countEl = document.getElementById('desktopHabitsCount');
+            if (!el) return;
+            if (typeof habits === 'undefined' || !Array.isArray(habits) || habits.length === 0) {
+                el.innerHTML = '<div class="desktop-widget-empty">No habits yet. '
+                    + '<button class="dash-habit-link" onclick="openHabits()">Open habits →</button></div>';
+                if (countEl) countEl.textContent = '';
+                return;
+            }
+            const dk = habitDateKey();
+            const due = habits.filter(h => !h.archived && h.section === 'daily' && isHabitDueOn(h, dk));
+            if (!due.length) {
+                el.innerHTML = '<div class="desktop-widget-empty">Nothing due today. '
+                    + '<button class="dash-habit-link" onclick="openHabits()">Open habits →</button></div>';
+                if (countEl) countEl.textContent = '';
+                return;
+            }
+            const doneCount = due.filter(h => habitProgressFraction(h) >= 1).length;
+            if (countEl) countEl.textContent = `${doneCount}/${due.length}`;
+            const pct = Math.round(dailyProgress() * 100);
+            const ring = habitRingSVG(dailyProgress(), 84, 9, 'var(--accent-green)',
+                `<tspan class="habit-big-pct" style="font-size:26px">${pct}</tspan>`
+                + `<tspan class="habit-big-unit" style="font-size:12px">%</tspan>`, 5);
+            const rows = due.slice(0, 6).map(h => {
+                const done = habitProgressFraction(h) >= 1;
+                return `<div class="dash-habit-row ${done ? 'done' : ''}">
+                    <span class="dash-habit-icon" style="color:${h.color}">${escapeHtml(h.icon || '•')}</span>
+                    <span class="dash-habit-name">${escapeHtml(h.name)}</span>
+                    <span class="dash-habit-check">${done ? '✓' : ''}</span>
+                </div>`;
+            }).join('');
+            const more = due.length > 6 ? `<div class="dash-habit-more">+${due.length - 6} more</div>` : '';
+            el.innerHTML = `
+                <div class="dash-habits">
+                    <div class="dash-habits-ring" onclick="openHabits()" title="Open habit tracker">${ring}</div>
+                    <div class="dash-habits-list">${rows}${more}</div>
+                </div>`;
         }
 
         // ── Weather widget (Open-Meteo, free, no API key) ───────
@@ -7313,6 +7415,8 @@
             if (mobile && mobile.classList.contains('open')) renderHabits('habitScreenBody');
             const deskPanel = document.getElementById('desktopTabHabits');
             if (deskPanel && deskPanel.classList.contains('active')) renderHabits('habitScreenBodyDesktop');
+            // Keep the Dashboard habits card in sync after any habit change.
+            if (typeof renderDesktopHabitsWidget === 'function') renderDesktopHabitsWidget();
         }
 
         function renderHabits(containerId) {
