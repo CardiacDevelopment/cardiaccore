@@ -7646,6 +7646,28 @@
                 saveHabits();
                 saveHabitLogs();
                 renderHabitsActive();
+
+                // Migration: push any local habits/logs that were created before
+                // sync was active (e.g. the seeded examples) so they reach Notion.
+                // Adopt a same-named remote habit if one exists to avoid creating
+                // duplicates when a second device already seeded the same habits.
+                for (const h of habits) {
+                    if (h.archived || h.notionId) continue;
+                    const match = remoteHabits.find(rh => rh.name && h.name
+                        && rh.name.trim().toLowerCase() === h.name.trim().toLowerCase());
+                    if (match) {
+                        h.notionId = match.notionId;
+                    } else {
+                        await pushHabitToNotion(h); // sets h.notionId on success
+                    }
+                }
+                saveHabits();
+                for (const l of habitLogs) {
+                    if (l.notionId) continue;
+                    const h = habits.find(x => x.id === l.habitId);
+                    if (h && h.notionId) await pushHabitLogToNotion(l);
+                }
+                saveHabitLogs();
             } catch (e) {
                 console.error('syncHabitsFromNotion', e);
             }
