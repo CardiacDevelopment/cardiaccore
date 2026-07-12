@@ -7144,11 +7144,17 @@
         }
 
         // ---- SVG progress ring -----------------------------------------
-        function habitRingSVG(fraction, size, stroke, color, centerText) {
+        // centerDx nudges the centered text horizontally. It's used by the big
+        // percentage ring so the *number* sits on the ring's centerline while
+        // the smaller "%" hangs to its right (otherwise text-anchor=middle
+        // centers the whole "0%" run, which pushed the bold number left of
+        // center — the "not aligned in the circle" report on the web view).
+        function habitRingSVG(fraction, size, stroke, color, centerText, centerDx) {
             const r = (size - stroke) / 2;
             const c = 2 * Math.PI * r;
             const off = c * (1 - Math.max(0, Math.min(1, fraction)));
             const cx = size / 2;
+            const dx = centerDx || 0;
             return `
                 <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="habit-ring-svg">
                     <circle cx="${cx}" cy="${cx}" r="${r}" fill="none"
@@ -7157,7 +7163,7 @@
                             stroke="${color}" stroke-width="${stroke}" stroke-linecap="round"
                             stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"
                             transform="rotate(-90 ${cx} ${cx})" />
-                    ${centerText != null ? `<text x="${cx}" y="${cx}" text-anchor="middle"
+                    ${centerText != null ? `<text x="${cx + dx}" y="${cx}" text-anchor="middle"
                             dominant-baseline="central" class="habit-ring-text">${centerText}</text>` : ''}
                 </svg>`;
         }
@@ -7212,8 +7218,10 @@
                 .sort((a, b) => (a.order || 0) - (b.order || 0));
 
             const pct = Math.round(dailyProgress() * 100);
+            // Shift the whole "NN%" run right by ~half the "%" width so the
+            // number lands on the ring's centerline (see habitRingSVG).
             const ring = habitRingSVG(dailyProgress(), 168, 12, 'var(--accent-green)',
-                `<tspan class="habit-big-pct">${pct}</tspan><tspan class="habit-big-unit">%</tspan>`);
+                `<tspan class="habit-big-pct">${pct}</tspan><tspan class="habit-big-unit">%</tspan>`, 9.4);
 
             const dailyRows = daily.length
                 ? daily.map(h => habitRowHTML(h, dk)).join('')
