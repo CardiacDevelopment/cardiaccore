@@ -1,3 +1,94 @@
+## Habit Tracker
+
+A full habit tracker (inspired by Awesome Habits) lives behind the **◎ icon**
+in the mobile header and a **Habits** tab in the desktop sidebar. It's a
+self-contained module — it does not touch the task list or the task/Notion
+sync flow. Data lives in `localStorage` and two-way syncs to Notion via
+`/api/habits/*` when connected (same design as the task sync).
+
+### Views
+- **Today** — a large daily-completion ring (average progress across today's
+  due daily habits) over a list of habit rows. Each row has an icon, name,
+  goal, and a per-habit progress ring. A **Weekly goals** section renders
+  weekly habits below the daily ones. Habits not due today render muted.
+- **History** — per-habit 🔥 streak count and a 12-week completion heatmap
+  (4 intensity levels: none / partial / half / complete).
+
+### Habit types & logging
+- **Count** — tap the ring to increment by 1 (goals ≤ 20); larger goals open
+  the log sheet with a bulk step.
+- **Duration** (stored in minutes) — a bottom **log sheet** with ±5-minute
+  steppers, a manual "set minutes" entry, and a **start/stop timer** that
+  accumulates elapsed time (persisted across reloads). No Apple Health on web,
+  so sleep/steps are manual entry or timer-driven.
+- Every logging action writes a `HabitLog` and pushes it to Notion when synced.
+
+### Scheduling
+- **Section**: `daily` or `weekly` (weekly habits aggregate into a single
+  weekly period bucket, keyed `W` + Monday's date).
+- **Frequency**: `daily`, `weekly`, or `custom` (pick specific weekdays).
+
+### Add / Edit habit
+Modal with name, a scrollable **110-icon** picker (categorized: health,
+fitness, mindfulness, food, home, faith, pets, productivity, money, nature,
+vices), color swatches, type, unit, goal, section, and frequency. Delete
+archives the habit's Notion page and drops its local logs.
+
+### Data model (`localStorage`)
+```js
+// cardiacHabits
+{ id, notionId, name, icon, color, type:'count'|'duration',
+  goal, unit, section:'daily'|'weekly',
+  frequency:'daily'|'weekly'|'custom', days:[0..6], order, archived, createdAt }
+
+// cardiacHabitLogs
+{ id, notionId, habitId, date, value, completed, createdAt }
+// date = 'YYYY-MM-DD' (daily) or 'W'+week-start (weekly)
+
+// cardiacHabitTimers  →  { habitId: startEpochMs }  (running duration timers)
+```
+
+### Notion sync
+Two databases, reusing `NOTION_TOKEN`:
+
+| Database | Purpose | Key properties |
+|---|---|---|
+| **Cardiac Habits** | habit definitions | Name, Icon, Color, Type, Goal, Unit, Section, Frequency, Days, Order, Archived |
+| **Cardiac Habit Logs** | one row per habit per period | Name, HabitId, Period, Day (date), Value, Completed |
+
+`HabitId` stores the habit's Notion page ID (no relation needed). `Day` is a
+real date so `sync` can pull the last 150 days; `Period` carries the exact
+period key (including weekly `W…` keys). `log-habit` upserts by notionId, else
+by `(HabitId, Period)` to avoid duplicate rows.
+
+Endpoints mirror `api/notion/*`:
+- **`api/habits/sync.js`** — `GET`, returns `{ habits, logs }` (logs from last 150 days).
+- **`api/habits/push-habit.js`** — `POST`, create/update a habit.
+- **`api/habits/log-habit.js`** — `POST`, upsert a daily/weekly log.
+- **`api/habits/archive-habit.js`** — `POST`, archive a habit page.
+- **`api/_lib/habits.js`** — config + page↔habit/log converters.
+
+### Environment variables
+Added (see `HABITS_SETUP.md` for full activation steps):
+- `NOTION_HABITS_DB_ID`
+- `NOTION_HABIT_LOGS_DB_ID`
+
+Until both DBs are shared with the integration and the env vars are set, the
+habit tracker runs fully offline (per-device) and the sync calls no-op.
+
+### Files
+| File | Change |
+|------|--------|
+| `index.html` | Habits module: header ◎ icon, mobile overlay + desktop `Habits` tab, Today/History views, log sheet, add/edit modal, 110-icon picker, client Notion sync; scoped CSS |
+| `api/_lib/habits.js` | New: habit/log Notion config + converters |
+| `api/habits/sync.js` | New: `GET` pull habits + recent logs |
+| `api/habits/push-habit.js` | New: `POST` create/update habit |
+| `api/habits/log-habit.js` | New: `POST` upsert habit log |
+| `api/habits/archive-habit.js` | New: `POST` archive habit |
+| `HABITS_SETUP.md` | New: Notion + Vercel activation guide |
+
+---
+
 ## Hub Tab & Editorial Dashboard
 
 The desktop dashboard now has a **Hub** tab that pulls the day together in one
