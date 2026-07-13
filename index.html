@@ -2009,21 +2009,17 @@
             border-radius: 10px;
         }
         /* "Drag to Someday" strip on the Week view. */
-        .desktop-week-someday {
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-align: center;
-            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        /* Someday board beneath the Week grid (mirrors the Month board). */
+        .desktop-week-board-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
         }
-        .desktop-week-someday.drag-over {
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-            background: rgba(151, 196, 89, 0.1);
+        .desktop-week-board-section .desktop-month-board {
+            min-height: 60px;
+            padding: 4px;
+            border-radius: 10px;
+            transition: background 0.15s ease, outline-color 0.15s ease;
         }
 
         .desktop-month-board-title {
@@ -3678,11 +3674,14 @@
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
                 <div class="desktop-tab-title">Week</div>
-                <div class="desktop-week-someday" id="weekSomedayDrop"
-                     ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                     ondragleave="this.classList.remove('drag-over')"
-                     ondrop="handleUnscheduleDrop(event)">↩ Drag a task here to move it to the Someday board</div>
                 <div class="desktop-week-grid" id="desktopWeekGrid"></div>
+                <div class="desktop-week-board-section">
+                    <div class="desktop-month-board-title">Someday · drag a card onto a day to schedule it, or drop a task here to unschedule</div>
+                    <div class="desktop-month-board" id="weekBoard"
+                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="handleUnscheduleDrop(event)"></div>
+                </div>
             </div>
             <div class="desktop-tab" id="desktopTabMonth">
                 <div class="desktop-month-layout">
@@ -4519,6 +4518,7 @@
                     const dateLabel = `${monthNames[d.getMonth()]} ${d.getDate()}`;
                     cols.push(`
                         <div class="desktop-week-col ${i === 0 ? 'today-col' : ''}"
+                             onclick="handleWeekColClick(${i})"
                              ondragover="event.preventDefault(); this.classList.add('drag-over')"
                              ondragleave="this.classList.remove('drag-over')"
                              ondrop="handleWeekDrop(event, ${i})">
@@ -4571,6 +4571,9 @@
                     ? rows.join('')
                     : '<div class="desktop-widget-empty">No tasks</div>';
             }
+
+            // Someday board across the bottom (same as the Month view).
+            renderMonthBoard('weekBoard');
         }
 
         // Create a task for a specific day offset. Mirrors addTask() exactly
@@ -4822,8 +4825,11 @@
             }).join('');
         }
 
-        function renderMonthBoard() {
-            const el = document.getElementById('monthBoard');
+        // Renders the "Someday" board (unscheduled tasks, grouped by category,
+        // as draggable chips) into the given container. Used by both the Month
+        // view (#monthBoard) and the Week view (#weekBoard).
+        function renderMonthBoard(elId = 'monthBoard') {
+            const el = document.getElementById(elId);
             if (!el) return;
 
             const isUnscheduled = t => (t.dayOffset == null || t.dayOffset === 999) && !t.completed;
@@ -4919,10 +4925,19 @@
             if (taskId) unscheduleTask(taskId);
         }
 
-        // Click to assign: click a board task to arm it, then click a cell.
+        // Click to assign: click a board task to arm it, then click a cell
+        // (Month) or a day column (Week).
         function toggleMonthArm(taskId) {
             monthArmedTaskId = monthArmedTaskId === taskId ? null : taskId;
-            renderMonthBoard();
+            renderMonthBoard('monthBoard');
+            renderMonthBoard('weekBoard');
+        }
+
+        // Week day column click: place an armed board task onto that day.
+        function handleWeekColClick(offset) {
+            if (!monthArmedTaskId) return;
+            placeTaskOnDate(monthArmedTaskId, ymdForOffset(offset));
+            monthArmedTaskId = null;
         }
 
         function handleMonthCellClick(ymd) {
