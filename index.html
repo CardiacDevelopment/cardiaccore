@@ -3828,6 +3828,14 @@
                         </button>
                     </div>
                     <div class="desktop-settings-card">
+                        <div class="setting-label">Google Calendars</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Pulls the calendars from your connected Google account — no URLs. Toggle each to show or hide it.</div>
+                        <div id="gcalList"><div style="font-size:12px; color:var(--text-secondary);">Not loaded yet.</div></div>
+                        <button class="setting-button" onclick="loadGoogleCalendarList()" style="margin-top:10px;">
+                            Load my Google calendars
+                        </button>
+                    </div>
+                    <div class="desktop-settings-card">
                         <div class="setting-label">Appearance</div>
                         <div class="setting-toggle">
                             <div class="setting-label" style="margin-bottom:0;">Light Mode</div>
@@ -3885,10 +3893,33 @@
         let calendarEvents = [];
         const CAL_REFRESH_MS = 5 * 60 * 1000;
 
+        // calendarEvents is the merged view; keep the two sources separate so a
+        // refresh of one doesn't clobber the other.
+        let _icalEvents = [];
+        let _gcalEvents = [];
+        function recomputeCalendarEvents() {
+            calendarEvents = [..._icalEvents, ..._gcalEvents];
+            repaintAfterCalendar();
+        }
+
         // User-managed calendar feeds. Each: { id, name, url, color, enabled }.
         // Stored in localStorage under 'cardiacCalendars'. The client owns this
         // list and sends it to /api/calendar/events on every fetch.
         let calendars = [];
+
+        // Connected Google calendars (auto-discovered, no URLs). Each:
+        // { id, name, color, enabled }. Stored under 'cardiacGoogleCalendars'.
+        let googleCalendars = [];
+        function loadGoogleCalendars() {
+            try {
+                const saved = localStorage.getItem('cardiacGoogleCalendars');
+                googleCalendars = saved ? JSON.parse(saved) : [];
+                if (!Array.isArray(googleCalendars)) googleCalendars = [];
+            } catch { googleCalendars = []; }
+        }
+        function saveGoogleCalendars() {
+            try { localStorage.setItem('cardiacGoogleCalendars', JSON.stringify(googleCalendars)); } catch {}
+        }
 
         // Palette offered when adding a calendar (user can still pick any color
         // via the native picker). Chosen to be distinct on the dark theme.
@@ -3939,6 +3970,7 @@
             recomputeTaskDatesOnLoad();
             loadCollapsedCategories();
             loadCalendars();
+            loadGoogleCalendars();
             loadCheckedCalendarEvents();
             initHabits();
             applyLightModePreference();
@@ -3978,6 +4010,10 @@
             // First fetch is non-blocking — UI renders without events first.
             fetchCalendarEvents();
             setInterval(fetchCalendarEvents, CAL_REFRESH_MS);
+            // Google calendars (if any are connected + enabled) on the same cadence.
+            renderGoogleCalendarList();
+            fetchGoogleCalendarEvents();
+            setInterval(fetchGoogleCalendarEvents, CAL_REFRESH_MS);
         }
 
         // ── Desktop mode ────────────────────────────────────────
@@ -5950,9 +5986,12 @@
             }
         }
 
-        // Look up a calendar's color/name by id. Returns sensible fallbacks.
+        // Look up a calendar's color/name by id — checks both the iCal feeds
+        // and the connected Google calendars. Returns sensible fallbacks.
         function calendarById(id) {
-            return calendars.find(c => String(c.id) === String(id)) || null;
+            return calendars.find(c => String(c.id) === String(id))
+                || googleCalendars.find(c => String(c.id) === String(id))
+                || null;
         }
         function colorForEvent(ev) {
             const cal = calendarById(ev.calendarId);
@@ -6174,10 +6213,10 @@
                 .filter(c => c.enabled !== false && c.url)
                 .map(c => ({ id: c.id, url: c.url }));
 
-            // Nothing configured — clear any stale events and bail.
+            // Nothing configured — clear any stale iCal events and bail.
             if (feeds.length === 0) {
-                calendarEvents = [];
-                repaintAfterCalendar();
+                _icalEvents = [];
+                recomputeCalendarEvents();
                 return;
             }
 
@@ -6206,7 +6245,7 @@
                     return;
                 }
                 const data = await res.json();
-                calendarEvents = Array.isArray(data.events) ? data.events : [];
+                _icalEvents = Array.isArray(data.events) ? data.events : [];
                 if (Array.isArray(data.errors) && data.errors.length) {
                     // Don't block the UI on per-feed errors — just log them and
                     // surface them in the settings list so the user can see which
@@ -6216,7 +6255,7 @@
                 } else {
                     annotateCalendarErrors([]);
                 }
-                repaintAfterCalendar();
+                recomputeCalendarEvents();
             } catch (err) {
                 // Network error / offline — surface it rather than swallowing.
                 console.error('Calendar fetch error:', err);
@@ -6224,6 +6263,89 @@
                     calendarId: f.id, error: 'Sync failed (network error)',
                 })));
             }
+        }
+
+        // ── Google Calendar (auto-discovered, no URLs) ─────────
+        // Fetch events for the enabled Google calendars and merge them in.
+        async function fetchGoogleCalendarEvents() {
+            const enabled = googleCalendars.filter(c => c.enabled);
+            if (!enabled.length) {
+                _gcalEvents = [];
+                recomputeCalendarEvents();
+                return;
+            }
+            let tz;
+            try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { tz = ''; }
+            const ids = enabled.map(c => c.id).join(',');
+            try {
+                const res = await fetch(`/api/calendar/google?action=events&ids=${encodeURIComponent(ids)}&tz=${encodeURIComponent(tz || '')}`);
+                if (!res.ok) { console.error('Google calendar events failed:', res.status); return; }
+                const data = await res.json();
+                _gcalEvents = Array.isArray(data.events) ? data.events : [];
+                recomputeCalendarEvents();
+            } catch (err) {
+                console.error('Google calendar fetch error:', err);
+            }
+        }
+
+        // Load the account's calendar list from the API and render the Settings
+        // toggles, preserving each calendar's saved show/hide + color state.
+        async function loadGoogleCalendarList() {
+            const listEl = document.getElementById('gcalList');
+            if (listEl) listEl.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">Loading your calendars…</div>';
+            try {
+                const res = await fetch('/api/calendar/google?action=list');
+                if (!res.ok) {
+                    const msg = (res.status === 401 || res.status === 403)
+                        ? 'Google hasn’t granted Calendar access yet. Re-run Google sign-in (see setup) to enable it.'
+                        : `Could not load calendars (HTTP ${res.status}).`;
+                    throw new Error(msg);
+                }
+                const data = await res.json();
+                const remote = Array.isArray(data.calendars) ? data.calendars : [];
+                // Merge: keep existing enabled/color state; add newly-seen calendars
+                // (default hidden); drop calendars that no longer exist remotely.
+                const byId = Object.fromEntries(googleCalendars.map(c => [c.id, c]));
+                googleCalendars = remote.map(rc => {
+                    const prev = byId[rc.id];
+                    return {
+                        id: rc.id,
+                        name: rc.name,
+                        color: (prev && prev.color) || rc.color || CALENDAR_FALLBACK_COLOR,
+                        enabled: prev ? !!prev.enabled : false,
+                    };
+                });
+                saveGoogleCalendars();
+                renderGoogleCalendarList();
+            } catch (err) {
+                if (listEl) listEl.innerHTML = `<div style="font-size:12px; color:#E24B4A;">${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function renderGoogleCalendarList() {
+            const el = document.getElementById('gcalList');
+            if (!el) return;
+            if (!googleCalendars.length) {
+                el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No calendars loaded yet.</div>';
+                return;
+            }
+            el.innerHTML = googleCalendars.map(c => `
+                <label style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color); cursor:pointer;">
+                    <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleGoogleCalendar('${escapeHtml(c.id).replace(/'/g, "&#39;")}', this.checked)" />
+                    <span style="width:12px; height:12px; border-radius:50%; background:${escapeHtml(c.color || CALENDAR_FALLBACK_COLOR)}; flex-shrink:0;"></span>
+                    <span style="flex:1; font-size:13px; color:var(--text-primary);">${escapeHtml(c.name)}</span>
+                    <span style="font-size:11px; color:var(--text-secondary);">${c.enabled ? 'Showing' : 'Hidden'}</span>
+                </label>
+            `).join('');
+        }
+
+        function toggleGoogleCalendar(id, on) {
+            const cal = googleCalendars.find(c => String(c.id) === String(id));
+            if (!cal) return;
+            cal.enabled = !!on;
+            saveGoogleCalendars();
+            renderGoogleCalendarList();
+            fetchGoogleCalendarEvents();
         }
 
         // Repaint every surface that reads calendarEvents, regardless of which
