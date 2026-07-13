@@ -2362,7 +2362,16 @@
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
-        #desktopTabHub .briefing-weather {
+        #desktopTabHub .briefing-weather-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #desktopTabHub .briefing-weather-stack .briefing-weather-card + .briefing-weather-card {
+            padding-top: 1rem;
+            border-top: 1px solid var(--br-border);
+        }
+        #desktopTabHub .briefing-weather-card {
             display: grid;
             grid-template-columns: auto 1fr auto;
             gap: 1rem;
@@ -3538,7 +3547,7 @@
                     <div class="briefing-wxmk-row">
                         <div class="briefing-card">
                             <div class="briefing-section-mini">Weather</div>
-                            <div class="briefing-weather" id="briefingWeather">
+                            <div class="briefing-weather-stack" id="briefingWeather">
                                 <div class="briefing-empty">Set your location in Settings to see weather.</div>
                             </div>
                         </div>
@@ -3697,6 +3706,17 @@
                         </div>
                         <div id="desktopWeatherResults" style="margin-top:8px;"></div>
                         <div class="sync-status" id="desktopWeatherStatus"></div>
+                    </div>
+                    <div class="desktop-settings-card">
+                        <div class="setting-label">Cardiac News Weather</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Extra locations shown only on the Cardiac News page.</div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="newsWeatherCityInput" placeholder="Add a city…"
+                                   style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
+                            <button class="setting-button" onclick="searchNewsWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
+                        </div>
+                        <div id="newsWeatherResults" style="margin-top:8px;"></div>
+                        <div id="newsWeatherList" style="margin-top:8px;"></div>
                     </div>
                     <div class="desktop-settings-card">
                         <div class="setting-label">Data</div>
@@ -3868,6 +3888,13 @@
             loadWeatherCache();
             fetchWeather();
             setInterval(fetchWeather, 15 * 60 * 1000);
+
+            // News page multi-location weather (separate from the dashboard's
+            // single location). Same refresh cadence.
+            loadNewsWeatherCache();
+            renderNewsWeatherLocationList();
+            fetchNewsWeather();
+            setInterval(fetchNewsWeather, 15 * 60 * 1000);
 
             // Markets: load cache, fetch fresh data, refresh every 5 min.
             loadMarketCache();
@@ -6777,24 +6804,39 @@
             return n;
         }
 
-        // Weather bridge — reads the same `weatherCache` global that the
-        // Dashboard's weather widget populates from Open-Meteo (shape:
-        // { data: {current, daily}, ts, name }). If empty, shows the same
-        // empty state the dashboard shows.
+        // News weather supports MULTIPLE locations (the Dashboard widget stays
+        // single-location). Renders one card per configured News location from
+        // newsWeatherCache; if none are configured, falls back to the single
+        // dashboard weatherCache so the card isn't empty for existing users.
         function renderBriefingWeather() {
             const el = document.getElementById('briefingWeather');
             if (!el) return;
-            const w = (typeof weatherCache !== 'undefined') ? weatherCache : null;
-            if (!w || !w.data || !w.data.current) {
-                el.innerHTML = `<div class="briefing-empty">Set your location in Settings to see weather.</div>`;
-                return;
+
+            const locs = getNewsWeatherLocations();
+            let cards;
+            if (locs.length) {
+                cards = locs.map(loc => {
+                    const entry = (newsWeatherCache || []).find(e => e.id === loc.id);
+                    return entry && entry.data && entry.data.current
+                        ? briefingWeatherCardHtml(entry.data, entry.name || loc.name)
+                        : `<div class="briefing-weather-card"><div class="briefing-empty">Loading ${escapeHtml(loc.name)}…</div></div>`;
+                }).join('');
+            } else {
+                const w = (typeof weatherCache !== 'undefined') ? weatherCache : null;
+                if (!w || !w.data || !w.data.current) {
+                    el.innerHTML = `<div class="briefing-empty">Add locations under Settings → Cardiac News Weather.</div>`;
+                    return;
+                }
+                cards = briefingWeatherCardHtml(w.data, w.name || 'Location');
             }
-            const c = w.data.current;
-            const daily = w.data.daily;
+            el.innerHTML = cards;
+        }
+
+        // Renders one location's weather card from a raw Open-Meteo response.
+        function briefingWeatherCardHtml(data, name) {
+            const c = data.current;
+            const daily = data.daily;
             const info = weatherCodeToInfo(c.weather_code);
-            const icon = info.icon;
-            const desc = info.desc;
-            const loc = (w.name || 'Location').toString();
             const temp = Math.round(c.temperature_2m ?? 0);
             const hi = daily && daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[0]) : null;
             const lo = daily && daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[0]) : null;
@@ -6806,17 +6848,127 @@
             if (wind != null) details.push(`Wind<span>${wind} mph</span>`);
             if (humidity != null) details.push(`Humidity<span>${humidity}%</span>`);
 
-            el.innerHTML = `
-                <div class="briefing-weather-icon">${icon}</div>
-                <div>
-                    <div class="briefing-weather-loc">${escapeHtml(loc)}</div>
-                    <div class="briefing-weather-desc">${escapeHtml(desc)}</div>
-                </div>
-                <div class="briefing-weather-temp">${temp}<span class="briefing-weather-unit">°F</span></div>
-                <div class="briefing-weather-details">
-                    ${details.map(d => `<div class="briefing-weather-detail">${d}</div>`).join('')}
+            return `
+                <div class="briefing-weather-card">
+                    <div class="briefing-weather-icon">${info.icon}</div>
+                    <div>
+                        <div class="briefing-weather-loc">${escapeHtml(name)}</div>
+                        <div class="briefing-weather-desc">${escapeHtml(info.desc)}</div>
+                    </div>
+                    <div class="briefing-weather-temp">${temp}<span class="briefing-weather-unit">°F</span></div>
+                    <div class="briefing-weather-details">
+                        ${details.map(d => `<div class="briefing-weather-detail">${d}</div>`).join('')}
+                    </div>
                 </div>
             `;
+        }
+
+        // ── News multi-location weather (News page only) ────────
+        const NEWS_WEATHER_LOC_KEY = 'cardiacNewsWeatherLocations';
+        const NEWS_WEATHER_CACHE_KEY = 'cardiacNewsWeatherCache';
+        let newsWeatherLocations = null;
+        let newsWeatherCache = [];
+
+        function getNewsWeatherLocations() {
+            if (newsWeatherLocations) return newsWeatherLocations;
+            try {
+                const raw = localStorage.getItem(NEWS_WEATHER_LOC_KEY);
+                newsWeatherLocations = raw ? JSON.parse(raw) : [];
+            } catch { newsWeatherLocations = []; }
+            return newsWeatherLocations;
+        }
+
+        function saveNewsWeatherLocations() {
+            try { localStorage.setItem(NEWS_WEATHER_LOC_KEY, JSON.stringify(newsWeatherLocations || [])); } catch {}
+        }
+
+        function loadNewsWeatherCache() {
+            try {
+                const raw = localStorage.getItem(NEWS_WEATHER_CACHE_KEY);
+                if (raw) newsWeatherCache = JSON.parse(raw);
+            } catch { newsWeatherCache = []; }
+        }
+
+        function addNewsWeatherLocation(loc) {
+            getNewsWeatherLocations();
+            const id = 'nwl_' + Date.now();
+            newsWeatherLocations.push({ id, lat: loc.lat, lon: loc.lon, name: loc.name });
+            saveNewsWeatherLocations();
+            renderNewsWeatherLocationList();
+            fetchNewsWeather();
+        }
+
+        function removeNewsWeatherLocation(id) {
+            getNewsWeatherLocations();
+            newsWeatherLocations = newsWeatherLocations.filter(l => l.id !== id);
+            saveNewsWeatherLocations();
+            newsWeatherCache = (newsWeatherCache || []).filter(e => e.id !== id);
+            try { localStorage.setItem(NEWS_WEATHER_CACHE_KEY, JSON.stringify(newsWeatherCache)); } catch {}
+            renderNewsWeatherLocationList();
+            renderBriefingWeather();
+        }
+
+        async function fetchNewsWeather() {
+            const locs = getNewsWeatherLocations();
+            if (!locs.length) { renderBriefingWeather(); return; }
+            try {
+                const results = await Promise.all(locs.map(async loc => {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`
+                        + `&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`
+                        + `&daily=weather_code,temperature_2m_max,temperature_2m_min`
+                        + `&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    return { id: loc.id, name: loc.name, data, ts: Date.now() };
+                }));
+                newsWeatherCache = results;
+                try { localStorage.setItem(NEWS_WEATHER_CACHE_KEY, JSON.stringify(newsWeatherCache)); } catch {}
+                renderBriefingWeather();
+            } catch (err) {
+                console.error('News weather fetch error:', err);
+            }
+        }
+
+        async function searchNewsWeatherCity() {
+            const input = document.getElementById('newsWeatherCityInput');
+            const results = document.getElementById('newsWeatherResults');
+            if (!input || !results) return;
+            const q = input.value.trim();
+            if (!q) return;
+            results.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">Searching…</div>';
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=5&language=en`);
+                const data = await res.json();
+                if (!data.results || data.results.length === 0) {
+                    results.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No results found.</div>';
+                    return;
+                }
+                results.innerHTML = data.results.map(r => {
+                    const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
+                    const loc = { lat: r.latitude, lon: r.longitude, name: label };
+                    return `<button class="setting-button" style="margin-bottom:4px; text-align:left; font-size:13px;"
+                                onclick='addNewsWeatherLocation(${JSON.stringify(loc).replace(/'/g, "&#39;")}); document.getElementById("newsWeatherResults").innerHTML=""; document.getElementById("newsWeatherCityInput").value="";'>＋ ${escapeHtml(label)}</button>`;
+                }).join('');
+            } catch (err) {
+                results.innerHTML = `<div style="font-size:12px; color:var(--text-secondary);">Error: ${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function renderNewsWeatherLocationList() {
+            const el = document.getElementById('newsWeatherList');
+            if (!el) return;
+            const locs = getNewsWeatherLocations();
+            if (!locs.length) {
+                el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No extra locations yet.</div>';
+                return;
+            }
+            el.innerHTML = locs.map(l => `
+                <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--border-color);">
+                    <span style="flex:1; font-size:13px; color:var(--text-primary);">${escapeHtml(l.name)}</span>
+                    <button class="setting-button" style="width:auto; padding:4px 10px; font-size:12px;"
+                            onclick="removeNewsWeatherLocation('${l.id}')">Remove</button>
+                </div>
+            `).join('');
         }
 
         // Markets bridge — reads the same `marketCache` global that the
