@@ -3781,6 +3781,16 @@
                         <div id="newsWeatherList" style="margin-top:8px;"></div>
                     </div>
                     <div class="desktop-settings-card">
+                        <div class="setting-label">Market Tickers</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Comma-separated symbols shown on the Dashboard &amp; News (e.g. VTI, VOO, AAPL, ^GSPC). Leave blank for the default Vanguard ETFs.</div>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="marketSymbolsInput" placeholder="VTI, VOO, VXUS, BND"
+                                   style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
+                            <button class="setting-button" onclick="saveMarketSymbols()" style="width:auto; padding:10px 16px;">Save</button>
+                        </div>
+                        <div class="sync-status" id="marketSymbolsStatus"></div>
+                    </div>
+                    <div class="desktop-settings-card">
                         <div class="setting-label">Data</div>
                         <button class="setting-button" onclick="exportTasks()">Export Tasks</button>
                     </div>
@@ -3960,6 +3970,7 @@
 
             // Markets: load cache, fetch fresh data, refresh every 5 min.
             loadMarketCache();
+            initMarketSymbolsInput();
             fetchMarketQuotes();
             setInterval(fetchMarketQuotes, MARKET_REFRESH_MS);
         }
@@ -4231,8 +4242,37 @@
 
         // ── Market widget (S&P, Dow, Nasdaq) ────────────────────
         const MARKET_CACHE_KEY = 'cardiacMarketCache';
+        const MARKET_SYMBOLS_KEY = 'cardiacMarketSymbols';
         const MARKET_REFRESH_MS = 5 * 60 * 1000; // 5 min
         let marketCache = null;
+
+        // Custom ticker list (comma-separated string) or '' to use the server
+        // default (Vanguard ETFs).
+        function getMarketSymbols() {
+            try { return localStorage.getItem(MARKET_SYMBOLS_KEY) || ''; } catch { return ''; }
+        }
+
+        function saveMarketSymbols() {
+            const input = document.getElementById('marketSymbolsInput');
+            const status = document.getElementById('marketSymbolsStatus');
+            if (!input) return;
+            // Normalize: uppercase, strip junk, comma-join.
+            const cleaned = input.value.split(',')
+                .map(s => s.trim().toUpperCase())
+                .filter(s => /^[A-Z0-9.^=-]{1,12}$/.test(s));
+            const value = cleaned.join(', ');
+            try { localStorage.setItem(MARKET_SYMBOLS_KEY, value); } catch {}
+            input.value = value;
+            if (status) status.textContent = value ? `Tracking: ${value}` : 'Using default Vanguard ETFs';
+            marketCache = null; // force a fresh render with the new set
+            fetchMarketQuotes();
+        }
+
+        // Populate the Settings input from storage (call when the app initializes).
+        function initMarketSymbolsInput() {
+            const input = document.getElementById('marketSymbolsInput');
+            if (input) input.value = getMarketSymbols();
+        }
 
         function loadMarketCache() {
             try {
@@ -4243,7 +4283,11 @@
 
         async function fetchMarketQuotes() {
             try {
-                const res = await fetch('/api/market/quotes');
+                const custom = getMarketSymbols().trim();
+                const url = custom
+                    ? `/api/market/quotes?symbols=${encodeURIComponent(custom)}`
+                    : '/api/market/quotes';
+                const res = await fetch(url);
                 if (!res.ok) throw new Error(`${res.status}`);
                 const data = await res.json();
                 marketCache = { quotes: data.quotes, ts: Date.now() };
