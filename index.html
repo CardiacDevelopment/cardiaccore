@@ -2165,8 +2165,55 @@
             display: inline-block;
         }
 
+        /* Centered Today column + drag-to-act buckets. */
+        .desktop-today-wrap {
+            max-width: 720px;
+            margin: 0 auto;
+        }
         .desktop-today-panel {
-            max-width: 640px;
+            width: 100%;
+        }
+        .desktop-today-buckets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 24px;
+        }
+        .desktop-today-bucket {
+            border: 2px dashed var(--border-color);
+            border-radius: 14px;
+            padding: 22px 14px;
+            text-align: center;
+            transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+        }
+        .desktop-today-bucket .bucket-icon { font-size: 26px; line-height: 1; }
+        .desktop-today-bucket .bucket-label {
+            font-weight: 700;
+            font-size: 14px;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .desktop-today-bucket .bucket-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+        .desktop-today-bucket.drag-over { transform: translateY(-2px); }
+        .desktop-today-bucket.unschedule.drag-over,
+        .desktop-today-bucket.tomorrow.drag-over {
+            border-color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.12);
+        }
+        .desktop-today-bucket.delete.drag-over {
+            border-color: #E24B4A;
+            background: rgba(226, 75, 74, 0.14);
+        }
+        .desktop-today-buckets-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 12px;
         }
 
         /* ══════════════════════════════════════════════════════
@@ -3654,22 +3701,51 @@
             </div>
 
             <div class="desktop-tab" id="desktopTabToday">
-                <div class="desktop-today-header">
-                    <button class="desktop-today-nav" onclick="desktopChangeToday(-1)" aria-label="Previous day">←</button>
-                    <div class="desktop-today-titles">
-                        <div class="desktop-dash-day" id="desktopTodayDay">&nbsp;</div>
-                        <div class="desktop-dash-date" id="desktopTodayDate">&nbsp;</div>
+                <div class="desktop-today-wrap">
+                    <div class="desktop-today-header">
+                        <button class="desktop-today-nav" onclick="desktopChangeToday(-1)" aria-label="Previous day">←</button>
+                        <div class="desktop-today-titles">
+                            <div class="desktop-dash-day" id="desktopTodayDay">&nbsp;</div>
+                            <div class="desktop-dash-date" id="desktopTodayDate">&nbsp;</div>
+                        </div>
+                        <button class="desktop-today-nav" onclick="desktopChangeToday(1)" aria-label="Next day">→</button>
+                        <button class="desktop-today-return" id="desktopTodayReturn" onclick="desktopChangeToday(0, true)">Back to today</button>
                     </div>
-                    <button class="desktop-today-nav" onclick="desktopChangeToday(1)" aria-label="Next day">→</button>
-                    <button class="desktop-today-return" id="desktopTodayReturn" onclick="desktopChangeToday(0, true)">Back to today</button>
-                </div>
-                <div class="desktop-widget desktop-today-panel">
-                    <div class="desktop-widget-title">
-                        <span>Tasks</span>
-                        <span class="desktop-widget-count" id="desktopTodayTabCount"></span>
+                    <div class="desktop-widget desktop-today-panel">
+                        <div class="desktop-widget-title">
+                            <span>Tasks</span>
+                            <span class="desktop-widget-count" id="desktopTodayTabCount"></span>
+                        </div>
+                        <div class="desktop-widget-body" id="desktopTodayTabList"></div>
+                        <input type="text" class="desktop-quick-add" id="desktopTodayTabAdd" placeholder="Add a task for this day…" />
                     </div>
-                    <div class="desktop-widget-body" id="desktopTodayTabList"></div>
-                    <input type="text" class="desktop-quick-add" id="desktopTodayTabAdd" placeholder="Add a task for this day…" />
+                    <div class="desktop-today-buckets">
+                        <div class="desktop-today-bucket unschedule"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleUnscheduleDrop(event)">
+                            <div class="bucket-icon">↩</div>
+                            <div class="bucket-label">Unschedule</div>
+                            <div class="bucket-hint">Back to its board</div>
+                        </div>
+                        <div class="desktop-today-bucket tomorrow"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleTomorrowDrop(event)">
+                            <div class="bucket-icon">→</div>
+                            <div class="bucket-label">Tomorrow</div>
+                            <div class="bucket-hint">Move to the next day</div>
+                        </div>
+                        <div class="desktop-today-bucket delete"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleDeleteDrop(event)">
+                            <div class="bucket-icon">🗑</div>
+                            <div class="bucket-label">Delete</div>
+                            <div class="bucket-hint">Remove the task</div>
+                        </div>
+                    </div>
+                    <div class="desktop-today-buckets-hint">Drag a task onto a bucket</div>
                 </div>
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
@@ -4923,6 +4999,23 @@
             e.currentTarget.classList.remove('drag-over');
             const taskId = draggedTaskId(e);
             if (taskId) unscheduleTask(taskId);
+        }
+
+        // Today-view "Tomorrow" bucket: move the task to the day after the one
+        // currently being viewed.
+        function handleTomorrowDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = draggedTaskId(e);
+            if (taskId) placeTaskOnDate(taskId, ymdForOffset(desktopTodayOffset + 1));
+        }
+
+        // Today-view "Delete" bucket: delete the task (with confirm).
+        function handleDeleteDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = draggedTaskId(e);
+            if (taskId) deleteTaskById(taskId, { confirmFirst: true });
         }
 
         // Click to assign: click a board task to arm it, then click a cell
