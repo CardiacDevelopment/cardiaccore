@@ -2393,9 +2393,10 @@
             border-color: var(--br-green-100);
         }
         #desktopTabHub .briefing-networth-value {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-weight: 900;
-            font-size: 2.6rem;
+            font-family: 'Barlow', sans-serif;
+            font-weight: 600;
+            font-size: 2.2rem;
+            letter-spacing: -0.01em;
             line-height: 1;
             color: var(--br-green-100);
         }
@@ -4064,9 +4065,12 @@
             const doneCount = due.filter(h => habitProgressFraction(h) >= 1).length;
             if (countEl) countEl.textContent = `${doneCount}/${due.length}`;
             const pct = Math.round(dailyProgress() * 100);
+            // Center the whole "NN%" block in this small ring (dx=0) so it reads
+            // as centered, rather than centering just the number (which leaves
+            // the % hanging right and looks off at this size).
             const ring = habitRingSVG(dailyProgress(), 84, 9, 'var(--accent-green)',
-                `<tspan class="habit-big-pct" style="font-size:26px">${pct}</tspan>`
-                + `<tspan class="habit-big-unit" style="font-size:12px">%</tspan>`, 5);
+                `<tspan class="habit-big-pct" style="font-size:24px">${pct}</tspan>`
+                + `<tspan class="habit-big-unit" style="font-size:12px" dx="1">%</tspan>`, 0);
             const rows = due.slice(0, 6).map(h => {
                 const done = habitProgressFraction(h) >= 1;
                 return `<div class="dash-habit-row ${done ? 'done' : ''}">
