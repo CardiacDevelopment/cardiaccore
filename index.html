@@ -2362,6 +2362,56 @@
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
         }
+        #desktopTabHub .briefing-networth {
+            background: var(--br-green-900, rgba(99,153,34,0.08));
+            border: 1px solid var(--br-border);
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        #desktopTabHub .briefing-networth-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.35rem;
+        }
+        #desktopTabHub .briefing-networth-toggle {
+            background: none;
+            border: 1px solid var(--br-border);
+            color: var(--br-text-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 3px 12px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        #desktopTabHub .briefing-networth-toggle:hover {
+            color: var(--br-green-100);
+            border-color: var(--br-green-100);
+        }
+        #desktopTabHub .briefing-networth-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-size: 2.6rem;
+            line-height: 1;
+            color: var(--br-green-100);
+        }
+        #desktopTabHub .briefing-networth-value.hidden-amount {
+            letter-spacing: 0.15em;
+            color: var(--br-text-dim);
+        }
+        #desktopTabHub .briefing-networth-sub {
+            font-size: 0.72rem;
+            color: var(--br-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            margin-top: 0.4rem;
+        }
+
         #desktopTabHub .briefing-weather-stack {
             display: flex;
             flex-direction: column;
@@ -3541,6 +3591,17 @@
                             <div class="briefing-hero-tagline">Everything you need to start your day, in one screen.</div>
                         </div>
                         <div class="briefing-hero-stats" id="briefingHeroStats"></div>
+                    </div>
+
+                    <!-- Net worth (Tiller) -->
+                    <div class="briefing-networth" id="briefingNetWorthCard">
+                        <div class="briefing-networth-head">
+                            <span class="briefing-section-mini">Net Worth</span>
+                            <button class="briefing-networth-toggle" id="tillerToggle"
+                                    onclick="toggleTillerHidden()">Hide</button>
+                        </div>
+                        <div class="briefing-networth-value" id="briefingNetWorth">—</div>
+                        <div class="briefing-networth-sub" id="briefingNetWorthSub"></div>
                     </div>
 
                     <!-- Weather + Markets row -->
@@ -6718,6 +6779,7 @@
             renderBriefingHero();
             renderBriefingWeather();
             renderBriefingMarkets();
+            renderBriefingNetWorth();
             renderBriefingSources();
 
             if (!briefingState.initialized) {
@@ -6726,11 +6788,14 @@
                 // Kick off async loaders. Each renders itself on completion.
                 loadBriefingNewsletters();
                 loadBriefingSports();
+                loadBriefingTiller();
 
                 // Keep them fresh while the app is open. Times are conservative
                 // — the CDN cache on /api/gmail/newsletters already smooths spikes.
                 briefingState.newsRefreshTimer = setInterval(loadBriefingNewsletters, BRIEFING_NEWS_TTL_MS);
                 briefingState.sportsRefreshTimer = setInterval(loadBriefingSports, BRIEFING_SPORTS_TTL_MS);
+                // Net worth changes at most once a day; refresh hourly.
+                setInterval(loadBriefingTiller, 60 * 60 * 1000);
 
                 // Wire collapsible sections. Uses the same pattern the mobile
                 // board view uses, scoped to this tab so it can't leak.
@@ -6969,6 +7034,63 @@
                             onclick="removeNewsWeatherLocation('${l.id}')">Remove</button>
                 </div>
             `).join('');
+        }
+
+        // ── Net worth (Tiller "Hello, Money" email) ────────────
+        const TILLER_HIDDEN_KEY = 'cardiacTillerHidden';
+        let tillerData = null;
+
+        function isTillerHidden() {
+            return localStorage.getItem(TILLER_HIDDEN_KEY) === '1';
+        }
+
+        function toggleTillerHidden() {
+            localStorage.setItem(TILLER_HIDDEN_KEY, isTillerHidden() ? '0' : '1');
+            renderBriefingNetWorth();
+        }
+
+        async function loadBriefingTiller() {
+            try {
+                const res = await fetch('/api/gmail/tiller', { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                tillerData = await res.json();
+            } catch (err) {
+                console.error('Tiller fetch failed:', err);
+                if (!tillerData) tillerData = { netWorth: null, error: err.message };
+            }
+            renderBriefingNetWorth();
+        }
+
+        function renderBriefingNetWorth() {
+            const valEl = document.getElementById('briefingNetWorth');
+            const subEl = document.getElementById('briefingNetWorthSub');
+            const toggle = document.getElementById('tillerToggle');
+            if (!valEl) return;
+
+            const hidden = isTillerHidden();
+            if (toggle) toggle.textContent = hidden ? 'Show' : 'Hide';
+
+            const nw = tillerData && typeof tillerData.netWorth === 'number' ? tillerData.netWorth : null;
+
+            if (hidden) {
+                valEl.textContent = '••••••••';
+                valEl.classList.add('hidden-amount');
+                if (subEl) subEl.textContent = nw != null ? 'Hidden' : '';
+                return;
+            }
+            valEl.classList.remove('hidden-amount');
+
+            if (nw == null) {
+                valEl.textContent = '—';
+                if (subEl) subEl.textContent = (tillerData && tillerData.error) ? tillerData.error : 'Loading…';
+                return;
+            }
+            valEl.textContent = '$' + nw.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (subEl) {
+                const asOf = tillerData.asOf ? new Date(tillerData.asOf) : null;
+                const when = asOf ? asOf.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+                subEl.textContent = when ? `As of ${when} · from Tiller` : 'From Tiller';
+            }
         }
 
         // Markets bridge — reads the same `marketCache` global that the
