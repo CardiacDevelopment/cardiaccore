@@ -72,6 +72,16 @@
             align-items: center;
         }
 
+        /* Board (Someday) view: the date/status header isn't tied to a day,
+           so hide the text and let the action buttons sit on their own. */
+        .header.board-active .date-display,
+        .header.board-active .status-indicator {
+            display: none;
+        }
+        .header.board-active .header-top {
+            justify-content: flex-end;
+        }
+
         /* Large date display, TeuxDeux style */
         .date-display {
             font-size: 26px;
@@ -3400,18 +3410,11 @@
         </div>
 
         <div class="setting-item">
-            <div class="setting-label">Notion Integration</div>
-            <button class="setting-button accent" id="notionAuthBtn" onclick="checkNotionStatus()">
-                Check connection
+            <div class="setting-label">Notion</div>
+            <button class="setting-button accent" onclick="syncAndReconcile()" id="syncBtn">
+                Sync Now
             </button>
             <div class="sync-status" id="notionStatus">Checking…</div>
-        </div>
-
-        <div class="setting-item">
-            <div class="setting-label">Sync</div>
-            <button class="setting-button" onclick="syncAndReconcile()" id="syncBtn">
-                Pull from Notion
-            </button>
         </div>
 
         <div class="setting-item">
@@ -3811,14 +3814,11 @@
                 <div class="desktop-tab-title">Settings</div>
                 <div class="desktop-settings-grid">
                     <div class="desktop-settings-card">
-                        <div class="setting-label">Notion Integration</div>
-                        <button class="setting-button accent" id="desktopNotionAuthBtn" onclick="desktopCheckNotionStatus()">
-                            Check connection
+                        <div class="setting-label">Notion</div>
+                        <button class="setting-button accent" onclick="desktopSyncFromNotion()" id="desktopSyncBtn">
+                            Sync Now
                         </button>
                         <div class="sync-status" id="desktopNotionStatus">Checking…</div>
-                        <button class="setting-button" onclick="desktopSyncFromNotion()" id="desktopSyncBtn" style="margin-top:12px;">
-                            Pull from Notion
-                        </button>
                     </div>
                     <div class="desktop-settings-card">
                         <div class="setting-label">Calendars</div>
@@ -4135,12 +4135,17 @@
                 btn.textContent = 'Syncing...';
             }
             try {
-                await syncFromNotion();
+                // (Re)connect if needed — checkNotionStatus auto-syncs on success.
+                if (!notionConnected) {
+                    await checkNotionStatus();
+                } else {
+                    await syncFromNotion();
+                }
                 reconcileDatesFromOffsets();
             } finally {
                 if (btn) {
                     btn.disabled = false;
-                    btn.textContent = 'Pull from Notion';
+                    btn.textContent = 'Sync Now';
                 }
             }
         }
@@ -4780,6 +4785,13 @@
             renderDesktopWeek();
             renderDesktopToday();
             renderDesktopMonth();
+            // If the month day-detail popup is open, refresh it too so an action
+            // taken inside it (e.g. "↩ Board") updates immediately instead of
+            // leaving the moved task visible.
+            const overlay = document.getElementById('monthDetailOverlay');
+            if (overlay && overlay.classList.contains('visible') && monthDetailYmd) {
+                renderMonthDetailBody(monthDetailYmd);
+            }
         }
 
         // ── Desktop month grid ──────────────────────────────────
@@ -5537,7 +5549,7 @@
             } finally {
                 if (syncBtn) {
                     syncBtn.disabled = false;
-                    syncBtn.textContent = 'Pull from Notion';
+                    syncBtn.textContent = 'Sync Now';
                 }
             }
         }
@@ -5654,6 +5666,11 @@
             // Show/hide day strip on the bottom bar (hide it in board view)
             const strip = document.getElementById('dayStrip');
             if (strip) strip.style.display = (view === 'tasks') ? 'none' : '';
+
+            // The big date/status header is day-specific, so hide it on the
+            // board (Someday) view — it's not tied to any date.
+            const header = document.querySelector('.header');
+            if (header) header.classList.toggle('board-active', view === 'tasks');
 
             if (view === 'tasks') {
                 mobileView.classList.add('hidden');
@@ -6196,7 +6213,13 @@
         // Manual sync entry point: syncs, then locks dates to the fresh
         // offsets. syncFromNotion itself stays byte identical.
         async function syncAndReconcile(opts) {
-            await syncFromNotion(opts);
+            // A single "Sync Now" button: (re)establish the connection if needed
+            // — checkNotionStatus auto-syncs on success — otherwise just pull.
+            if (!notionConnected) {
+                await checkNotionStatus();
+            } else {
+                await syncFromNotion(opts);
+            }
             reconcileDatesFromOffsets();
         }
 
@@ -7328,7 +7351,8 @@
         let tillerData = null;
 
         function isTillerHidden() {
-            return localStorage.getItem(TILLER_HIDDEN_KEY) === '1';
+            // Hidden by default (privacy); only an explicit '0' reveals it.
+            return localStorage.getItem(TILLER_HIDDEN_KEY) !== '0';
         }
 
         function toggleTillerHidden() {
