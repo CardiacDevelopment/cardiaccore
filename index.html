@@ -1673,6 +1673,14 @@
             border-radius: 6px;
         }
 
+        /* Compact rows for the fixed Dashboard indices widget. */
+        .market-row.compact {
+            padding: 7px 12px;
+        }
+        .market-row.compact .market-name { font-size: 13px; }
+        .market-row.compact .market-price { font-size: 13px; }
+        .market-row.compact .market-change { font-size: 12px; }
+
         .market-name {
             font-size: 13px;
             font-weight: 600;
@@ -3660,7 +3668,7 @@
                             </div>
                         </div>
                         <div class="briefing-card">
-                            <div class="briefing-section-mini">Markets</div>
+                            <div class="briefing-section-mini">Portfolio</div>
                             <div class="briefing-market-grid" id="briefingMarkets">
                                 <div class="briefing-empty">Loading…</div>
                             </div>
@@ -3864,14 +3872,15 @@
                         <div id="newsWeatherList" style="margin-top:8px;"></div>
                     </div>
                     <div class="desktop-settings-card">
-                        <div class="setting-label">Market Tickers</div>
-                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Comma-separated symbols shown on the Dashboard &amp; News (e.g. VTI, VOO, AAPL, ^GSPC). Leave blank for the default Vanguard ETFs.</div>
+                        <div class="setting-label">Portfolio Tickers</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Shown as your Portfolio on the Cardiac News page. Add tickers one at a time (e.g. VTI, AAPL, ^GSPC). The Dashboard always shows the S&amp;P 500, Dow &amp; Nasdaq.</div>
                         <div style="display:flex; gap:8px;">
-                            <input type="text" id="marketSymbolsInput" placeholder="VTI, VOO, VXUS, BND"
+                            <input type="text" id="portfolioTickerInput" placeholder="Add a ticker…"
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault();addPortfolioTicker();}"
                                    style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
-                            <button class="setting-button" onclick="saveMarketSymbols()" style="width:auto; padding:10px 16px;">Save</button>
+                            <button class="setting-button" onclick="addPortfolioTicker()" style="width:auto; padding:10px 16px;">Add</button>
                         </div>
-                        <div class="sync-status" id="marketSymbolsStatus"></div>
+                        <div id="portfolioTickerList"></div>
                     </div>
                     <div class="desktop-settings-card">
                         <div class="setting-label">Data</div>
@@ -4079,11 +4088,15 @@
             fetchNewsWeather();
             setInterval(fetchNewsWeather, 15 * 60 * 1000);
 
-            // Markets: load cache, fetch fresh data, refresh every 5 min.
-            loadMarketCache();
-            initMarketSymbolsInput();
-            fetchMarketQuotes();
-            setInterval(fetchMarketQuotes, MARKET_REFRESH_MS);
+            // Dashboard indices (fixed S&P/Dow/Nasdaq) + News Portfolio
+            // (user tickers) — separate sources, both refresh every 5 min.
+            loadDashMarketCache();
+            fetchDashMarkets();
+            setInterval(fetchDashMarkets, MARKET_REFRESH_MS);
+            loadPortfolioCache();
+            renderPortfolioTickerList();
+            fetchPortfolio();
+            setInterval(fetchPortfolio, MARKET_REFRESH_MS);
         }
 
         function switchDesktopTab(tab) {
@@ -4164,7 +4177,7 @@
             // and only re-render from cache here so they do not fire new
             // network requests on every task change.
             renderWeatherFromCache();
-            renderMarketsFromCache();
+            renderDashMarkets();
             renderDesktopHabitsWidget();
         }
 
@@ -4356,102 +4369,149 @@
             if (typeof renderBriefingWeather === 'function') renderBriefingWeather();
         }
 
-        // ── Market widget (S&P, Dow, Nasdaq) ────────────────────
-        const MARKET_CACHE_KEY = 'cardiacMarketCache';
-        const MARKET_SYMBOLS_KEY = 'cardiacMarketSymbols';
         const MARKET_REFRESH_MS = 5 * 60 * 1000; // 5 min
-        let marketCache = null;
 
-        // Custom ticker list (comma-separated string) or '' to use the server
-        // default (Vanguard ETFs).
-        function getMarketSymbols() {
-            try { return localStorage.getItem(MARKET_SYMBOLS_KEY) || ''; } catch { return ''; }
-        }
+        // ── Dashboard market widget: ALWAYS the three US indices ────
+        // Fixed set, compact display. Not user-configurable.
+        const DASH_INDEX_SYMBOLS = '^GSPC,^DJI,^IXIC';
+        const DASH_INDEX_NAMES = { '^GSPC': 'S&P 500', '^DJI': 'Dow', '^IXIC': 'Nasdaq' };
+        const DASH_MARKET_CACHE_KEY = 'cardiacDashMarketCache';
+        let dashMarketCache = null;
 
-        function saveMarketSymbols() {
-            const input = document.getElementById('marketSymbolsInput');
-            const status = document.getElementById('marketSymbolsStatus');
-            if (!input) return;
-            // Normalize: uppercase, strip junk, comma-join.
-            const cleaned = input.value.split(',')
-                .map(s => s.trim().toUpperCase())
-                .filter(s => /^[A-Z0-9.^=-]{1,12}$/.test(s));
-            const value = cleaned.join(', ');
-            try { localStorage.setItem(MARKET_SYMBOLS_KEY, value); } catch {}
-            input.value = value;
-            if (status) status.textContent = value ? `Tracking: ${value}` : 'Using default Vanguard ETFs';
-            marketCache = null; // force a fresh render with the new set
-            fetchMarketQuotes();
-        }
-
-        // Populate the Settings input from storage (call when the app initializes).
-        function initMarketSymbolsInput() {
-            const input = document.getElementById('marketSymbolsInput');
-            if (input) input.value = getMarketSymbols();
-        }
-
-        function loadMarketCache() {
+        function loadDashMarketCache() {
             try {
-                const raw = localStorage.getItem(MARKET_CACHE_KEY);
-                if (raw) marketCache = JSON.parse(raw);
+                const raw = localStorage.getItem(DASH_MARKET_CACHE_KEY);
+                if (raw) dashMarketCache = JSON.parse(raw);
             } catch {}
         }
 
-        async function fetchMarketQuotes() {
+        async function fetchDashMarkets() {
             try {
-                const custom = getMarketSymbols().trim();
-                const url = custom
-                    ? `/api/market/quotes?symbols=${encodeURIComponent(custom)}`
-                    : '/api/market/quotes';
-                const res = await fetch(url);
+                const res = await fetch(`/api/market/quotes?symbols=${encodeURIComponent(DASH_INDEX_SYMBOLS)}`);
                 if (!res.ok) throw new Error(`${res.status}`);
                 const data = await res.json();
-                marketCache = { quotes: data.quotes, ts: Date.now() };
-                try { localStorage.setItem(MARKET_CACHE_KEY, JSON.stringify(marketCache)); } catch {}
-                renderMarketsFromCache();
+                dashMarketCache = { quotes: data.quotes, ts: Date.now() };
+                try { localStorage.setItem(DASH_MARKET_CACHE_KEY, JSON.stringify(dashMarketCache)); } catch {}
             } catch (err) {
-                console.error('Market fetch error:', err);
-                // Show stale cache or error
-                renderMarketsFromCache();
+                console.error('Dashboard market fetch error:', err);
             }
+            renderDashMarkets();
         }
 
-        function renderMarketsFromCache() {
+        function renderDashMarkets() {
             const el = document.getElementById('desktopMarketsWidget');
             if (!el) return;
-
-            if (!marketCache || !marketCache.quotes) {
-                el.innerHTML = '<div class="desktop-widget-empty">Loading market data…</div>';
+            if (!dashMarketCache || !dashMarketCache.quotes) {
+                el.innerHTML = '<div class="desktop-widget-empty">Loading…</div>';
                 return;
             }
-
-            const q = marketCache.quotes;
-            el.innerHTML = q.map(item => {
-                const changeClass = item.change >= 0 ? 'up' : 'down';
-                const arrow = item.change >= 0 ? '▲' : '▼';
-                const changeStr = `${arrow} ${Math.abs(item.change).toFixed(2)} (${Math.abs(item.changePct).toFixed(2)}%)`;
+            el.innerHTML = dashMarketCache.quotes.map(item => {
+                const name = DASH_INDEX_NAMES[item.symbol] || item.name || item.symbol;
+                const up = (item.change || 0) >= 0;
+                const price = item.price == null ? '—'
+                    : Number(item.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const chg = item.price == null ? '' : `${up ? '▲' : '▼'} ${Math.abs(item.changePct).toFixed(2)}%`;
                 return `
-                    <div class="market-row">
-                        <div>
-                            <div class="market-name">${escapeHtml(item.name)}</div>
-                            <div class="market-label">${escapeHtml(item.symbol)}</div>
+                    <div class="market-row compact">
+                        <div class="market-name">${escapeHtml(name)}</div>
+                        <div style="text-align:right;">
+                            <span class="market-price">${price}</span>
+                            <span class="market-change ${up ? 'up' : 'down'}" style="margin-left:8px;">${chg}</span>
                         </div>
-                        <div>
-                            <div class="market-price">${Number(item.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                            <div class="market-change ${changeClass}">${changeStr}</div>
-                        </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
+        }
 
-            const age = Date.now() - (marketCache.ts || 0);
-            const mins = Math.round(age / 60000);
-            const label = mins < 1 ? 'Just now' : `${mins}m ago`;
-            el.innerHTML += `<div style="font-size:10px; color:var(--text-secondary); margin-top:6px; text-align:right;">Updated ${label}</div>`;
+        // ── News "Portfolio" widget: user-chosen tickers ───────────
+        const PORTFOLIO_KEY = 'cardiacPortfolioTickers';
+        const PORTFOLIO_CACHE_KEY = 'cardiacPortfolioCache';
+        let portfolioTickers = null;
+        let portfolioCache = null;
 
-            // Keep the Cardiac News page's markets card in sync with the same
-            // cache — it renders lazily on tab open, so repaint it here too.
-            if (typeof renderBriefingMarkets === 'function') renderBriefingMarkets();
+        function getPortfolioTickers() {
+            if (portfolioTickers) return portfolioTickers;
+            try {
+                const raw = localStorage.getItem(PORTFOLIO_KEY);
+                if (raw != null) {
+                    portfolioTickers = JSON.parse(raw);
+                } else {
+                    // One-time migration from the old comma-string setting.
+                    const legacy = localStorage.getItem('cardiacMarketSymbols');
+                    portfolioTickers = legacy
+                        ? legacy.split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+                        : ['VTI', 'VOO', 'VXUS', 'BND'];
+                }
+            } catch { portfolioTickers = ['VTI', 'VOO', 'VXUS', 'BND']; }
+            if (!Array.isArray(portfolioTickers)) portfolioTickers = ['VTI', 'VOO', 'VXUS', 'BND'];
+            return portfolioTickers;
+        }
+
+        function savePortfolioTickers() {
+            try { localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(portfolioTickers || [])); } catch {}
+        }
+
+        function addPortfolioTicker() {
+            const input = document.getElementById('portfolioTickerInput');
+            if (!input) return;
+            const sym = input.value.trim().toUpperCase();
+            if (!/^[A-Z0-9.^=-]{1,12}$/.test(sym)) { input.value = ''; return; }
+            getPortfolioTickers();
+            if (!portfolioTickers.includes(sym)) portfolioTickers.push(sym);
+            savePortfolioTickers();
+            input.value = '';
+            renderPortfolioTickerList();
+            portfolioCache = null;
+            fetchPortfolio();
+        }
+
+        function removePortfolioTicker(sym) {
+            getPortfolioTickers();
+            portfolioTickers = portfolioTickers.filter(t => t !== sym);
+            savePortfolioTickers();
+            renderPortfolioTickerList();
+            portfolioCache = null;
+            fetchPortfolio();
+        }
+
+        function renderPortfolioTickerList() {
+            const el = document.getElementById('portfolioTickerList');
+            if (!el) return;
+            const t = getPortfolioTickers();
+            if (!t.length) {
+                el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary); margin-top:8px;">No tickers yet.</div>';
+                return;
+            }
+            el.innerHTML = '<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;">' + t.map(sym => `
+                <span style="display:inline-flex; align-items:center; gap:6px; background:var(--task-bg); border:1px solid var(--border-color); border-radius:50px; padding:4px 6px 4px 12px; font-size:13px;">
+                    ${escapeHtml(sym)}
+                    <button onclick="removePortfolioTicker('${escapeHtml(sym)}')" title="Remove" style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:15px; line-height:1; padding:0 2px;">×</button>
+                </span>`).join('') + '</div>';
+        }
+
+        function loadPortfolioCache() {
+            try {
+                const raw = localStorage.getItem(PORTFOLIO_CACHE_KEY);
+                if (raw) portfolioCache = JSON.parse(raw);
+            } catch {}
+        }
+
+        async function fetchPortfolio() {
+            const tickers = getPortfolioTickers();
+            if (!tickers.length) {
+                portfolioCache = { quotes: [], ts: Date.now() };
+                renderBriefingPortfolio();
+                return;
+            }
+            try {
+                const res = await fetch(`/api/market/quotes?symbols=${encodeURIComponent(tickers.join(','))}`);
+                if (!res.ok) throw new Error(`${res.status}`);
+                const data = await res.json();
+                portfolioCache = { quotes: data.quotes, ts: Date.now() };
+                try { localStorage.setItem(PORTFOLIO_CACHE_KEY, JSON.stringify(portfolioCache)); } catch {}
+            } catch (err) {
+                console.error('Portfolio fetch error:', err);
+            }
+            renderBriefingPortfolio();
         }
 
 
@@ -7088,7 +7148,7 @@
         function renderBriefing() {
             renderBriefingHero();
             renderBriefingWeather();
-            renderBriefingMarkets();
+            renderBriefingPortfolio();
             renderBriefingNetWorth();
             renderBriefingSources();
 
@@ -7337,13 +7397,33 @@
                 el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No extra locations yet.</div>';
                 return;
             }
-            el.innerHTML = locs.map(l => `
-                <div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--border-color);">
+            el.innerHTML = locs.map((l, i) => `
+                <div style="display:flex; align-items:center; gap:6px; padding:6px 0; border-top:1px solid var(--border-color);">
+                    <button class="setting-button" title="Move up" ${i === 0 ? 'disabled' : ''}
+                            style="width:auto; padding:4px 9px; font-size:13px; opacity:${i === 0 ? '0.3' : '1'};"
+                            onclick="moveNewsWeatherLocation('${l.id}', -1)">↑</button>
+                    <button class="setting-button" title="Move down" ${i === locs.length - 1 ? 'disabled' : ''}
+                            style="width:auto; padding:4px 9px; font-size:13px; opacity:${i === locs.length - 1 ? '0.3' : '1'};"
+                            onclick="moveNewsWeatherLocation('${l.id}', 1)">↓</button>
                     <span style="flex:1; font-size:13px; color:var(--text-primary);">${escapeHtml(l.name)}</span>
                     <button class="setting-button" style="width:auto; padding:4px 10px; font-size:12px;"
                             onclick="removeNewsWeatherLocation('${l.id}')">Remove</button>
                 </div>
             `).join('');
+        }
+
+        // Reorder a News-page weather location. The News cards render in the
+        // saved order, so this changes their display order.
+        function moveNewsWeatherLocation(id, dir) {
+            getNewsWeatherLocations();
+            const i = newsWeatherLocations.findIndex(l => l.id === id);
+            const j = i + dir;
+            if (i < 0 || j < 0 || j >= newsWeatherLocations.length) return;
+            const [item] = newsWeatherLocations.splice(i, 1);
+            newsWeatherLocations.splice(j, 0, item);
+            saveNewsWeatherLocations();
+            renderNewsWeatherLocationList();
+            renderBriefingWeather();
         }
 
         // ── Net worth (Tiller "Hello, Money" email) ────────────
@@ -7404,27 +7484,38 @@
             }
         }
 
-        // Markets bridge — reads the same `marketCache` global that the
-        // Dashboard's markets widget populates from /api/market/quotes
-        // (shape: { quotes: [...], ts }).
-        function renderBriefingMarkets() {
+        // Portfolio widget (News page) — reads the user's custom tickers from
+        // portfolioCache. A ticker that failed to price (invalid symbol / no
+        // data) shows a small ⚠ flag on its row.
+        function renderBriefingPortfolio() {
             const el = document.getElementById('briefingMarkets');
             if (!el) return;
-            const quotes = (typeof marketCache !== 'undefined' && marketCache && Array.isArray(marketCache.quotes))
-                ? marketCache.quotes : null;
-            if (!Array.isArray(quotes) || quotes.length === 0) {
+            const quotes = (portfolioCache && Array.isArray(portfolioCache.quotes)) ? portfolioCache.quotes : null;
+            if (quotes && quotes.length === 0) {
+                el.innerHTML = `<div class="briefing-empty">Add tickers under Settings → Portfolio.</div>`;
+                return;
+            }
+            if (!Array.isArray(quotes)) {
                 el.innerHTML = `<div class="briefing-empty">Loading…</div>`;
                 return;
             }
             el.innerHTML = quotes.map(q => {
-                const price = q.price != null ? q.price.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '—';
+                if (q.price == null) {
+                    return `
+                        <div class="briefing-market-item">
+                            <div class="briefing-market-ticker">${escapeHtml(q.symbol || q.name)}</div>
+                            <div class="briefing-market-value" style="color:var(--br-text-dim, #888);">—</div>
+                            <div class="briefing-market-change" style="color:#E6A23C;" title="${escapeHtml(q.error || 'No data for this ticker')}">⚠ no data</div>
+                        </div>`;
+                }
+                const price = q.price.toLocaleString(undefined, { maximumFractionDigits: 2 });
                 const changeVal = q.change != null ? q.change.toFixed(2) : '0.00';
                 const changePct = q.changePct != null ? q.changePct.toFixed(2) : '0.00';
                 const dir = (q.change || 0) >= 0 ? 'up' : 'down';
                 const arrow = (q.change || 0) >= 0 ? '▲' : '▼';
                 return `
                     <div class="briefing-market-item">
-                        <div class="briefing-market-ticker">${escapeHtml(q.name || q.symbol)}</div>
+                        <div class="briefing-market-ticker">${escapeHtml(q.symbol || q.name)}</div>
                         <div class="briefing-market-value">${price}</div>
                         <div class="briefing-market-change ${dir}">${arrow} ${changeVal} (${changePct}%)</div>
                     </div>
