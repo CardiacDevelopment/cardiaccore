@@ -2107,6 +2107,28 @@
             padding-top: 20px;
             border-top: 1px solid var(--border-color);
         }
+
+        /* This Week / This Month holders — undated, time-boxed task areas. */
+        .desktop-holder-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .desktop-holder {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 54px;
+            padding: 10px;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .desktop-holder.drag-over {
+            border-color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.08);
+        }
+        .desktop-holder .desktop-board-task { flex: 0 0 auto; }
         .desktop-week-board-section .desktop-month-board {
             min-height: 60px;
             padding: 4px;
@@ -3865,6 +3887,16 @@
             <div class="desktop-tab" id="desktopTabWeek">
                 <div class="desktop-tab-title">Week</div>
                 <div class="desktop-week-grid" id="desktopWeekGrid"></div>
+                <div class="desktop-holder-section">
+                    <div class="desktop-month-board-title" style="display:flex; align-items:center; justify-content:space-between;">
+                        <span>This Week · no specific day, just sometime this week</span>
+                        <button class="month-cell-add" style="opacity:1; font-size:18px;" title="Add a This Week task" onclick="openCreateTaskModal('week')">+</button>
+                    </div>
+                    <div class="desktop-holder" id="weekThisWeek"
+                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                         ondragleave="this.classList.remove('drag-over')"
+                         ondrop="handleThisWeekDrop(event)"></div>
+                </div>
                 <div class="desktop-week-board-section">
                     <div class="desktop-month-board-title">Someday · drag a card onto a day to schedule it, or drop a task here to unschedule</div>
                     <div class="desktop-month-board" id="weekBoard"
@@ -3888,10 +3920,23 @@
                         </div>
                         <div class="desktop-month-grid" id="monthGrid"></div>
                     </div>
-                    <div class="desktop-month-board" id="monthBoard"
-                         ondragover="event.preventDefault(); this.classList.add('drag-over')"
-                         ondragleave="this.classList.remove('drag-over')"
-                         ondrop="handleUnscheduleDrop(event)"></div>
+                    <div class="desktop-month-side">
+                        <div class="desktop-holder-section">
+                            <div class="desktop-month-board-title" style="display:flex; align-items:center; justify-content:space-between;">
+                                <span>This Month · no specific day, just sometime this month</span>
+                                <button class="month-cell-add" style="opacity:1; font-size:18px;" title="Add a This Month task" onclick="openCreateTaskModal('month')">+</button>
+                            </div>
+                            <div class="desktop-holder" id="monthThisMonth"
+                                 ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                                 ondragleave="this.classList.remove('drag-over')"
+                                 ondrop="handleThisMonthDrop(event)"></div>
+                        </div>
+                        <div class="desktop-month-board-title" style="margin-top:16px;">Someday</div>
+                        <div class="desktop-month-board" id="monthBoard"
+                             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                             ondragleave="this.classList.remove('drag-over')"
+                             ondrop="handleUnscheduleDrop(event)"></div>
+                    </div>
                 </div>
             </div>
 
@@ -4894,7 +4939,8 @@
                     : '<div class="desktop-widget-empty">No tasks</div>';
             }
 
-            // Someday board across the bottom (same as the Month view).
+            // This Week holder + Someday board across the bottom.
+            renderThisWeekHolder();
             renderMonthBoard('weekBoard');
         }
 
@@ -5037,6 +5083,7 @@
             if (!document.body.classList.contains('desktop-mode')) return;
             renderMonthHeader();
             renderMonthGrid();
+            renderThisMonthHolder();
             renderMonthBoard();
         }
 
@@ -5165,7 +5212,8 @@
             const el = document.getElementById(elId);
             if (!el) return;
 
-            const isUnscheduled = t => (t.dayOffset == null || t.dayOffset === 999) && !t.completed;
+            // Board excludes tasks parked in the This Week / This Month holders.
+            const isUnscheduled = t => (t.dayOffset == null || t.dayOffset === 999) && !t.completed && !t.bucket;
             const groups = {};
             const knownOrder = Object.keys(categoryColors);
             for (const cat of knownOrder) groups[cat] = [];
@@ -5329,9 +5377,11 @@
             if (offset == null) return;
             task.dueDate = ymd;
             task.dayOffset = offset;
+            delete task.bucket; // now has a specific day — no longer a week/month bucket
             task.order = tasks.filter(t => t.dueDate === ymd || t.dayOffset === offset).length;
             saveTasks();
             renderDesktopViews();
+            renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
 
@@ -7185,10 +7235,78 @@
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
             setTaskSchedule(task, 999);
+            delete task.bucket; // back to the plain Someday board
             task.order = 0;
             saveTasks();
+            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
+        }
+
+        // Move a task into an undated time bucket: 'week' (This Week) or
+        // 'month' (This Month). bucket is local-only (like startTime) — the
+        // task is dayOffset 999 in Notion.
+        function setTaskBucket(taskId, bucket) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.dayOffset = 999;
+            task.dueDate = null;
+            task.bucket = bucket;
+            saveTasks();
+            renderDesktopViews();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(task);
+        }
+
+        function handleThisWeekDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = draggedTaskId(e);
+            if (id) setTaskBucket(id, 'week');
+        }
+        function handleThisMonthDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = draggedTaskId(e);
+            if (id) setTaskBucket(id, 'month');
+        }
+
+        // A draggable board/holder chip for a task (shared by the Someday board
+        // and the This Week / This Month holders).
+        function boardTaskChipHtml(t) {
+            const color = categoryColors[t.category] || '#888780';
+            return `<div class="desktop-board-task ${monthArmedTaskId === t.id ? 'armed' : ''}"
+                         data-task-id="${t.id}" draggable="true"
+                         style="border-left-color:${color}"
+                         onclick="toggleMonthArm(${t.id})"
+                         ondragstart="handleMonthDragStart(event, ${t.id})"
+                         ondragend="handleMonthDragEnd(event)">${escapeHtml(t.text)}</div>`;
+        }
+
+        // This Week holder: undated tasks bucketed 'week' — PLUS 'month' tasks,
+        // which "flow through" so the week view shows everything you mean to do
+        // soon.
+        function renderThisWeekHolder() {
+            const el = document.getElementById('weekThisWeek');
+            if (!el) return;
+            const items = tasks.filter(t => !t.completed
+                && (t.dayOffset == null || t.dayOffset === 999)
+                && (t.bucket === 'week' || t.bucket === 'month'));
+            el.innerHTML = items.length
+                ? items.map(boardTaskChipHtml).join('')
+                : '<div class="board-cat-empty" style="flex:1;">Drop tasks here to do them sometime this week</div>';
+        }
+
+        // This Month holder: undated tasks bucketed 'month'.
+        function renderThisMonthHolder() {
+            const el = document.getElementById('monthThisMonth');
+            if (!el) return;
+            const items = tasks.filter(t => !t.completed
+                && (t.dayOffset == null || t.dayOffset === 999)
+                && t.bucket === 'month');
+            el.innerHTML = items.length
+                ? items.map(boardTaskChipHtml).join('')
+                : '<div class="board-cat-empty" style="flex:1;">Drop tasks here to do them sometime this month</div>';
         }
 
         // ── Drag-to-reorder (day view) ─────────────────────────
