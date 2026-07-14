@@ -6296,9 +6296,18 @@
             try {
                 const res = await fetch('/api/calendar/google?action=list');
                 if (!res.ok) {
-                    const msg = (res.status === 401 || res.status === 403)
-                        ? 'Google hasn’t granted Calendar access yet. Re-run Google sign-in (see setup) to enable it.'
-                        : `Could not load calendars (HTTP ${res.status}).`;
+                    // Surface the real reason. The two common first-run cases get
+                    // a friendly, actionable message; otherwise show Google's own.
+                    let serverMsg = '';
+                    try { serverMsg = (await res.json()).error || ''; } catch {}
+                    let msg;
+                    if (/insufficient authentication scopes/i.test(serverMsg)) {
+                        msg = 'Your Google token doesn’t include Calendar access yet. Re-run /api/google/auth and update GOOGLE_REFRESH_TOKEN.';
+                    } else if (/has not been used|is disabled|is not enabled/i.test(serverMsg)) {
+                        msg = 'The Google Calendar API isn’t enabled for your Google Cloud project yet. Enable it in the Google Cloud console (Calendar API), wait a minute, then retry.';
+                    } else {
+                        msg = serverMsg || `Could not load calendars (HTTP ${res.status}).`;
+                    }
                     throw new Error(msg);
                 }
                 const data = await res.json();
