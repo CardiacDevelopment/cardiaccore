@@ -1459,6 +1459,35 @@
         }
         .dash-habit-check { color: var(--accent-green); font-weight: 700; flex-shrink: 0; }
         .dash-habit-more { font-size: 12px; color: var(--text-secondary); }
+
+        /* Dashboard Brain Dump rows */
+        .braindump-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-top: 1px solid var(--border-color);
+        }
+        .braindump-row:first-child { border-top: none; }
+        .braindump-text {
+            flex: 1;
+            min-width: 0;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .braindump-select {
+            flex-shrink: 0;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+        }
         .dash-habit-link {
             background: none;
             border: none;
@@ -1547,6 +1576,34 @@
         .desktop-quick-add:focus {
             outline: none;
             border-color: var(--accent-green);
+        }
+
+        /* "+ Add task" buttons that replace the inline add inputs. */
+        .desktop-add-btn {
+            width: 100%;
+            margin-top: 12px;
+            background: none;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 9px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-family: inherit;
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+        }
+        .desktop-add-btn:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.06);
+        }
+        /* Compact + on the week day cards. */
+        .desktop-add-btn.mini {
+            margin-top: 8px;
+            padding: 5px;
+            font-size: 15px;
+            line-height: 1;
         }
 
         .desktop-cal-day {
@@ -1936,12 +1993,29 @@
             background: rgba(0, 255, 102, 0.05);
         }
 
+        .desktop-month-cell-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
         .desktop-month-cell-num {
             font-size: 12px;
             font-weight: 700;
-            margin-bottom: 4px;
             color: var(--text-secondary);
         }
+        .month-cell-add {
+            background: none;
+            border: none;
+            color: var(--accent-green);
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+            opacity: 0;
+            transition: opacity 0.12s ease;
+        }
+        .desktop-month-cell:hover .month-cell-add { opacity: 1; }
 
         .desktop-month-cell.today-cell .desktop-month-cell-num {
             color: var(--accent-green);
@@ -2058,6 +2132,26 @@
             border-radius: 10px;
             padding: 14px;
             margin-bottom: 0;
+            transition: border-color 0.12s ease, background 0.12s ease;
+        }
+        /* Empty categories are slimmer so the board isn't cluttered, but still
+           act as drop targets for moving a task into that category. */
+        .desktop-month-board-cat.empty {
+            flex: 0 0 150px;
+            opacity: 0.7;
+        }
+        .desktop-month-board-cat.cat-drag-over {
+            border-color: var(--accent-green);
+            background: rgba(151, 196, 89, 0.08);
+            opacity: 1;
+        }
+        .board-cat-empty {
+            font-size: 12px;
+            color: var(--text-secondary);
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
         }
 
         .desktop-month-board-cat-header {
@@ -3462,7 +3556,7 @@
     <!-- Edit Task Modal -->
     <div class="edit-modal-overlay" id="editModal">
         <div class="edit-modal">
-            <div class="edit-modal-title">Edit Task</div>
+            <div class="edit-modal-title" id="editModalTitle">Edit Task</div>
             <input type="text" id="editTaskInput" placeholder="Task name…" />
             <div class="edit-modal-title" style="margin-top:18px;">Time</div>
             <div style="display:flex; gap:10px; align-items:center;">
@@ -3475,7 +3569,7 @@
             <div class="edit-modal-title" style="margin-top:18px;">Category</div>
             <div class="category-grid" id="editCategoryGrid"></div>
             <div class="edit-modal-actions">
-                <button class="btn-delete" onclick="deleteEditingTask()">Delete</button>
+                <button class="btn-delete" id="editDeleteBtn" onclick="deleteEditingTask()">Delete</button>
                 <button class="btn-save" onclick="saveEditingTask()">Save</button>
             </div>
         </div>
@@ -3602,7 +3696,7 @@
                             <span class="desktop-widget-count" id="desktopTodayCount"></span>
                         </div>
                         <div class="desktop-widget-body" id="desktopTodayList"></div>
-                        <input type="text" class="desktop-quick-add" id="desktopQuickAdd" placeholder="Add a task for today…" />
+                        <button class="desktop-add-btn" onclick="openCreateTaskModal(0)">+ Add task</button>
                     </div>
                     <div class="desktop-widget">
                         <div class="desktop-widget-title"><span>Calendar</span></div>
@@ -3627,6 +3721,15 @@
                         </div>
                         <div class="desktop-widget-body" id="desktopHabitsWidget">
                             <div class="desktop-widget-empty">No habits yet.</div>
+                        </div>
+                    </div>
+                    <div class="desktop-widget">
+                        <div class="desktop-widget-title">
+                            <span>Brain Dump</span>
+                            <span class="desktop-widget-count" id="desktopBrainDumpCount"></span>
+                        </div>
+                        <div class="desktop-widget-body" id="desktopBrainDumpWidget">
+                            <div class="desktop-widget-empty">Nothing to sort.</div>
                         </div>
                     </div>
                 </div>
@@ -3728,7 +3831,7 @@
                             <span class="desktop-widget-count" id="desktopTodayTabCount"></span>
                         </div>
                         <div class="desktop-widget-body" id="desktopTodayTabList"></div>
-                        <input type="text" class="desktop-quick-add" id="desktopTodayTabAdd" placeholder="Add a task for this day…" />
+                        <button class="desktop-add-btn" onclick="openCreateTaskModal(desktopTodayOffset)">+ Add task</button>
                     </div>
                     <div class="desktop-today-buckets">
                         <div class="desktop-today-bucket unschedule"
@@ -3800,7 +3903,7 @@
                         <button class="close-btn" onclick="closeMonthDetail()">×</button>
                     </div>
                     <div class="desktop-widget-body" id="monthDetailBody"></div>
-                    <input type="text" class="desktop-quick-add" id="monthDetailAdd" placeholder="Add a task for this day…" style="margin-top:12px;" />
+                    <button class="desktop-add-btn" style="margin-top:12px;" onclick="openCreateTaskModal(monthDetailYmd)">+ Add task</button>
                 </div>
             </div>
 
@@ -4179,6 +4282,7 @@
             renderWeatherFromCache();
             renderDashMarkets();
             renderDesktopHabitsWidget();
+            renderDesktopBrainDump();
         }
 
         // Dashboard habits card: today's daily-completion ring + a compact list
@@ -4225,6 +4329,47 @@
                     <div class="dash-habits-ring" onclick="openHabits()" title="Open habit tracker">${ring}</div>
                     <div class="dash-habits-list">${rows}${more}</div>
                 </div>`;
+        }
+
+        // Dashboard Brain Dump card: uncategorized tasks with a "Sort into…"
+        // picker so they can be filed into a real category quickly. (A future
+        // AI agent could auto-suggest categories here.)
+        function renderDesktopBrainDump() {
+            const el = document.getElementById('desktopBrainDumpWidget');
+            const countEl = document.getElementById('desktopBrainDumpCount');
+            if (!el) return;
+            const items = Array.isArray(tasks)
+                ? tasks.filter(t => !t.completed && (t.category || 'Brain Dump') === 'Brain Dump')
+                : [];
+            if (countEl) countEl.textContent = items.length ? String(items.length) : '';
+            if (!items.length) {
+                el.innerHTML = '<div class="desktop-widget-empty">Nothing to sort. 🎉</div>';
+                return;
+            }
+            const options = Object.keys(categoryColors).filter(c => c !== 'Brain Dump');
+            el.innerHTML = items.slice(0, 8).map(t => `
+                <div class="braindump-row">
+                    <span class="braindump-text">${escapeHtml(t.text)}</span>
+                    <select class="braindump-select" onchange="setTaskCategory(${t.id}, this.value)">
+                        <option value="">Sort into…</option>
+                        ${options.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('')}
+                    </select>
+                </div>
+            `).join('');
+            if (items.length > 8) {
+                el.innerHTML += `<div class="dash-habit-more">+${items.length - 8} more on the board</div>`;
+            }
+        }
+
+        function setTaskCategory(taskId, category) {
+            if (!category) return;
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.category = category;
+            saveTasks();
+            renderDesktopViews();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(task);
         }
 
         // ── Weather widget (Open-Meteo, free, no API key) ───────
@@ -4702,7 +4847,7 @@
                             <div class="desktop-week-col-day">${escapeHtml(dayLabel)}</div>
                             <div class="desktop-week-col-date">${escapeHtml(dateLabel)}</div>
                             <div class="desktop-week-list" id="desktopWeekList${i}"></div>
-                            <input type="text" class="desktop-week-add" data-day-offset="${i}" placeholder="Add task…" />
+                            <button class="desktop-add-btn mini" title="Add a task for this day" onclick="openCreateTaskModal(${i})">+</button>
                         </div>
                     `);
                 }
@@ -5003,7 +5148,11 @@
                              ondragover="event.preventDefault(); this.classList.add('drag-over')"
                              ondragleave="this.classList.remove('drag-over')"
                              ondrop="handleMonthDrop(event, '${cell.ymd}')">
-                    <div class="desktop-month-cell-num">${cell.day}</div>
+                    <div class="desktop-month-cell-head">
+                        <span class="desktop-month-cell-num">${cell.day}</span>
+                        <button class="month-cell-add" title="Add a task on this day"
+                                onclick="event.stopPropagation(); openCreateTaskModal('${cell.ymd}')">+</button>
+                    </div>
                     ${visible}${overflow}
                 </div>`;
             }).join('');
@@ -5030,11 +5179,16 @@
             const cats = [...knownOrder, ...Object.keys(groups).filter(c => !knownOrder.includes(c))];
             let html = '';
 
+            // Render every known category (even empty) so a task can be dragged
+            // into any of them; empty ones render as a slim drop target.
             for (const cat of cats) {
-                const items = groups[cat];
-                if (!items || items.length === 0) continue;
+                const items = groups[cat] || [];
                 const color = categoryColors[cat] || '#888780';
-                html += `<div class="desktop-month-board-cat">
+                const catAttr = escapeHtml(cat).replace(/'/g, '&#39;');
+                html += `<div class="desktop-month-board-cat ${items.length === 0 ? 'empty' : ''}"
+                              ondragover="event.preventDefault(); this.classList.add('cat-drag-over')"
+                              ondragleave="this.classList.remove('cat-drag-over')"
+                              ondrop="handleCategoryDrop(event, '${catAttr}')">
                     <div class="desktop-month-board-cat-header">
                         <span class="chip-dot" style="background:${color}; width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
                         ${escapeHtml(cat)} (${items.length})
@@ -5050,6 +5204,7 @@
                             ${escapeHtml(t.text)}
                         </div>
                     `).join('')}
+                    ${items.length === 0 ? '<div class="board-cat-empty">Drop here</div>' : ''}
                 </div>`;
             }
 
@@ -5107,6 +5262,22 @@
             e.currentTarget.classList.remove('drag-over');
             const taskId = draggedTaskId(e);
             if (taskId) unscheduleTask(taskId);
+        }
+
+        // Drop a board task onto a category column to reassign its category.
+        function handleCategoryDrop(e, category) {
+            e.preventDefault();
+            e.stopPropagation(); // don't also trigger the board's unschedule drop
+            e.currentTarget.classList.remove('cat-drag-over');
+            const taskId = draggedTaskId(e);
+            if (!taskId) return;
+            const task = tasks.find(t => t.id === taskId);
+            if (!task || task.category === category) return;
+            task.category = category;
+            saveTasks();
+            renderDesktopViews();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(task);
         }
 
         // Today-view "Tomorrow" bucket: move the task to the day after the one
@@ -5177,16 +5348,6 @@
                 `${dayNames[d.getDay()]}, ${MONTH_NAMES_FULL[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 
             renderMonthDetailBody(ymd);
-
-            const addInput = document.getElementById('monthDetailAdd');
-            addInput.value = '';
-            addInput.onkeypress = (e) => {
-                if (e.key === 'Enter' && addInput.value.trim()) {
-                    monthDetailAddTask(ymd, addInput.value.trim());
-                    addInput.value = '';
-                }
-            };
-
             overlay.classList.add('visible');
         }
 
@@ -5518,6 +5679,37 @@
             if (notionConnected) {
                 pushTaskToNotion(task);
             }
+        }
+
+        // Create a task at a target (see createTarget). Returns the new task;
+        // the caller saves + syncs.
+        function createTaskAtTarget(text, category, target) {
+            const t = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                dayOffset: 999,
+                dueDate: null,
+                category: category || 'Brain Dump',
+                order: 0,
+                createdAt: new Date().toISOString(),
+            };
+            if (typeof target === 'number') {
+                setTaskSchedule(t, target);
+            } else if (typeof target === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(target)) {
+                // A specific calendar date (Month view).
+                const off = offsetFromYmd(target);
+                t.dayOffset = off != null ? off : 999;
+                t.dueDate = target;
+            } else if (target === 'week' || target === 'month') {
+                setTaskSchedule(t, 999);
+                t.bucket = target; // undated time bucket (This Week / This Month)
+            } else {
+                setTaskSchedule(t, 999); // 'someday' / default -> board
+            }
+            t.order = tasks.filter(x => x.dayOffset === t.dayOffset).length;
+            tasks.push(t);
+            return t;
         }
 
         function toggleTask(taskId) {
@@ -5936,25 +6128,52 @@
 
         // ── Edit Task Modal ─────────────────────────────────────
         let editingTaskId = null;
+        // When creating (not editing), this holds where the new task should land:
+        //   a number = dayOffset; 'someday' = board; 'week'/'month' = time buckets.
+        let createTarget = null;
 
-        function openEditModal(taskId) {
-            const task = tasks.find(t => t.id === taskId);
-            if (!task) return;
-            editingTaskId = taskId;
-
-            document.getElementById('editTaskInput').value = task.text;
-            // Native <input type="time"> expects "HH:MM" 24h, which is what we store.
-            document.getElementById('editTimeInput').value = task.startTime || '';
-
+        function renderEditCategoryGrid(selectedCategory) {
             const grid = document.getElementById('editCategoryGrid');
             grid.innerHTML = Object.entries(categoryColors).map(([name, color]) => `
-                <div class="category-chip ${task.category === name ? 'selected' : ''}"
+                <div class="category-chip ${selectedCategory === name ? 'selected' : ''}"
                      style="background: ${color}22; color: ${color};"
                      data-category="${escapeHtml(name)}"
                      onclick="selectEditCategory(this)">
                     ${escapeHtml(name)}
                 </div>
             `).join('');
+        }
+
+        function openEditModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            editingTaskId = taskId;
+            createTarget = null;
+
+            document.getElementById('editModalTitle').textContent = 'Edit Task';
+            const delBtn = document.getElementById('editDeleteBtn');
+            if (delBtn) delBtn.style.display = '';
+            document.getElementById('editTaskInput').value = task.text;
+            // Native <input type="time"> expects "HH:MM" 24h, which is what we store.
+            document.getElementById('editTimeInput').value = task.startTime || '';
+            renderEditCategoryGrid(task.category);
+
+            document.getElementById('editModal').classList.add('visible');
+            setTimeout(() => document.getElementById('editTaskInput').focus(), 100);
+        }
+
+        // Open the same modal in "create" mode. `target` decides where the task
+        // lands (see createTarget). Collects name / time / category up front.
+        function openCreateTaskModal(target) {
+            editingTaskId = null;
+            createTarget = target;
+
+            document.getElementById('editModalTitle').textContent = 'New Task';
+            const delBtn = document.getElementById('editDeleteBtn');
+            if (delBtn) delBtn.style.display = 'none';
+            document.getElementById('editTaskInput').value = '';
+            document.getElementById('editTimeInput').value = '';
+            renderEditCategoryGrid('Brain Dump');
 
             document.getElementById('editModal').classList.add('visible');
             setTimeout(() => document.getElementById('editTaskInput').focus(), 100);
@@ -5966,12 +6185,27 @@
         }
 
         function saveEditingTask() {
-            const task = tasks.find(t => t.id === editingTaskId);
-            if (!task) { closeEditModal(); return; }
-
             const newText = document.getElementById('editTaskInput').value.trim();
             const newTime = document.getElementById('editTimeInput').value || '';
             const selectedChip = document.querySelector('#editCategoryGrid .category-chip.selected');
+            const chosenCategory = selectedChip ? selectedChip.getAttribute('data-category') : 'Brain Dump';
+
+            // Create mode: build a fresh task at the requested target.
+            if (editingTaskId == null) {
+                if (!newText) { closeEditModal(); return; }
+                const t = createTaskAtTarget(newText, chosenCategory, createTarget);
+                if (newTime) { t.startTime = newTime; placeTimedTask(t); }
+                saveTasks();
+                renderActiveView();
+                renderDesktopViews();
+                closeEditModal();
+                if (notionConnected) pushTaskToNotion(t);
+                return;
+            }
+
+            const task = tasks.find(t => t.id === editingTaskId);
+            if (!task) { closeEditModal(); return; }
+
             if (newText) task.text = newText;
             if (selectedChip) task.category = selectedChip.getAttribute('data-category');
 
