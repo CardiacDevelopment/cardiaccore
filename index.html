@@ -363,6 +363,36 @@
             opacity: 0.8;
         }
 
+        /* ── Google calendar picker ──────────────────────────── */
+        /* Collapsed by default: an account can carry a long list of calendars,
+           and the summary already says how many are showing. */
+        .gcal-details > summary {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 13px;
+            color: var(--text-primary);
+            list-style: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .gcal-details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .gcal-details > summary::before {
+            content: "▸";
+            color: var(--text-secondary);
+            font-size: 11px;
+        }
+        .gcal-details[open] > summary::before {
+            content: "▾";
+        }
+        .gcal-details > summary:hover {
+            color: var(--accent-green);
+        }
+
         /* ── Calendar settings rows ──────────────────────────── */
         .cal-row {
             display: flex;
@@ -928,7 +958,8 @@
             margin-bottom: 8px;
         }
 
-        .edit-modal input {
+        .edit-modal input,
+        .edit-modal select {
             width: 100%;
             background: var(--task-bg);
             border: 1px solid var(--border-color);
@@ -939,7 +970,8 @@
             font-family: inherit;
         }
 
-        .edit-modal input:focus {
+        .edit-modal input:focus,
+        .edit-modal select:focus {
             outline: none;
             border-color: var(--accent-green);
         }
@@ -2175,6 +2207,9 @@
             opacity: 0.5;
         }
 
+        /* Sits below the 300-tier dialogs: the day detail is a panel, and the
+           New Task modal opens on top of it. At an equal z-index this overlay
+           won on DOM order and buried the modal behind its own backdrop. */
         .desktop-month-detail-overlay {
             position: fixed;
             inset: 0;
@@ -2182,7 +2217,7 @@
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 300;
+            z-index: 290;
             padding: 20px;
         }
 
@@ -3553,7 +3588,7 @@
             <input type="text" id="editTaskInput" placeholder="Task name…" />
             <div class="edit-modal-title" style="margin-top:18px;">Time</div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <input type="time" id="editTimeInput" step="900" style="flex:1;" />
+                <select id="editTimeInput" style="flex:1;"></select>
                 <button type="button" onclick="clearEditTime()"
                         style="background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 14px; border-radius:6px; font-size:13px; cursor:pointer; font-family:inherit;">
                     Clear
@@ -4042,6 +4077,9 @@
         // that has never been configured (a phone that only ever loaded the app)
         // shows every discovered calendar rather than a blank schedule.
         let googleCalendarsConfigured = false;
+        // Whether the Settings calendar picker is expanded. Session-only, and
+        // shared by both shells' copies of the list so they stay in step.
+        let gcalPickerOpen = false;
         function loadGoogleCalendars() {
             try {
                 const saved = localStorage.getItem('cardiacGoogleCalendars');
@@ -6230,8 +6268,7 @@
             const delBtn = document.getElementById('editDeleteBtn');
             if (delBtn) delBtn.style.display = '';
             document.getElementById('editTaskInput').value = task.text;
-            // Native <input type="time"> expects "HH:MM" 24h, which is what we store.
-            document.getElementById('editTimeInput').value = task.startTime || '';
+            setEditTime(task.startTime || '');
             renderEditCategoryGrid(task.category);
 
             document.getElementById('editModal').classList.add('visible');
@@ -6248,7 +6285,7 @@
             const delBtn = document.getElementById('editDeleteBtn');
             if (delBtn) delBtn.style.display = 'none';
             document.getElementById('editTaskInput').value = '';
-            document.getElementById('editTimeInput').value = '';
+            setEditTime('');
             renderEditCategoryGrid('Brain Dump');
 
             document.getElementById('editModal').classList.add('visible');
@@ -6305,9 +6342,35 @@
             if (notionConnected) pushTaskToNotion(task);
         }
 
+        // Populate the time dropdown and select `value` ("HH:MM" 24h, or '' for
+        // no time). Rebuilt on every open so the list always reflects the task
+        // being edited.
+        //
+        // Times are offered on a 15-minute grid. A task saved before this was a
+        // dropdown — or edited in Notion — can hold an off-grid time; that value
+        // gets its own option so opening and saving never silently moves it.
+        function setEditTime(value) {
+            const sel = document.getElementById('editTimeInput');
+            if (!sel) return;
+            const slots = [];
+            for (let m = 0; m < 24 * 60; m += 15) {
+                const hh = String(Math.floor(m / 60)).padStart(2, '0');
+                const mm = String(m % 60).padStart(2, '0');
+                slots.push(`${hh}:${mm}`);
+            }
+            if (value && !slots.includes(value)) {
+                slots.push(value);
+                slots.sort();
+            }
+            sel.innerHTML = [
+                '<option value="">No time</option>',
+                ...slots.map(v => `<option value="${v}">${escapeHtml(formatTime12h(v))}</option>`),
+            ].join('');
+            sel.value = value || '';
+        }
+
         function clearEditTime() {
-            const input = document.getElementById('editTimeInput');
-            if (input) input.value = '';
+            setEditTime('');
         }
 
         // Position a newly-timed (or re-timed) task chronologically among other
@@ -6748,7 +6811,7 @@
                 els.forEach(el => { el.innerHTML = empty; });
                 return;
             }
-            const html = googleCalendars.map(c => `
+            const rows = googleCalendars.map(c => `
                 <label style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color); cursor:pointer;">
                     <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleGoogleCalendar('${escapeHtml(c.id).replace(/'/g, "&#39;")}', this.checked)" />
                     <span style="width:12px; height:12px; border-radius:50%; background:${escapeHtml(c.color || CALENDAR_FALLBACK_COLOR)}; flex-shrink:0;"></span>
@@ -6756,6 +6819,19 @@
                     <span style="font-size:11px; color:var(--text-secondary);">${c.enabled ? 'Showing' : 'Hidden'}</span>
                 </label>
             `).join('');
+            // Toggling a calendar re-renders this list, so the expanded state
+            // has to survive the rebuild or the panel snaps shut on every click.
+            // gcalPickerOpen is set from summary's onclick, which runs before
+            // the browser flips `open` — hence the negation. The `toggle` event
+            // would be the obvious hook but it fires asynchronously, so a
+            // re-render in the same tick would still read the old value.
+            const shown = googleCalendars.filter(c => c.enabled).length;
+            const html = `
+                <details class="gcal-details" ${gcalPickerOpen ? 'open' : ''}>
+                    <summary onclick="gcalPickerOpen = !this.parentElement.open">${shown} of ${googleCalendars.length} showing</summary>
+                    ${rows}
+                </details>
+            `;
             els.forEach(el => { el.innerHTML = html; });
         }
 
