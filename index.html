@@ -308,8 +308,9 @@
             text-transform: uppercase;
             margin-top: 4px;
         }
+        /* Events keep their checkbox (a meeting can be ticked off) but have no
+           drag or swipe affordances — they are owned by the calendar, not us. */
         .task-item-wrapper.event .drag-handle,
-        .task-item-wrapper.event .task-checkbox,
         .task-item-wrapper.event .task-swipe-action,
         .task-item-wrapper.event .task-swipe-done {
             display: none;
@@ -1612,6 +1613,9 @@
 
         .desktop-cal-day {
             margin-bottom: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .desktop-cal-day-label {
@@ -1621,42 +1625,6 @@
             letter-spacing: 0.5px;
             color: var(--text-secondary);
             margin-bottom: 6px;
-        }
-
-        .desktop-cal-event {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--task-bg);
-            border-left: 3px solid #5B7BD9;
-            border-radius: 4px;
-            padding: 9px 12px;
-            font-size: 13px;
-            margin-bottom: 6px;
-            cursor: pointer;
-        }
-
-        .desktop-cal-event-time {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
-            min-width: 62px;
-        }
-
-        .desktop-cal-event-title {
-            flex: 1;
-            line-height: 1.3;
-            min-width: 0;
-        }
-
-        .desktop-cal-event-cal {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
         }
 
         /* ── Weather widget ──────────────────────────────────── */
@@ -1827,43 +1795,6 @@
         .desktop-task-row.small {
             padding: 8px 10px;
             font-size: 13px;
-        }
-
-        .desktop-cal-event.small {
-            padding: 7px 10px;
-            font-size: 12px;
-            margin-bottom: 0;
-        }
-
-        .desktop-cal-event.small .desktop-cal-event-time {
-            min-width: 0;
-        }
-
-        /* All-day rows read as background context for the day, so they sit
-           smaller and quieter than timed events. Declared after .small so a
-           compact week-column all-day row still picks these up. */
-        .desktop-cal-event.allday {
-            padding: 3px 10px;
-            font-size: 11px;
-            border-left-width: 2px;
-            margin-bottom: 3px;
-            background: transparent;
-            color: var(--text-secondary);
-        }
-
-        .desktop-cal-event.allday .desktop-cal-event-time,
-        .desktop-cal-event.allday .desktop-cal-event-cal {
-            font-size: 9px;
-            letter-spacing: 0.4px;
-            opacity: 0.8;
-        }
-
-        .desktop-cal-event.allday .desktop-cal-event-time {
-            min-width: 44px;
-        }
-
-        .desktop-cal-event.allday .task-checkbox {
-            transform: scale(0.75);
         }
 
         .desktop-week-add {
@@ -3573,6 +3504,15 @@
         </div>
 
         <div class="setting-item">
+            <div class="setting-label">Google Calendars</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Toggle each calendar to show or hide it on this device.</div>
+            <div id="gcalListMobile"></div>
+            <button class="setting-button" onclick="loadGoogleCalendarList()" style="margin-top:10px;">
+                Refresh my Google calendars
+            </button>
+        </div>
+
+        <div class="setting-item">
             <div class="setting-label">Calendars</div>
             <div id="calendarList"></div>
             <button class="setting-button" onclick="openAddCalendar()" style="margin-top:10px;">
@@ -4834,7 +4774,8 @@
                 checkedCalendarEvents.add(uid);
             }
             saveCheckedCalendarEvents();
-            renderDesktopViews();
+            // Checking is available in both shells, so repaint both.
+            repaintAfterCalendar();
         }
 
         // Stable key for an event: prefer uid, fall back to start+title hash.
@@ -4842,25 +4783,57 @@
             return ev.uid || `${ev.start || ''}_${ev.title || ''}`;
         }
 
-        function desktopEventRow(ev, timeLabel, { compact = false } = {}) {
+        // ── Shared calendar-event markup ───────────────────────
+        // Mobile and desktop render calendar items from these two builders so
+        // the shells stay visually identical instead of drifting apart.
+
+        // A timed event: card with the time above the title, tinted with the
+        // calendar's color. Checkable — a meeting is something you attend.
+        function eventCardMarkup(ev) {
+            const color = colorForEvent(ev);
+            const calName = nameForEvent(ev);
+            const timeLabel = formatTime12h(timeFromIso(ev.start));
+            const url = ev.url ? escapeHtml(ev.url) : '';
+            const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
+            const key = calEventKey(ev);
+            const isChecked = checkedCalendarEvents.has(key);
+            const keyAttr = escapeHtml(key).replace(/'/g, '&#39;');
+            return `
+                <div class="task-item-wrapper event">
+                    <div class="task-item" style="border-left-color:${color}; background:linear-gradient(90deg, ${color}1a, var(--task-bg) min(30%, 110px));">
+                        <div class="task-checkbox ${isChecked ? 'checked' : ''}" style="border-color:${color}; ${isChecked ? 'background:' + color + ';' : ''}" onclick="event.stopPropagation(); toggleCalendarEventCheck('${keyAttr}')"></div>
+                        <div class="task-text ${isChecked ? 'completed' : ''}" ${openAttr} style="cursor:${url ? 'pointer' : 'default'}">
+                            <div class="task-time" style="color:${color};">${escapeHtml(timeLabel)}</div>
+                            ${escapeHtml(ev.title)}
+                            <div class="event-source" style="color:${color};">${escapeHtml(calName)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // An all-day event: single quiet line. Deliberately has no checkbox —
+        // it is context for the day, not a thing to complete. `ymd` is the day
+        // being rendered, used to caption multi-day spans ("Day 2/4").
+        function allDayPillMarkup(ev, ymd) {
             const color = colorForEvent(ev);
             const calName = nameForEvent(ev);
             const url = ev.url ? escapeHtml(ev.url) : '';
-            const key = calEventKey(ev);
-            const isChecked = checkedCalendarEvents.has(key);
             const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
-            // Compact rows (week columns) drop the calendar name to save
-            // width; the border color still identifies the feed.
-            const calLabel = compact
-                ? ''
-                : `<span class="desktop-cal-event-cal" style="color:${color};">${escapeHtml(calName)}</span>`;
-            const checkedStyle = isChecked ? 'opacity:0.45; text-decoration:line-through;' : '';
+            let range = '';
+            if (ymd && ev.endDate && ev.endDate !== ev.date) {
+                const startMs = Date.parse(ev.date);
+                const endMs = Date.parse(ev.endDate);
+                const todayMs = Date.parse(ymd);
+                const total = Math.round((endMs - startMs) / 86400000) + 1;
+                const dayN = Math.round((todayMs - startMs) / 86400000) + 1;
+                range = `<span class="all-day-event-range">Day ${dayN}/${total}</span>`;
+            }
             return `
-                <div class="desktop-cal-event ${compact ? 'small' : ''} ${ev.allDay ? 'allday' : ''}" style="border-left-color:${color}; ${checkedStyle}">
-                    <div class="task-checkbox ${isChecked ? 'checked' : ''}" style="border-color:${color}; flex-shrink:0; ${isChecked ? 'background:' + color + ';' : ''}" onclick="event.stopPropagation(); toggleCalendarEventCheck('${escapeHtml(key)}')"></div>
-                    <span class="desktop-cal-event-time" style="color:${color};">${escapeHtml(timeLabel)}</span>
-                    <span class="desktop-cal-event-title" ${openAttr} style="cursor:${url ? 'pointer' : 'default'}">${escapeHtml(ev.title)}</span>
-                    ${calLabel}
+                <div class="all-day-event" style="border-left-color:${color}; background:${color}14;" ${openAttr}>
+                    <span class="all-day-event-cal" style="color:${color};">${escapeHtml(calName)}</span>
+                    <span class="all-day-event-title">${escapeHtml(ev.title)}</span>
+                    ${range}
                 </div>
             `;
         }
@@ -4871,9 +4844,13 @@
             const el = document.getElementById('desktopCalendarWidget');
             if (!el) return;
 
+            // Events can come from either source, so the widget is only really
+            // empty when neither has anything enabled. Checking iCal feeds alone
+            // blanked the widget for a Google-only setup.
             const activeFeeds = calendars.filter(c => c.enabled !== false && c.url);
-            if (activeFeeds.length === 0) {
-                el.innerHTML = '<div class="desktop-widget-empty">No calendars connected. Add iCal feeds in Settings.</div>';
+            const activeGoogle = googleCalendars.filter(c => c.enabled);
+            if (activeFeeds.length === 0 && activeGoogle.length === 0) {
+                el.innerHTML = '<div class="desktop-widget-empty">No calendars connected. Add an iCal feed or enable a Google calendar in Settings.</div>';
                 return;
             }
 
@@ -4894,8 +4871,8 @@
                     : `${dayNames[d.getDay()]} ${monthNames[d.getMonth()]} ${d.getDate()}`;
 
                 const rows = [
-                    ...allDay.map(ev => desktopEventRow(ev, 'All day')),
-                    ...timed.map(ev => desktopEventRow(ev, formatTime12h(timeFromIso(ev.start)))),
+                    ...allDay.map(ev => allDayPillMarkup(ev, ymd)),
+                    ...timed.map(ev => eventCardMarkup(ev)),
                 ];
                 sections.push(`
                     <div class="desktop-cal-day">
@@ -4973,10 +4950,10 @@
                 const merged = buildDayRenderList(dayTasks, timedEventsForDay(ymd));
 
                 const rows = [
-                    ...allDay.map(ev => desktopEventRow(ev, 'All day', { compact: true })),
+                    ...allDay.map(ev => allDayPillMarkup(ev, ymd)),
                     ...merged.map(item => {
                         if (item.kind === 'event') {
-                            return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)), { compact: true });
+                            return eventCardMarkup(item.event);
                         }
                         const task = item.task;
                         return desktopTaskRowHtml(task, { small: true });
@@ -5062,10 +5039,10 @@
             const merged = buildDayRenderList(dayTasks, timedEventsForDay(ymd));
 
             const rows = [
-                ...allDay.map(ev => desktopEventRow(ev, 'All day')),
+                ...allDay.map(ev => allDayPillMarkup(ev, ymd)),
                 ...merged.map(item => {
                     if (item.kind === 'event') {
-                        return desktopEventRow(item.event, formatTime12h(timeFromIso(item.event.start)));
+                        return eventCardMarkup(item.event);
                     }
                     const task = item.task;
                     return desktopTaskRowHtml(task);
@@ -5464,13 +5441,13 @@
 
             const rows = [];
             for (const ev of allDay) {
-                rows.push(desktopEventRow(ev, 'All day'));
+                rows.push(allDayPillMarkup(ev, ymd));
             }
             for (const t of dayTasks) {
                 rows.push(desktopTaskRowHtml(t, { toggleFn: 'monthDetailToggle' }));
             }
             for (const ev of timed) {
-                rows.push(desktopEventRow(ev, formatTime12h(timeFromIso(ev.start))));
+                rows.push(eventCardMarkup(ev));
             }
 
             body.innerHTML = rows.length
@@ -5720,7 +5697,7 @@
             }
 
             list.innerHTML = mergedList.map(item => {
-                if (item.kind === 'event') return renderEventCard(item.event);
+                if (item.kind === 'event') return eventCardMarkup(item.event);
                 const task = item.task;
                 const categoryColor = categoryColors[task.category] || '#888780';
                 const hasTime = !!task.startTime;
@@ -6707,8 +6684,9 @@
         // Load the account's calendar list from the API and render the Settings
         // toggles, preserving each calendar's saved show/hide + color state.
         async function loadGoogleCalendarList() {
-            const listEl = document.getElementById('gcalList');
-            if (listEl) listEl.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">Loading your calendars…</div>';
+            gcalListContainers().forEach(el => {
+                el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">Loading your calendars…</div>';
+            });
             try {
                 const res = await fetch('/api/calendar/google?action=list');
                 if (!res.ok) {
@@ -6747,18 +6725,30 @@
                 saveGoogleCalendars();
                 renderGoogleCalendarList();
             } catch (err) {
-                if (listEl) listEl.innerHTML = `<div style="font-size:12px; color:#E24B4A;">${escapeHtml(err.message)}</div>`;
+                const errHtml = `<div style="font-size:12px; color:#E24B4A;">${escapeHtml(err.message)}</div>`;
+                gcalListContainers().forEach(el => { el.innerHTML = errHtml; });
             }
         }
 
+        // The picker exists in both shells — the desktop Settings tab and the
+        // mobile hamburger panel — so every render targets both containers.
+        // Only one is ever visible, but keeping them in step means the mobile
+        // panel is correct the moment it is opened.
+        function gcalListContainers() {
+            return ['gcalList', 'gcalListMobile']
+                .map(id => document.getElementById(id))
+                .filter(Boolean);
+        }
+
         function renderGoogleCalendarList() {
-            const el = document.getElementById('gcalList');
-            if (!el) return;
+            const els = gcalListContainers();
+            if (!els.length) return;
             if (!googleCalendars.length) {
-                el.innerHTML = '<div style="font-size:12px; color:var(--text-secondary);">No calendars loaded yet.</div>';
+                const empty = '<div style="font-size:12px; color:var(--text-secondary);">No calendars loaded yet.</div>';
+                els.forEach(el => { el.innerHTML = empty; });
                 return;
             }
-            el.innerHTML = googleCalendars.map(c => `
+            const html = googleCalendars.map(c => `
                 <label style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color); cursor:pointer;">
                     <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleGoogleCalendar('${escapeHtml(c.id).replace(/'/g, "&#39;")}', this.checked)" />
                     <span style="width:12px; height:12px; border-radius:50%; background:${escapeHtml(c.color || CALENDAR_FALLBACK_COLOR)}; flex-shrink:0;"></span>
@@ -6766,6 +6756,7 @@
                     <span style="font-size:11px; color:var(--text-secondary);">${c.enabled ? 'Showing' : 'Hidden'}</span>
                 </label>
             `).join('');
+            els.forEach(el => { el.innerHTML = html; });
         }
 
         function toggleGoogleCalendar(id, on) {
@@ -6829,29 +6820,7 @@
                 return;
             }
             banner.className = 'all-day-banner has-events';
-            banner.innerHTML = evs.map(ev => {
-                // Show "Day 2 of 3" style range badge for multi-day events.
-                let range = '';
-                if (ev.endDate && ev.endDate !== ev.date) {
-                    const startMs = Date.parse(ev.date);
-                    const endMs = Date.parse(ev.endDate);
-                    const todayMs = Date.parse(ymd);
-                    const total = Math.round((endMs - startMs) / 86400000) + 1;
-                    const dayN = Math.round((todayMs - startMs) / 86400000) + 1;
-                    range = `<span class="all-day-event-range">Day ${dayN}/${total}</span>`;
-                }
-                const color = colorForEvent(ev);
-                const calName = nameForEvent(ev);
-                const url = ev.url ? escapeHtml(ev.url) : '';
-                const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
-                return `
-                    <div class="all-day-event" style="border-left-color:${color}; background:${color}14;" ${openAttr}>
-                        <span class="all-day-event-cal" style="color:${color};">${escapeHtml(calName)}</span>
-                        <span class="all-day-event-title">${escapeHtml(ev.title)}</span>
-                        ${range}
-                    </div>
-                `;
-            }).join('');
+            banner.innerHTML = evs.map(ev => allDayPillMarkup(ev, ymd)).join('');
         }
 
         // Build the merged day render list — tasks (in order) with timed events
@@ -6886,27 +6855,6 @@
                 return [...leftover, ...result];
             }
             return [...result, ...leftover];
-        }
-
-        // Render a single calendar event card. Used inline in renderTasks.
-        function renderEventCard(ev) {
-            const time = timeFromIso(ev.start);
-            const timeLabel = time ? formatTime12h(time) : '';
-            const color = colorForEvent(ev);
-            const calName = nameForEvent(ev);
-            const url = ev.url ? escapeHtml(ev.url) : '';
-            const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
-            return `
-                <div class="task-item-wrapper event" ${openAttr}>
-                    <div class="task-item" style="border-left-color:${color}; background:linear-gradient(90deg, ${color}1a, var(--task-bg) 30%);">
-                        <div class="task-text">
-                            <div class="task-time" style="color:${color};">${escapeHtml(timeLabel)}</div>
-                            ${escapeHtml(ev.title)}
-                            <div class="event-source" style="color:${color};">${escapeHtml(calName)}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
         }
 
         function deleteEditingTask() {
