@@ -4198,6 +4198,20 @@
             renderGoogleCalendarList();
             loadGoogleCalendarList().then(fetchGoogleCalendarEvents);
             setInterval(fetchGoogleCalendarEvents, CAL_REFRESH_MS);
+
+            // Tasks and calendar-event checks are the two things with no
+            // background refresh of their own. Pull changes made on other
+            // devices every 45s, and whenever this tab regains focus, so a task
+            // or event completed on mobile shows up on web (and vice versa)
+            // without a manual reload.
+            const backgroundRefresh = () => { maybeBackgroundSync(); syncCalChecks(); };
+            syncCalChecks(); // once on load
+            const TASK_RESYNC_MS = 45 * 1000;
+            setInterval(backgroundRefresh, TASK_RESYNC_MS);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') backgroundRefresh();
+            });
+            window.addEventListener('focus', backgroundRefresh);
         }
 
         // ── Desktop mode ────────────────────────────────────────
@@ -4787,8 +4801,11 @@
         }
 
         // ── Calendar event checkoff ─────────────────────────────
-        // Purely local (not synced). Persisted in localStorage so checked
-        // events stay checked across refreshes within the same day.
+        // Checked events sync across devices via a Notion DB (through
+        // /api/calendar/events). localStorage is an offline cache and instant-
+        // paint source; the server is the source of truth on each sync. If the
+        // feature isn't configured server-side, pushes no-op and it degrades to
+        // the old per-device behavior.
         const CAL_CHECKED_KEY = 'cardiacCheckedCalendarEvents';
         let checkedCalendarEvents = new Set();
 
@@ -4806,14 +4823,62 @@
         }
 
         function toggleCalendarEventCheck(uid) {
-            if (checkedCalendarEvents.has(uid)) {
-                checkedCalendarEvents.delete(uid);
-            } else {
+            const nowChecked = !checkedCalendarEvents.has(uid);
+            if (nowChecked) {
                 checkedCalendarEvents.add(uid);
+            } else {
+                checkedCalendarEvents.delete(uid);
             }
             saveCheckedCalendarEvents();
             // Checking is available in both shells, so repaint both.
             repaintAfterCalendar();
+            // Fire-and-forget to Notion so the check follows the user across
+            // devices. A readable title helps the Notion row make sense; fall
+            // back to the key if the event isn't in the current window.
+            const ev = calendarEvents.find(e => calEventKey(e) === uid);
+            pushCalCheck(uid, ev ? ev.title : uid, nowChecked);
+        }
+
+        // Push a single calendar-event check state to the server. Fire-and-
+        // forget: the local Set already updated optimistically, and the next
+        // syncCalChecks() reconciles if this fails.
+        async function pushCalCheck(key, title, checked) {
+            try {
+                await fetch('/api/calendar/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'setCheck', key, title, checked }),
+                });
+            } catch (error) {
+                console.error('Calendar check push error:', error);
+            }
+        }
+
+        // Pull the authoritative set of checked event keys from the server and
+        // rebuild the local Set. Server is source of truth: this replaces local
+        // state so an uncheck made on another device propagates here too. No-ops
+        // silently if the feature isn't configured server-side (enabled:false).
+        let calChecksInFlight = false;
+        async function syncCalChecks() {
+            if (calChecksInFlight) return;
+            calChecksInFlight = true;
+            try {
+                const res = await fetch('/api/calendar/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ action: 'listChecks' }),
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.enabled === false || !Array.isArray(data.checks)) return;
+                checkedCalendarEvents = new Set(data.checks);
+                saveCheckedCalendarEvents();
+                repaintAfterCalendar();
+            } catch (error) {
+                console.error('Calendar check sync error:', error);
+            } finally {
+                calChecksInFlight = false;
+            }
         }
 
         // Stable key for an event: prefer uid, fall back to start+title hash.
@@ -5917,6 +5982,23 @@
                     syncBtn.disabled = false;
                     syncBtn.textContent = 'Sync Now';
                 }
+            }
+        }
+
+        // Guarded wrapper for the interval / focus re-sync. Skips when we can't
+        // or shouldn't pull: not connected, a sync already in flight, or the user
+        // is mid-edit (so a remote merge never clobbers text being typed).
+        let bgSyncInFlight = false;
+        async function maybeBackgroundSync() {
+            if (!notionConnected || bgSyncInFlight) return;
+            if (editingTaskId != null) return;
+            const ae = document.activeElement;
+            if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+            bgSyncInFlight = true;
+            try {
+                await syncFromNotion({ silent: true });
+            } finally {
+                bgSyncInFlight = false;
             }
         }
 
