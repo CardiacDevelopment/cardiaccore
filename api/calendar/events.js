@@ -17,6 +17,9 @@
 
 const { fetchAndExpand } = require('../_lib/ical');
 const { applyCors } = require('../_lib/notion');
+const {
+  getCalChecksConfig, calChecksEnabled, listChecks, setCheck,
+} = require('../_lib/calendar-checks');
 
 // Window: a week back (for in-progress multi-day events) through 30 days
 // forward (the day strip + week-ahead lookahead the UI uses).
@@ -52,6 +55,36 @@ module.exports = async function handler(req, res) {
   let body = req.body || {};
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { body = {}; }
+  }
+
+  // Cross-device calendar-event check state is folded into this endpoint (see
+  // api/_lib/calendar-checks.js) to stay within Vercel's 12-function limit.
+  // Requests carry an `action`; the original feed-fetch path has none and is
+  // left untouched below. When the feature isn't configured yet, list returns
+  // an empty set and set is a no-op, so the client degrades to per-device.
+  if (body.action === 'listChecks' || body.action === 'setCheck') {
+    try {
+      if (!calChecksEnabled()) {
+        res.status(200).json({ checks: [], enabled: false });
+        return;
+      }
+      const cfg = getCalChecksConfig();
+      if (body.action === 'listChecks') {
+        const checks = await listChecks(cfg);
+        res.status(200).json({ checks, enabled: true });
+        return;
+      }
+      const result = await setCheck(cfg, {
+        key: body.key,
+        title: body.title,
+        checked: !!body.checked,
+      });
+      res.status(200).json({ ok: true, enabled: true, ...result });
+      return;
+    } catch (err) {
+      res.status(err.status || 500).json({ error: err.message, notion: err.notion });
+      return;
+    }
   }
 
   const rawFeeds = Array.isArray(body.feeds) ? body.feeds : [];
