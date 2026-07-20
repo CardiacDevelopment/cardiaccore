@@ -1819,6 +1819,34 @@
             padding-bottom: 2px;
         }
 
+        /* All-day event pills are shared with the mobile view, where they are
+           wide flex rows. In the narrow week columns the fixed-width calendar
+           name and the right-aligned "Day n/total" label can't shrink and spill
+           into the next column, so stack them vertically and let everything
+           wrap inside the column. */
+        .desktop-week-col .all-day-event {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            padding: 3px 6px;
+            overflow: hidden;
+        }
+        .desktop-week-col .all-day-event-cal,
+        .desktop-week-col .all-day-event-title,
+        .desktop-week-col .all-day-event-range {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            min-width: 0;
+        }
+        .desktop-week-col .all-day-event-range { opacity: 0.7; }
+
+        /* Timed event cards: keep the tinted-panel width sensible in a ~150px
+           column and let long titles wrap without spilling. */
+        .desktop-week-col .task-item-wrapper.event .task-text {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
         .desktop-week-col.today-col {
             border-color: var(--accent-green);
         }
