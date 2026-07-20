@@ -2240,6 +2240,22 @@
             border-bottom: 1px solid var(--border-color);
         }
 
+        /* Grip that drags a whole category column left/right to reorder it. */
+        .board-cat-grip {
+            cursor: grab;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            font-size: 13px;
+            line-height: 1;
+            padding: 0 1px;
+            flex-shrink: 0;
+            user-select: none;
+            transition: opacity 0.12s ease, color 0.12s ease;
+        }
+        .desktop-month-board-cat:hover .board-cat-grip { opacity: 1; }
+        .board-cat-grip:hover { color: var(--accent-green); }
+        .board-cat-grip:active { cursor: grabbing; }
+
         .desktop-board-task {
             background: var(--task-bg);
             border-left: 3px solid var(--accent-green);
@@ -4186,6 +4202,34 @@
             'COGHQ': '#C65A9C'
         };
 
+        // User-defined left-to-right order of the Someday board's category
+        // columns. Persisted locally (display-only — Notion has no concept of
+        // category order). Defaults to the categoryColors declaration order.
+        let boardCategoryOrder = loadBoardOrder();
+        function loadBoardOrder() {
+            try {
+                const raw = localStorage.getItem('cardiacBoardOrder');
+                if (raw) {
+                    const arr = JSON.parse(raw);
+                    if (Array.isArray(arr)) return arr;
+                }
+            } catch { /* fall through to default */ }
+            return Object.keys(categoryColors);
+        }
+        function saveBoardOrder() {
+            try { localStorage.setItem('cardiacBoardOrder', JSON.stringify(boardCategoryOrder)); }
+            catch { /* storage unavailable — order just won't persist */ }
+        }
+        // The board's categories in display order: saved order first (for those
+        // still known), then any known/extra categories not yet in the saved
+        // list appended at the end so nothing silently disappears.
+        function orderedBoardCategories(extra = []) {
+            const all = [...new Set([...Object.keys(categoryColors), ...extra])];
+            const ordered = boardCategoryOrder.filter(c => all.includes(c));
+            for (const c of all) if (!ordered.includes(c)) ordered.push(c);
+            return ordered;
+        }
+
         // Notion has a legacy misspelled "Aquisitions" category option; the app
         // uses the correct "Acquisitions". Rewrite any locally-cached tasks so
         // they don't render a second, near-identical board group before the
@@ -5430,7 +5474,7 @@
                 groups[cat].push(task);
             }
 
-            const cats = [...knownOrder, ...Object.keys(groups).filter(c => !knownOrder.includes(c))];
+            const cats = orderedBoardCategories(Object.keys(groups));
             let html = '';
 
             // Render every known category (even empty) so a task can be dragged
@@ -5444,6 +5488,9 @@
                               ondragleave="this.classList.remove('cat-drag-over')"
                               ondrop="handleCategoryDrop(event, '${catAttr}')">
                     <div class="desktop-month-board-cat-header">
+                        <span class="board-cat-grip" draggable="true" title="Drag to reorder columns"
+                              ondragstart="handleCatReorderStart(event, '${catAttr}')"
+                              ondragend="handleCatReorderEnd(event)">⠿</span>
                         <span class="chip-dot" style="background:${color}; width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
                         ${escapeHtml(cat)} (${items.length})
                     </div>
@@ -5471,6 +5518,35 @@
 
         // Drag and drop: board task onto a month cell.
         let monthDragTaskId = null;
+
+        // Column reordering: which category column is being dragged by its grip.
+        let draggingCategory = null;
+        function handleCatReorderStart(e, cat) {
+            draggingCategory = cat;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', 'cat:' + cat);
+            e.stopPropagation(); // this is a column drag, not a task drag
+        }
+        function handleCatReorderEnd() {
+            draggingCategory = null;
+            document.querySelectorAll('.desktop-month-board-cat.cat-drag-over')
+                .forEach(c => c.classList.remove('cat-drag-over'));
+        }
+        // Move the dragged category so it lands in front of `target`, then
+        // persist and refresh both boards (Week + Month share one order).
+        function reorderCategory(target) {
+            if (!draggingCategory || draggingCategory === target) return;
+            const order = orderedBoardCategories();
+            const src = order.indexOf(draggingCategory);
+            const dst = order.indexOf(target);
+            if (src === -1 || dst === -1) return;
+            order.splice(src, 1);
+            order.splice(order.indexOf(target), 0, draggingCategory);
+            boardCategoryOrder = order;
+            saveBoardOrder();
+            renderMonthBoard('monthBoard');
+            renderMonthBoard('weekBoard');
+        }
 
         function handleMonthDragStart(e, taskId) {
             monthDragTaskId = taskId;
@@ -5518,15 +5594,34 @@
             if (taskId) unscheduleTask(taskId);
         }
 
-        // Drop a board task onto a category column to reassign its category.
+        // Drop a task onto a Someday category column. A task already on the
+        // board is simply recategorized. A SCHEDULED or bucketed task (dragged
+        // in from a day column or a This Week/Month holder) is unscheduled onto
+        // the board under the dropped category — the category columns cover the
+        // whole board, so this is how "drag back to the board" actually lands.
         function handleCategoryDrop(e, category) {
             e.preventDefault();
             e.stopPropagation(); // don't also trigger the board's unschedule drop
             e.currentTarget.classList.remove('cat-drag-over');
+            // A column grip is being dragged: reorder columns instead of moving a task.
+            if (draggingCategory) {
+                reorderCategory(category);
+                draggingCategory = null;
+                return;
+            }
             const taskId = draggedTaskId(e);
             if (!taskId) return;
             const task = tasks.find(t => t.id === taskId);
-            if (!task || task.category === category) return;
+            if (!task) return;
+            const wasOnBoard = (task.dayOffset == null || task.dayOffset === 999) && !task.bucket;
+            if (wasOnBoard && task.category === category) return; // no change
+            if (!wasOnBoard) {
+                // Move to Someday (unschedule) and drop any week/month bucket.
+                setTaskSchedule(task, 999);
+                delete task.bucket;
+                delete task.weekOf;
+                task.order = 0;
+            }
             task.category = category;
             saveTasks();
             renderDesktopViews();
