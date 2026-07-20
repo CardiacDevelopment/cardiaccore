@@ -1775,21 +1775,48 @@
 
         .desktop-week-grid {
             display: flex;
-            gap: 16px;
-            overflow-x: auto;
+            gap: 8px;
             padding-bottom: 12px;
             align-items: stretch;
         }
 
         .desktop-week-col {
-            flex: 0 0 250px;
+            flex: 1 1 0;
+            min-width: 0;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px 10px;
             display: flex;
             flex-direction: column;
             min-height: 320px;
+        }
+
+        /* Long task text must wrap inside the now-narrower columns. The
+           "↩ Board" pill is lifted out of flow (absolute) so it no longer
+           steals width from the text; it still fades in on row hover. */
+        .desktop-week-col .desktop-task-row.small {
+            position: relative;
+            align-items: flex-start;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            padding-right: 10px;
+        }
+        .desktop-week-col .desktop-task-row.small .desktop-task-unsched {
+            position: absolute;
+            right: 8px;
+            bottom: 6px;
+            background: var(--bg-primary);
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .desktop-week-col .desktop-task-row.small:hover .desktop-task-unsched {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .desktop-week-col .desktop-task-row.small .desktop-task-text {
+            padding-bottom: 2px;
         }
 
         .desktop-week-col.today-col {
@@ -1938,7 +1965,7 @@
 
         .desktop-month-dow {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: 34px repeat(7, 1fr);
             gap: 2px;
             margin-bottom: 2px;
         }
@@ -1955,8 +1982,37 @@
 
         .desktop-month-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: 34px repeat(7, 1fr);
             gap: 2px;
+        }
+
+        /* Left-of-row drop target: assigns a dragged task to that whole
+           calendar week's "This Week" holder (Week view). */
+        .desktop-month-week-gutter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            background: var(--bg-primary);
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+        .desktop-month-week-gutter:hover {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+        .desktop-month-week-gutter.drag-over {
+            border-color: var(--accent-green);
+            border-style: solid;
+            background: rgba(0, 255, 102, 0.08);
         }
 
         .desktop-month-cell {
@@ -3891,11 +3947,11 @@
                 </div>
             </div>
             <div class="desktop-tab" id="desktopTabWeek">
-                <div class="desktop-tab-title">Week</div>
+                <div class="desktop-month-header" id="weekHeader"></div>
                 <div class="desktop-week-grid" id="desktopWeekGrid"></div>
                 <div class="desktop-holder-section">
                     <div class="desktop-month-board-title" style="display:flex; align-items:center; justify-content:space-between;">
-                        <span>This Week · no specific day, just sometime this week</span>
+                        <span id="weekThisWeekLabel">This Week · no specific day, just sometime this week</span>
                         <button class="month-cell-add" style="opacity:1; font-size:18px;" title="Add a This Week task" onclick="openCreateTaskModal('week')">+</button>
                     </div>
                     <div class="desktop-holder" id="weekThisWeek"
@@ -3916,6 +3972,7 @@
                     <div class="desktop-month-main">
                         <div class="desktop-month-header" id="monthHeader"></div>
                         <div class="desktop-month-dow">
+                            <div class="desktop-month-dow-cell"></div>
                             <div class="desktop-month-dow-cell">Sun</div>
                             <div class="desktop-month-dow-cell">Mon</div>
                             <div class="desktop-month-dow-cell">Tue</div>
@@ -5044,11 +5101,15 @@
                 const list = document.getElementById('desktopWeekList' + i);
                 if (!list) continue;
 
+                const d = new Date(weekViewSunday);
+                d.setDate(d.getDate() + i);
+                const ymd = ymdOf(d);
+                const offset = offsetFromYmd(ymd);
+
                 const dayTasks = tasks
-                    .filter(t => t.dayOffset === i)
+                    .filter(t => t.dueDate === ymd || (offset != null && t.dayOffset === offset && !t.dueDate))
                     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-                const ymd = ymdForOffset(i);
                 const allDay = allDayEventsForDay(ymd);
                 const merged = buildDayRenderList(dayTasks, timedEventsForDay(ymd));
 
@@ -5282,7 +5343,7 @@
 
             const MAX_CHIPS = 4;
 
-            grid.innerHTML = cells.map(cell => {
+            const cellHtmls = cells.map(cell => {
                 const isToday = cell.ymd === todayYmd;
                 const offset = monthYmdToOffset(cell.ymd);
 
@@ -5331,7 +5392,23 @@
                     </div>
                     ${visible}${overflow}
                 </div>`;
-            }).join('');
+            });
+
+            // Interleave a "week gutter" before each Sunday–Saturday row. The
+            // first cell of every 7-cell row is a Sunday; dropping/clicking a
+            // task on its gutter pins the task to that week's This Week holder.
+            const out = [];
+            for (let r = 0; r < cellHtmls.length; r += 7) {
+                const rowSunday = cells[r].ymd;
+                out.push(`<div class="desktop-month-week-gutter"
+                               title="Drop a task here to add it to this week's list"
+                               onclick="handleMonthWeekGutterClick('${rowSunday}')"
+                               ondragover="event.preventDefault(); this.classList.add('drag-over')"
+                               ondragleave="this.classList.remove('drag-over')"
+                               ondrop="handleMonthWeekDrop(event, '${rowSunday}')">week</div>`);
+                out.push(...cellHtmls.slice(r, r + 7));
+            }
+            grid.innerHTML = out.join('');
         }
 
         // Renders the "Someday" board (unscheduled tasks, grouped by category,
@@ -5423,12 +5500,12 @@
             return monthDragTaskId || Number(e.dataTransfer.getData('text/plain')) || null;
         }
 
-        // Reschedule a dragged task onto a Week-view day column (offset 0..6).
-        function handleWeekDrop(e, offset) {
+        // Reschedule a dragged task onto a Week-view day column (absolute date).
+        function handleWeekDropYmd(e, ymd) {
             e.preventDefault();
             e.currentTarget.classList.remove('drag-over');
             const taskId = draggedTaskId(e);
-            if (taskId) placeTaskOnDate(taskId, ymdForOffset(offset));
+            if (taskId) placeTaskOnDate(taskId, ymd);
         }
 
         // Drop a scheduled task onto a "Someday board" zone to unschedule it —
@@ -5483,9 +5560,23 @@
         }
 
         // Week day column click: place an armed board task onto that day.
-        function handleWeekColClick(offset) {
+        function handleWeekColClickYmd(ymd) {
             if (!monthArmedTaskId) return;
-            placeTaskOnDate(monthArmedTaskId, ymdForOffset(offset));
+            placeTaskOnDate(monthArmedTaskId, ymd);
+            monthArmedTaskId = null;
+        }
+
+        // Month-view week gutter: drop/click a task to assign it to that whole
+        // calendar week's "This Week" holder (sundayYmd = the row's Sunday).
+        function handleMonthWeekDrop(e, sundayYmd) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = draggedTaskId(e);
+            if (taskId) setTaskWeek(taskId, sundayYmd);
+        }
+        function handleMonthWeekGutterClick(sundayYmd) {
+            if (!monthArmedTaskId) return;
+            setTaskWeek(monthArmedTaskId, sundayYmd);
             monthArmedTaskId = null;
         }
 
@@ -5507,6 +5598,7 @@
             task.dueDate = ymd;
             task.dayOffset = offset;
             delete task.bucket; // now has a specific day — no longer a week/month bucket
+            delete task.weekOf; // and no longer pinned to a specific week
             task.order = tasks.filter(t => t.dueDate === ymd || t.dayOffset === offset).length;
             saveTasks();
             renderDesktopViews();
@@ -5880,9 +5972,13 @@
                 const off = offsetFromYmd(target);
                 t.dayOffset = off != null ? off : 999;
                 t.dueDate = target;
-            } else if (target === 'week' || target === 'month') {
+            } else if (target === 'week') {
                 setTaskSchedule(t, 999);
-                t.bucket = target; // undated time bucket (This Week / This Month)
+                t.bucket = 'week'; // pinned to the currently viewed week
+                t.weekOf = weekViewSundayYmd();
+            } else if (target === 'month') {
+                setTaskSchedule(t, 999);
+                t.bucket = 'month'; // undated "This Month" bucket
             } else {
                 setTaskSchedule(t, 999); // 'someday' / default -> board
             }
@@ -6703,6 +6799,12 @@
                     task.dueDate = ymdForOffset(task.dayOffset);
                     changed = true;
                 }
+                // Migrate legacy This Week tasks (bucket 'week', no weekOf) to
+                // the current week so they stay visible after this update.
+                if (task.bucket === 'week' && !task.weekOf) {
+                    task.weekOf = ymdOf(sundayOf(new Date()));
+                    changed = true;
+                }
             }
             if (changed) saveTasks();
         }
@@ -7395,6 +7497,7 @@
             if (!task) return;
             setTaskSchedule(task, 999);
             delete task.bucket; // back to the plain Someday board
+            delete task.weekOf;
             task.order = 0;
             saveTasks();
             renderDesktopViews();
@@ -7411,6 +7514,23 @@
             task.dayOffset = 999;
             task.dueDate = null;
             task.bucket = bucket;
+            delete task.weekOf; // 'month'/'someday' buckets aren't week-pinned
+            saveTasks();
+            renderDesktopViews();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(task);
+        }
+
+        // Pin an undated task to a SPECIFIC week's "This Week" holder. weekOf is
+        // that week's Sunday (YYYY-MM-DD) and is local-only — in Notion the task
+        // stays dayOffset 999, exactly like the plain 'week' bucket.
+        function setTaskWeek(taskId, weekOf) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            task.dayOffset = 999;
+            task.dueDate = null;
+            task.bucket = 'week';
+            task.weekOf = weekOf;
             saveTasks();
             renderDesktopViews();
             renderActiveView();
@@ -7421,7 +7541,7 @@
             e.preventDefault();
             e.currentTarget.classList.remove('drag-over');
             const id = draggedTaskId(e);
-            if (id) setTaskBucket(id, 'week');
+            if (id) setTaskWeek(id, weekViewSundayYmd());
         }
         function handleThisMonthDrop(e) {
             e.preventDefault();
@@ -7442,18 +7562,28 @@
                          ondragend="handleMonthDragEnd(event)">${escapeHtml(t.text)}</div>`;
         }
 
-        // This Week holder: undated tasks bucketed 'week' — PLUS 'month' tasks,
-        // which "flow through" so the week view shows everything you mean to do
-        // soon.
+        // This Week holder: undated tasks pinned to the week currently shown in
+        // the Week view (task.weekOf === that week's Sunday). Each week keeps its
+        // own list, so navigating weeks swaps the holder's contents.
         function renderThisWeekHolder() {
             const el = document.getElementById('weekThisWeek');
             if (!el) return;
+            const wk = weekViewSundayYmd();
             const items = tasks.filter(t => !t.completed
                 && (t.dayOffset == null || t.dayOffset === 999)
-                && (t.bucket === 'week' || t.bucket === 'month'));
+                && t.bucket === 'week' && t.weekOf === wk);
             el.innerHTML = items.length
                 ? items.map(boardTaskChipHtml).join('')
                 : '<div class="board-cat-empty" style="flex:1;">Drop tasks here to do them sometime this week</div>';
+
+            const label = document.getElementById('weekThisWeekLabel');
+            if (label) {
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const start = new Date(weekViewSunday);
+                const end = new Date(weekViewSunday);
+                end.setDate(end.getDate() + 6);
+                label.textContent = `This Week · ${monthNames[start.getMonth()]} ${start.getDate()}–${monthNames[end.getMonth()]} ${end.getDate()} · no specific day`;
+            }
         }
 
         // This Month holder: undated tasks bucketed 'month'.
