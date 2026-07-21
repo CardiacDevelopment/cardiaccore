@@ -1660,6 +1660,18 @@
         }
 
         /* ── Weather widget ──────────────────────────────────── */
+        .weather-loc-change {
+            background: none;
+            border: none;
+            color: var(--accent-green);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            text-decoration: underline;
+            flex-shrink: 0;
+        }
+
         .weather-current {
             display: flex;
             align-items: center;
@@ -4262,16 +4274,6 @@
                         </div>
                     </div>
                     <div class="desktop-settings-card">
-                        <div class="setting-label">Weather Location</div>
-                        <div style="display:flex; gap:8px;">
-                            <input type="text" id="desktopWeatherCityInput" placeholder="City name…"
-                                   style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
-                            <button class="setting-button" onclick="searchWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
-                        </div>
-                        <div id="desktopWeatherResults" style="margin-top:8px;"></div>
-                        <div class="sync-status" id="desktopWeatherStatus"></div>
-                    </div>
-                    <div class="desktop-settings-card">
                         <div class="setting-label">Cardiac News Weather</div>
                         <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Extra locations shown only on the Cardiac News page.</div>
                         <div style="display:flex; gap:8px;">
@@ -4607,9 +4609,12 @@
 
             renderDesktopViews();
 
-            // Weather: load cache, fetch fresh data, refresh every 15 min.
+            // Weather: show cached data instantly, then resolve the location
+            // (auto-detect current location, or an explicitly chosen city) and
+            // refresh every 15 min.
             loadWeatherCache();
-            fetchWeather();
+            renderWeatherFromCache();
+            initWeatherLocation();
             setInterval(fetchWeather, 15 * 60 * 1000);
 
             // News page multi-location weather (separate from the dashboard's
@@ -4832,14 +4837,91 @@
 
         function setWeatherLocation(loc) {
             localStorage.setItem(WEATHER_LOC_KEY, JSON.stringify(loc));
-            const status = document.getElementById('desktopWeatherStatus');
-            if (status) status.textContent = `Location set to ${loc.name}`;
             fetchWeather();
         }
 
+        function setWeatherInlineStatus(msg) {
+            const el = document.getElementById('weatherInlineStatus');
+            if (el) el.textContent = msg;
+        }
+
+        // Reverse-geocode coords to a friendly "City, Region" label. Best-effort:
+        // returns 'Current Location' if the lookup fails or is blocked.
+        async function reverseGeocodeName(lat, lon) {
+            try {
+                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                const j = await res.json();
+                const region = j.principalSubdivisionCode ? j.principalSubdivisionCode.split('-').pop() : (j.principalSubdivision || '');
+                const label = [j.city || j.locality, region].filter(Boolean).join(', ');
+                return label || 'Current Location';
+            } catch {
+                return 'Current Location';
+            }
+        }
+
+        // Ask the browser for the device's location and load its weather. Used
+        // on load (silent) and by the "Use my location" button (interactive).
+        function useCurrentLocationWeather({ silent = false } = {}) {
+            if (!navigator.geolocation) {
+                if (!silent) renderWeatherControls('Geolocation is not available on this device — search a city:');
+                return;
+            }
+            if (!silent) setWeatherInlineStatus('Locating…');
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    const name = await reverseGeocodeName(latitude, longitude);
+                    setWeatherLocation({ lat: latitude, lon: longitude, name, source: 'geo' });
+                },
+                () => {
+                    // Denied/unavailable: fall back to any saved location, else
+                    // show the manual controls.
+                    if (getWeatherLocation()) {
+                        fetchWeather();
+                    } else if (!silent) {
+                        renderWeatherControls('Location unavailable — search a city:');
+                    } else {
+                        renderWeatherFromCache();
+                    }
+                },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 30 * 60 * 1000 }
+            );
+        }
+
+        // On load: respect an explicitly-chosen city; otherwise auto-detect.
+        function initWeatherLocation() {
+            const loc = getWeatherLocation();
+            if (loc && loc.source === 'manual') {
+                fetchWeather();
+            } else {
+                useCurrentLocationWeather({ silent: true });
+            }
+        }
+
+        // Manual location controls inside the weather widget — replaces the old
+        // Settings "Weather Location" box. Reachable via the "change" link and
+        // shown automatically when there's no location yet.
+        function renderWeatherControls(message = 'Get your local forecast:') {
+            const el = document.getElementById('desktopWeatherWidget');
+            if (!el) return;
+            el.innerHTML = `
+                <div style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">${escapeHtml(message)}</div>
+                <button class="setting-button accent" style="width:100%; margin-bottom:10px;" onclick="useCurrentLocationWeather({ silent: false })">📍 Use my location</button>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="weatherCityInput" placeholder="City name…"
+                           onkeydown="if(event.key==='Enter') searchWeatherCity()"
+                           style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
+                    <button class="setting-button" onclick="searchWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
+                </div>
+                <div id="weatherResults" style="margin-top:8px;"></div>
+                <div id="weatherInlineStatus" class="sync-status" style="text-align:left;"></div>
+                ${weatherCache ? '<button class="weather-loc-change" style="margin-top:8px;" onclick="renderWeatherFromCache()">← back to forecast</button>' : ''}
+            `;
+        }
+
         async function searchWeatherCity() {
-            const input = document.getElementById('desktopWeatherCityInput');
-            const results = document.getElementById('desktopWeatherResults');
+            const input = document.getElementById('weatherCityInput');
+            const results = document.getElementById('weatherResults');
             if (!input || !results) return;
             const q = input.value.trim();
             if (!q) return;
@@ -4855,7 +4937,7 @@
                 results.innerHTML = data.results.map(r => {
                     const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
                     return `<button class="setting-button" style="margin-bottom:4px; text-align:left; font-size:13px;"
-                                onclick='setWeatherLocation(${JSON.stringify({ lat: r.latitude, lon: r.longitude, name: label }).replace(/'/g, "&#39;")})'>${escapeHtml(label)}</button>`;
+                                onclick='setWeatherLocation(${JSON.stringify({ lat: r.latitude, lon: r.longitude, name: label, source: 'manual' }).replace(/'/g, "&#39;")})'>${escapeHtml(label)}</button>`;
                 }).join('');
             } catch (err) {
                 results.innerHTML = `<div style="font-size:12px; color:var(--text-secondary);">Error: ${escapeHtml(err.message)}</div>`;
@@ -4885,16 +4967,14 @@
         }
 
         function renderWeatherFromCache() {
-            if (weatherCache) renderWeatherWidget(weatherCache);
-            else {
-                const el = document.getElementById('desktopWeatherWidget');
-                if (!el) return;
-                const loc = getWeatherLocation();
-                if (!loc) {
-                    el.innerHTML = '<div class="desktop-widget-empty">Set your location in Settings to see weather.</div>';
-                } else {
-                    el.innerHTML = '<div class="desktop-widget-empty">Loading weather…</div>';
-                }
+            if (weatherCache) { renderWeatherWidget(weatherCache); return; }
+            const el = document.getElementById('desktopWeatherWidget');
+            if (!el) return;
+            const loc = getWeatherLocation();
+            if (!loc) {
+                renderWeatherControls();
+            } else {
+                el.innerHTML = '<div class="desktop-widget-empty">Loading weather…</div>';
             }
         }
 
@@ -4938,7 +5018,10 @@
                     </div>
                 </div>
                 ${forecastHtml}
-                <div style="font-size:10px; color:var(--text-secondary); margin-top:8px;">${escapeHtml(cache.name || '')}</div>
+                <div style="font-size:10px; color:var(--text-secondary); margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <span>${escapeHtml(cache.name || '')}</span>
+                    <button class="weather-loc-change" onclick="renderWeatherControls()">change</button>
+                </div>
             `;
 
             // Keep the Cardiac News page's weather card in sync with the same
