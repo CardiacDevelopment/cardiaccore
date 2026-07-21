@@ -1818,6 +1818,20 @@
         .desktop-week-col .desktop-task-row.small .desktop-task-text {
             padding-bottom: 2px;
         }
+        /* Wordy titles are clamped to two lines so day columns stay short;
+           clicking the text toggles .expanded to reveal the whole title. */
+        .desktop-week-col .desktop-task-row.small .desktop-task-text.clampable {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .desktop-week-col .desktop-task-row.small .desktop-task-text.clampable.expanded {
+            display: block;
+            -webkit-line-clamp: none;
+            overflow: visible;
+        }
 
         /* All-day event pills are shared with the mobile view, where they are
            wide flex rows. In the narrow week columns the fixed-width calendar
@@ -5080,19 +5094,26 @@
 
         // Shared helper: renders a desktop task row with category colored
         // border, checkbox, time label, unschedule button, and category dot.
-        function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask' } = {}) {
+        function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask', clamp = false } = {}) {
             const color = colorForCategory(task.category);
             const time = task.startTime
                 ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
                 : '';
             const cls = small ? 'desktop-task-row small' : 'desktop-task-row';
+            // clamp: in the narrow week columns long titles are truncated to two
+            // lines; clicking the text toggles the full title. stopPropagation so
+            // the click doesn't bubble to the column's place-task handler.
+            const textCls = `desktop-task-text${clamp ? ' clampable' : ''}${task.completed ? ' completed' : ''}`;
+            const textClick = clamp
+                ? ` onclick="event.stopPropagation(); this.classList.toggle('expanded')" title="Click to expand"`
+                : '';
             return `
                 <div class="${cls}" style="border-left-color:${color}" ondblclick="openEditModal(${task.id})"
                      draggable="true"
                      ondragstart="handleMonthDragStart(event, ${task.id})"
                      ondragend="handleMonthDragEnd(event)">
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="${toggleFn}(${task.id})"></div>
-                    <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                    <div class="${textCls}"${textClick}>${time}${escapeHtml(task.text)}</div>
                     <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move back to the Someday board">↩ Board</button>
                     <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
                 </div>
@@ -5449,7 +5470,7 @@
                             return eventCardMarkup(item.event);
                         }
                         const task = item.task;
-                        return desktopTaskRowHtml(task, { small: true });
+                        return desktopTaskRowHtml(task, { small: true, clamp: true });
                     }),
                 ];
 
