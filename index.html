@@ -1497,6 +1497,38 @@
         .dash-habit-check { color: var(--accent-green); font-weight: 700; flex-shrink: 0; }
         .dash-habit-more { font-size: 12px; color: var(--text-secondary); }
 
+        /* Dashboard Brain Dump quick-add */
+        .brain-dump-add-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--accent-green);
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: inherit;
+            padding: 0;
+        }
+        .brain-dump-add-btn:hover { border-color: var(--accent-green); }
+        .brain-dump-input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            background: var(--task-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .brain-dump-input:focus { outline: none; border-color: var(--accent-green); }
+
         /* Dashboard Brain Dump rows */
         .braindump-row {
             display: flex;
@@ -1660,6 +1692,18 @@
         }
 
         /* ── Weather widget ──────────────────────────────────── */
+        .weather-loc-change {
+            background: none;
+            border: none;
+            color: var(--accent-green);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            text-decoration: underline;
+            flex-shrink: 0;
+        }
+
         .weather-current {
             display: flex;
             align-items: center;
@@ -1817,6 +1861,20 @@
         }
         .desktop-week-col .desktop-task-row.small .desktop-task-text {
             padding-bottom: 2px;
+        }
+        /* Wordy titles are clamped to two lines so day columns stay short;
+           clicking the text toggles .expanded to reveal the whole title. */
+        .desktop-week-col .desktop-task-row.small .desktop-task-text.clampable {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .desktop-week-col .desktop-task-row.small .desktop-task-text.clampable.expanded {
+            display: block;
+            -webkit-line-clamp: none;
+            overflow: visible;
         }
 
         /* All-day event pills are shared with the mobile view, where they are
@@ -3110,6 +3168,53 @@
             color: #f0f5e8 !important;
         }
 
+        /* ── Desktop LIGHT MODE ────────────────────────────────
+           body.desktop-mode redefines the palette variables above,
+           which (equal specificity, later in source) always beat the
+           mobile body.light-mode block — so light mode did nothing on
+           desktop. These two-class selectors out-specify it and supply
+           a light editorial palette. Covers every .desktop-* surface
+           that reads the global vars (Dashboard, Today, Week, Month,
+           Habits, Settings). The Cardiac News briefing has its own
+           token set, re-skinned below. */
+        body.desktop-mode.light-mode {
+            --bg-primary:      #ffffff;
+            --bg-secondary:    #eef1e8;
+            --text-primary:    #1a2213;
+            --text-secondary:  #5a7540;
+            --border-color:    rgba(99,153,34,0.28);
+            --task-bg:         #eef2e6;
+            --accent-green:    #4e7d1a;
+            --accent-green-dark: #3c6212;
+
+            background: #eef1e8 !important;
+            color: #1a2213 !important;
+        }
+
+        /* Cardiac News briefing: flip its scoped --br-* tokens to a
+           light editorial palette. Text-greens (100/200) go dark so
+           they read on white; fill-greens (800/900) go to light tints
+           so dark text sits on them. */
+        body.light-mode #desktopTabHub {
+            --br-green-50:  #2e550d;
+            --br-green-100: #2e550d;
+            --br-green-200: #4e7d1a;
+            --br-green-400: #4e7d1a;
+            --br-green-700: #dcebc4;
+            --br-green-800: #dcebc4;
+            --br-green-900: #eaf3de;
+            --br-bg:      #eef1e8;
+            --br-surface: #ffffff;
+            --br-card:    #ffffff;
+            --br-border:  rgba(99,153,34,0.30);
+            --br-border-bright: rgba(99,153,34,0.55);
+            --br-text-bright: #1a2213;
+            --br-text-muted:  #4e6b32;
+            --br-text-dim:    #6f8a4c;
+            --br-up:   #3c9e1f;
+            --br-down: #cf3b3b;
+        }
+
         /* Display type — Barlow Condensed with letterspacing wherever
            the dashboard uses uppercase headers. */
         body.desktop-mode .desktop-logo,
@@ -3258,6 +3363,58 @@
         body.desktop-mode .desktop-quick-add:focus {
             border-color: #97c459;
             outline: none;
+        }
+
+        /* ── Desktop LIGHT MODE — chrome overrides ─────────────
+           The editorial rules above hardcode dark hex on specific
+           elements, so the palette variables alone can't lighten them.
+           These two-class selectors out-specify each and supply light
+           equivalents. */
+        body.desktop-mode.light-mode .desktop-logo { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-nav-item.active {
+            background: rgba(99,153,34,0.16);
+            color: #3c6212;
+            border-left-color: #4e7d1a;
+        }
+        body.desktop-mode.light-mode .desktop-dash-day { color: #1a2213; }
+        body.desktop-mode.light-mode .desktop-dash-date { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-tab-title {
+            color: #3c6212;
+            border-bottom-color: rgba(99,153,34,0.45);
+        }
+        body.desktop-mode.light-mode .desktop-widget-title {
+            color: #4e7d1a;
+            border-bottom-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-widget {
+            background: #ffffff;
+            border-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-widget:hover {
+            border-color: rgba(99,153,34,0.5);
+        }
+        body.desktop-mode.light-mode .desktop-sidebar {
+            background: #ffffff;
+            border-right-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .setting-label { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-settings-card {
+            background: #ffffff;
+            border-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-settings-card .setting-button {
+            background: #f0f2ea;
+            border-color: rgba(99,153,34,0.35);
+            color: #1a2213;
+        }
+        body.desktop-mode.light-mode .desktop-settings-card .setting-button:hover {
+            background: #e6ebda;
+            border-color: rgba(99,153,34,0.6);
+        }
+        body.desktop-mode.light-mode .desktop-quick-add {
+            background: #f0f2ea;
+            border-color: rgba(99,153,34,0.35);
+            color: #1a2213;
         }
 
         /* Task rows on the dashboard use the accent green for their left
@@ -3892,8 +4049,12 @@
                     <div class="desktop-widget">
                         <div class="desktop-widget-title">
                             <span>Brain Dump</span>
-                            <span class="desktop-widget-count" id="desktopBrainDumpCount"></span>
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="desktop-widget-count" id="desktopBrainDumpCount"></span>
+                                <button class="brain-dump-add-btn" id="brainDumpAddBtn" title="Add to Brain Dump" onclick="toggleBrainDumpAdd()">+</button>
+                            </span>
                         </div>
+                        <input type="text" id="desktopBrainDumpInput" class="brain-dump-input" placeholder="Add to Brain Dump, then Enter…" style="display:none;" />
                         <div class="desktop-widget-body" id="desktopBrainDumpWidget">
                             <div class="desktop-widget-empty">Nothing to sort.</div>
                         </div>
@@ -4147,16 +4308,6 @@
                             <div class="setting-label" style="margin-bottom:0;">Light Mode</div>
                             <div class="toggle-switch" id="desktopLightModeToggle" onclick="toggleLightMode()"></div>
                         </div>
-                    </div>
-                    <div class="desktop-settings-card">
-                        <div class="setting-label">Weather Location</div>
-                        <div style="display:flex; gap:8px;">
-                            <input type="text" id="desktopWeatherCityInput" placeholder="City name…"
-                                   style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
-                            <button class="setting-button" onclick="searchWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
-                        </div>
-                        <div id="desktopWeatherResults" style="margin-top:8px;"></div>
-                        <div class="sync-status" id="desktopWeatherStatus"></div>
                     </div>
                     <div class="desktop-settings-card">
                         <div class="setting-label">Cardiac News Weather</div>
@@ -4480,6 +4631,21 @@
                 });
             }
 
+            // Brain Dump quick-add input (lives outside the re-rendered widget
+            // body so a background refresh never wipes in-progress typing).
+            const brainAdd = document.getElementById('desktopBrainDumpInput');
+            if (brainAdd) {
+                brainAdd.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && brainAdd.value.trim()) {
+                        addBrainDumpItem(brainAdd.value.trim());
+                        brainAdd.value = '';
+                    } else if (e.key === 'Escape') {
+                        brainAdd.value = '';
+                        brainAdd.style.display = 'none';
+                    }
+                });
+            }
+
             // Today tab add input: creates a task for whichever day is
             // currently being viewed there.
             const todayAdd = document.getElementById('desktopTodayTabAdd');
@@ -4494,9 +4660,12 @@
 
             renderDesktopViews();
 
-            // Weather: load cache, fetch fresh data, refresh every 15 min.
+            // Weather: show cached data instantly, then resolve the location
+            // (auto-detect current location, or an explicitly chosen city) and
+            // refresh every 15 min.
             loadWeatherCache();
-            fetchWeather();
+            renderWeatherFromCache();
+            initWeatherLocation();
             setInterval(fetchWeather, 15 * 60 * 1000);
 
             // News page multi-location weather (separate from the dashboard's
@@ -4680,6 +4849,28 @@
             }
         }
 
+        // Brain Dump quick-add: the + in the widget header reveals an inline
+        // input; Enter adds an uncategorized (Brain Dump) task to the board.
+        function toggleBrainDumpAdd() {
+            const input = document.getElementById('desktopBrainDumpInput');
+            if (!input) return;
+            if (!input.style.display || input.style.display === 'none') {
+                input.style.display = 'block';
+                input.focus();
+            } else {
+                input.style.display = 'none';
+                input.value = '';
+            }
+        }
+
+        function addBrainDumpItem(text) {
+            const t = createTaskAtTarget(text, 'Brain Dump', 'someday');
+            saveTasks();
+            renderDesktopViews();
+            renderActiveView();
+            if (notionConnected) pushTaskToNotion(t);
+        }
+
         function setTaskCategory(taskId, category) {
             if (!category) return;
             const task = tasks.find(t => t.id === taskId);
@@ -4719,14 +4910,91 @@
 
         function setWeatherLocation(loc) {
             localStorage.setItem(WEATHER_LOC_KEY, JSON.stringify(loc));
-            const status = document.getElementById('desktopWeatherStatus');
-            if (status) status.textContent = `Location set to ${loc.name}`;
             fetchWeather();
         }
 
+        function setWeatherInlineStatus(msg) {
+            const el = document.getElementById('weatherInlineStatus');
+            if (el) el.textContent = msg;
+        }
+
+        // Reverse-geocode coords to a friendly "City, Region" label. Best-effort:
+        // returns 'Current Location' if the lookup fails or is blocked.
+        async function reverseGeocodeName(lat, lon) {
+            try {
+                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+                const j = await res.json();
+                const region = j.principalSubdivisionCode ? j.principalSubdivisionCode.split('-').pop() : (j.principalSubdivision || '');
+                const label = [j.city || j.locality, region].filter(Boolean).join(', ');
+                return label || 'Current Location';
+            } catch {
+                return 'Current Location';
+            }
+        }
+
+        // Ask the browser for the device's location and load its weather. Used
+        // on load (silent) and by the "Use my location" button (interactive).
+        function useCurrentLocationWeather({ silent = false } = {}) {
+            if (!navigator.geolocation) {
+                if (!silent) renderWeatherControls('Geolocation is not available on this device — search a city:');
+                return;
+            }
+            if (!silent) setWeatherInlineStatus('Locating…');
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    const name = await reverseGeocodeName(latitude, longitude);
+                    setWeatherLocation({ lat: latitude, lon: longitude, name, source: 'geo' });
+                },
+                () => {
+                    // Denied/unavailable: fall back to any saved location, else
+                    // show the manual controls.
+                    if (getWeatherLocation()) {
+                        fetchWeather();
+                    } else if (!silent) {
+                        renderWeatherControls('Location unavailable — search a city:');
+                    } else {
+                        renderWeatherFromCache();
+                    }
+                },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 30 * 60 * 1000 }
+            );
+        }
+
+        // On load: respect an explicitly-chosen city; otherwise auto-detect.
+        function initWeatherLocation() {
+            const loc = getWeatherLocation();
+            if (loc && loc.source === 'manual') {
+                fetchWeather();
+            } else {
+                useCurrentLocationWeather({ silent: true });
+            }
+        }
+
+        // Manual location controls inside the weather widget — replaces the old
+        // Settings "Weather Location" box. Reachable via the "change" link and
+        // shown automatically when there's no location yet.
+        function renderWeatherControls(message = 'Get your local forecast:') {
+            const el = document.getElementById('desktopWeatherWidget');
+            if (!el) return;
+            el.innerHTML = `
+                <div style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">${escapeHtml(message)}</div>
+                <button class="setting-button accent" style="width:100%; margin-bottom:10px;" onclick="useCurrentLocationWeather({ silent: false })">📍 Use my location</button>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="weatherCityInput" placeholder="City name…"
+                           onkeydown="if(event.key==='Enter') searchWeatherCity()"
+                           style="flex:1; background:var(--task-bg); border:1px solid var(--border-color); color:var(--text-primary); padding:10px 12px; border-radius:6px; font-size:14px; font-family:inherit;" />
+                    <button class="setting-button" onclick="searchWeatherCity()" style="width:auto; padding:10px 16px;">Search</button>
+                </div>
+                <div id="weatherResults" style="margin-top:8px;"></div>
+                <div id="weatherInlineStatus" class="sync-status" style="text-align:left;"></div>
+                ${weatherCache ? '<button class="weather-loc-change" style="margin-top:8px;" onclick="renderWeatherFromCache()">← back to forecast</button>' : ''}
+            `;
+        }
+
         async function searchWeatherCity() {
-            const input = document.getElementById('desktopWeatherCityInput');
-            const results = document.getElementById('desktopWeatherResults');
+            const input = document.getElementById('weatherCityInput');
+            const results = document.getElementById('weatherResults');
             if (!input || !results) return;
             const q = input.value.trim();
             if (!q) return;
@@ -4742,7 +5010,7 @@
                 results.innerHTML = data.results.map(r => {
                     const label = [r.name, r.admin1, r.country].filter(Boolean).join(', ');
                     return `<button class="setting-button" style="margin-bottom:4px; text-align:left; font-size:13px;"
-                                onclick='setWeatherLocation(${JSON.stringify({ lat: r.latitude, lon: r.longitude, name: label }).replace(/'/g, "&#39;")})'>${escapeHtml(label)}</button>`;
+                                onclick='setWeatherLocation(${JSON.stringify({ lat: r.latitude, lon: r.longitude, name: label, source: 'manual' }).replace(/'/g, "&#39;")})'>${escapeHtml(label)}</button>`;
                 }).join('');
             } catch (err) {
                 results.innerHTML = `<div style="font-size:12px; color:var(--text-secondary);">Error: ${escapeHtml(err.message)}</div>`;
@@ -4772,16 +5040,14 @@
         }
 
         function renderWeatherFromCache() {
-            if (weatherCache) renderWeatherWidget(weatherCache);
-            else {
-                const el = document.getElementById('desktopWeatherWidget');
-                if (!el) return;
-                const loc = getWeatherLocation();
-                if (!loc) {
-                    el.innerHTML = '<div class="desktop-widget-empty">Set your location in Settings to see weather.</div>';
-                } else {
-                    el.innerHTML = '<div class="desktop-widget-empty">Loading weather…</div>';
-                }
+            if (weatherCache) { renderWeatherWidget(weatherCache); return; }
+            const el = document.getElementById('desktopWeatherWidget');
+            if (!el) return;
+            const loc = getWeatherLocation();
+            if (!loc) {
+                renderWeatherControls();
+            } else {
+                el.innerHTML = '<div class="desktop-widget-empty">Loading weather…</div>';
             }
         }
 
@@ -4825,7 +5091,10 @@
                     </div>
                 </div>
                 ${forecastHtml}
-                <div style="font-size:10px; color:var(--text-secondary); margin-top:8px;">${escapeHtml(cache.name || '')}</div>
+                <div style="font-size:10px; color:var(--text-secondary); margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <span>${escapeHtml(cache.name || '')}</span>
+                    <button class="weather-loc-change" onclick="renderWeatherControls()">change</button>
+                </div>
             `;
 
             // Keep the Cardiac News page's weather card in sync with the same
@@ -4981,19 +5250,26 @@
 
         // Shared helper: renders a desktop task row with category colored
         // border, checkbox, time label, unschedule button, and category dot.
-        function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask' } = {}) {
+        function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask', clamp = false } = {}) {
             const color = colorForCategory(task.category);
             const time = task.startTime
                 ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
                 : '';
             const cls = small ? 'desktop-task-row small' : 'desktop-task-row';
+            // clamp: in the narrow week columns long titles are truncated to two
+            // lines; clicking the text toggles the full title. stopPropagation so
+            // the click doesn't bubble to the column's place-task handler.
+            const textCls = `desktop-task-text${clamp ? ' clampable' : ''}${task.completed ? ' completed' : ''}`;
+            const textClick = clamp
+                ? ` onclick="event.stopPropagation(); this.classList.toggle('expanded')" title="Click to expand"`
+                : '';
             return `
                 <div class="${cls}" style="border-left-color:${color}" ondblclick="openEditModal(${task.id})"
                      draggable="true"
                      ondragstart="handleMonthDragStart(event, ${task.id})"
                      ondragend="handleMonthDragEnd(event)">
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="${toggleFn}(${task.id})"></div>
-                    <div class="desktop-task-text ${task.completed ? 'completed' : ''}">${time}${escapeHtml(task.text)}</div>
+                    <div class="${textCls}"${textClick}>${time}${escapeHtml(task.text)}</div>
                     <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move back to the Someday board">↩ Board</button>
                     <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
                 </div>
@@ -5350,7 +5626,7 @@
                             return eventCardMarkup(item.event);
                         }
                         const task = item.task;
-                        return desktopTaskRowHtml(task, { small: true });
+                        return desktopTaskRowHtml(task, { small: true, clamp: true });
                     }),
                 ];
 
