@@ -3110,6 +3110,53 @@
             color: #f0f5e8 !important;
         }
 
+        /* ── Desktop LIGHT MODE ────────────────────────────────
+           body.desktop-mode redefines the palette variables above,
+           which (equal specificity, later in source) always beat the
+           mobile body.light-mode block — so light mode did nothing on
+           desktop. These two-class selectors out-specify it and supply
+           a light editorial palette. Covers every .desktop-* surface
+           that reads the global vars (Dashboard, Today, Week, Month,
+           Habits, Settings). The Cardiac News briefing has its own
+           token set, re-skinned below. */
+        body.desktop-mode.light-mode {
+            --bg-primary:      #ffffff;
+            --bg-secondary:    #eef1e8;
+            --text-primary:    #1a2213;
+            --text-secondary:  #5a7540;
+            --border-color:    rgba(99,153,34,0.28);
+            --task-bg:         #eef2e6;
+            --accent-green:    #4e7d1a;
+            --accent-green-dark: #3c6212;
+
+            background: #eef1e8 !important;
+            color: #1a2213 !important;
+        }
+
+        /* Cardiac News briefing: flip its scoped --br-* tokens to a
+           light editorial palette. Text-greens (100/200) go dark so
+           they read on white; fill-greens (800/900) go to light tints
+           so dark text sits on them. */
+        body.light-mode #desktopTabHub {
+            --br-green-50:  #2e550d;
+            --br-green-100: #2e550d;
+            --br-green-200: #4e7d1a;
+            --br-green-400: #4e7d1a;
+            --br-green-700: #dcebc4;
+            --br-green-800: #dcebc4;
+            --br-green-900: #eaf3de;
+            --br-bg:      #eef1e8;
+            --br-surface: #ffffff;
+            --br-card:    #ffffff;
+            --br-border:  rgba(99,153,34,0.30);
+            --br-border-bright: rgba(99,153,34,0.55);
+            --br-text-bright: #1a2213;
+            --br-text-muted:  #4e6b32;
+            --br-text-dim:    #6f8a4c;
+            --br-up:   #3c9e1f;
+            --br-down: #cf3b3b;
+        }
+
         /* Display type — Barlow Condensed with letterspacing wherever
            the dashboard uses uppercase headers. */
         body.desktop-mode .desktop-logo,
@@ -3258,6 +3305,58 @@
         body.desktop-mode .desktop-quick-add:focus {
             border-color: #97c459;
             outline: none;
+        }
+
+        /* ── Desktop LIGHT MODE — chrome overrides ─────────────
+           The editorial rules above hardcode dark hex on specific
+           elements, so the palette variables alone can't lighten them.
+           These two-class selectors out-specify each and supply light
+           equivalents. */
+        body.desktop-mode.light-mode .desktop-logo { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-nav-item.active {
+            background: rgba(99,153,34,0.16);
+            color: #3c6212;
+            border-left-color: #4e7d1a;
+        }
+        body.desktop-mode.light-mode .desktop-dash-day { color: #1a2213; }
+        body.desktop-mode.light-mode .desktop-dash-date { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-tab-title {
+            color: #3c6212;
+            border-bottom-color: rgba(99,153,34,0.45);
+        }
+        body.desktop-mode.light-mode .desktop-widget-title {
+            color: #4e7d1a;
+            border-bottom-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-widget {
+            background: #ffffff;
+            border-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-widget:hover {
+            border-color: rgba(99,153,34,0.5);
+        }
+        body.desktop-mode.light-mode .desktop-sidebar {
+            background: #ffffff;
+            border-right-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .setting-label { color: #4e7d1a; }
+        body.desktop-mode.light-mode .desktop-settings-card {
+            background: #ffffff;
+            border-color: rgba(99,153,34,0.28);
+        }
+        body.desktop-mode.light-mode .desktop-settings-card .setting-button {
+            background: #f0f2ea;
+            border-color: rgba(99,153,34,0.35);
+            color: #1a2213;
+        }
+        body.desktop-mode.light-mode .desktop-settings-card .setting-button:hover {
+            background: #e6ebda;
+            border-color: rgba(99,153,34,0.6);
+        }
+        body.desktop-mode.light-mode .desktop-quick-add {
+            background: #f0f2ea;
+            border-color: rgba(99,153,34,0.35);
+            color: #1a2213;
         }
 
         /* Task rows on the dashboard use the accent green for their left
