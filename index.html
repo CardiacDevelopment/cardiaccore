@@ -5057,7 +5057,25 @@
 
         // A timed event: card with the time above the title, tinted with the
         // calendar's color. Checkable — a meeting is something you attend.
+        // A timed event on a calendar flagged "compact": render it as the same
+        // small, quiet pill the all-day events use (time in the colored slot,
+        // no checkbox). Used everywhere eventCardMarkup is, via the branch below.
+        function compactEventMarkup(ev) {
+            const color = colorForEvent(ev);
+            const timeLabel = formatTime12h(timeFromIso(ev.start));
+            const url = ev.url ? escapeHtml(ev.url) : '';
+            const openAttr = url ? `onclick="window.open('${url}','_blank','noopener')"` : '';
+            return `
+                <div class="all-day-event compact-event" style="border-left-color:${color}; background:${color}14;" ${openAttr}>
+                    <span class="all-day-event-cal" style="color:${color};">${escapeHtml(timeLabel)}</span>
+                    <span class="all-day-event-title">${escapeHtml(ev.title)}</span>
+                </div>
+            `;
+        }
+
         function eventCardMarkup(ev) {
+            const cal = calendarById(ev.calendarId);
+            if (cal && cal.compact) return compactEventMarkup(ev);
             const color = colorForEvent(ev);
             const calName = nameForEvent(ev);
             const timeLabel = formatTime12h(timeFromIso(ev.start));
@@ -7181,14 +7199,21 @@
                 els.forEach(el => { el.innerHTML = empty; });
                 return;
             }
-            const rows = googleCalendars.map(c => `
-                <label style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color); cursor:pointer;">
-                    <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleGoogleCalendar('${escapeHtml(c.id).replace(/'/g, "&#39;")}', this.checked)" />
-                    <span style="width:12px; height:12px; border-radius:50%; background:${escapeHtml(c.color || CALENDAR_FALLBACK_COLOR)}; flex-shrink:0;"></span>
-                    <span style="flex:1; font-size:13px; color:var(--text-primary);">${escapeHtml(c.name)}</span>
-                    <span style="font-size:11px; color:var(--text-secondary);">${c.enabled ? 'Showing' : 'Hidden'}</span>
-                </label>
-            `).join('');
+            const rows = googleCalendars.map(c => {
+                const idAttr = escapeHtml(c.id).replace(/'/g, "&#39;");
+                return `
+                <div style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color);">
+                    <label style="display:flex; align-items:center; gap:10px; flex:1; min-width:0; cursor:pointer;">
+                        <input type="checkbox" ${c.enabled ? 'checked' : ''} onchange="toggleGoogleCalendar('${idAttr}', this.checked)" />
+                        <span style="width:12px; height:12px; border-radius:50%; background:${escapeHtml(c.color || CALENDAR_FALLBACK_COLOR)}; flex-shrink:0;"></span>
+                        <span style="flex:1; min-width:0; font-size:13px; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(c.name)}</span>
+                    </label>
+                    <button type="button" onclick="toggleGoogleCalendarCompact('${idAttr}')"
+                            title="Show this calendar's events as small pills, like all-day events"
+                            style="flex-shrink:0; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:3px 8px; border-radius:20px; cursor:pointer; font-family:inherit; border:1px solid ${c.compact ? 'var(--accent-green)' : 'var(--border-color)'}; background:${c.compact ? 'rgba(151,196,89,0.15)' : 'transparent'}; color:${c.compact ? 'var(--accent-green)' : 'var(--text-secondary)'};">Mini</button>
+                    <span style="font-size:11px; color:var(--text-secondary); flex-shrink:0; width:52px; text-align:right;">${c.enabled ? 'Showing' : 'Hidden'}</span>
+                </div>`;
+            }).join('');
             // Toggling a calendar re-renders this list, so the expanded state
             // has to survive the rebuild or the panel snaps shut on every click.
             // gcalPickerOpen is set from summary's onclick, which runs before
@@ -7212,6 +7237,19 @@
             saveGoogleCalendars();
             renderGoogleCalendarList();
             fetchGoogleCalendarEvents();
+        }
+
+        // "Mini" per-calendar: render its timed events as small pills (like the
+        // all-day events) everywhere. Display-only — no refetch needed, just a
+        // repaint of every view that shows events.
+        function toggleGoogleCalendarCompact(id) {
+            const cal = googleCalendars.find(c => String(c.id) === String(id));
+            if (!cal) return;
+            cal.compact = !cal.compact;
+            saveGoogleCalendars();
+            renderGoogleCalendarList();
+            repaintAfterCalendar();
+            if (typeof renderDesktopViews === 'function') renderDesktopViews();
         }
 
         // Repaint every surface that reads calendarEvents, regardless of which
