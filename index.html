@@ -7236,8 +7236,8 @@
                 }
                 const data = await res.json();
                 const remote = Array.isArray(data.calendars) ? data.calendars : [];
-                // Merge: keep existing enabled/color state; drop calendars that
-                // no longer exist remotely.
+                // Merge: keep existing enabled/color/compact state; drop
+                // calendars that no longer exist remotely.
                 const byId = Object.fromEntries(googleCalendars.map(c => [c.id, c]));
                 // First run on this device: show everything, so a fresh phone
                 // isn't blank. Once the device has its own saved choices, a
@@ -7250,6 +7250,7 @@
                         name: rc.name,
                         color: (prev && prev.color) || rc.color || CALENDAR_FALLBACK_COLOR,
                         enabled: prev ? !!prev.enabled : firstRun,
+                        compact: prev ? !!prev.compact : false,
                     };
                 });
                 saveGoogleCalendars();
