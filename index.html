@@ -5128,6 +5128,13 @@
         // A timed event on a calendar flagged "compact": render it as the same
         // small, quiet pill the all-day events use (time in the colored slot,
         // no checkbox). Used everywhere eventCardMarkup is, via the branch below.
+        // A "Mini" calendar renders its timed events as small pills, pinned to
+        // the top with the all-day events rather than interleaved by time.
+        function isCompactEvent(ev) {
+            const cal = calendarById(ev.calendarId);
+            return !!(cal && cal.compact);
+        }
+
         function compactEventMarkup(ev) {
             const color = colorForEvent(ev);
             const timeLabel = formatTime12h(timeFromIso(ev.start));
@@ -5142,8 +5149,7 @@
         }
 
         function eventCardMarkup(ev) {
-            const cal = calendarById(ev.calendarId);
-            if (cal && cal.compact) return compactEventMarkup(ev);
+            if (isCompactEvent(ev)) return compactEventMarkup(ev);
             const color = colorForEvent(ev);
             const calName = nameForEvent(ev);
             const timeLabel = formatTime12h(timeFromIso(ev.start));
@@ -5170,6 +5176,9 @@
         // it is context for the day, not a thing to complete. `ymd` is the day
         // being rendered, used to caption multi-day spans ("Day 2/4").
         function allDayPillMarkup(ev, ymd) {
+            // Compact-calendar timed events ride in the all-day (pinned) bucket
+            // but keep their time-stamped pill look.
+            if (!ev.allDay) return compactEventMarkup(ev);
             const color = colorForEvent(ev);
             const calName = nameForEvent(ev);
             const url = ev.url ? escapeHtml(ev.url) : '';
@@ -7348,17 +7357,25 @@
             if (changed) renderCalendarSettings();
         }
 
-        // All-day events for a given day (inclusive of multi-day spans).
+        // Pinned events for a day: true all-day events (inclusive of multi-day
+        // spans) plus any "Mini" calendar's timed events, which pin to the top
+        // instead of interleaving. Compact events sort after the all-day ones,
+        // by start time.
         function allDayEventsForDay(ymd) {
-            return calendarEvents.filter(e =>
+            const allDay = calendarEvents.filter(e =>
                 e.allDay && e.date <= ymd && (e.endDate || e.date) >= ymd
             );
+            const compact = calendarEvents
+                .filter(e => !e.allDay && e.date === ymd && isCompactEvent(e))
+                .sort((a, b) => String(a.start).localeCompare(String(b.start)));
+            return [...allDay, ...compact];
         }
 
-        // Timed events that start on the given day.
+        // Timed events that start on the given day — excludes "Mini" calendars,
+        // whose events are pinned at the top via allDayEventsForDay instead.
         function timedEventsForDay(ymd) {
             return calendarEvents
-                .filter(e => !e.allDay && e.date === ymd)
+                .filter(e => !e.allDay && e.date === ymd && !isCompactEvent(e))
                 .sort((a, b) => String(a.start).localeCompare(String(b.start)));
         }
 
