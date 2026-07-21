@@ -3680,6 +3680,12 @@
         </div>
 
         <div class="setting-item">
+            <div class="setting-label">Category Colors</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Pick the color for each task category. Saved on this device.</div>
+            <div data-cat-colors></div>
+        </div>
+
+        <div class="setting-item">
             <div class="setting-label">Calendars</div>
             <div id="calendarList"></div>
             <button class="setting-button" onclick="openAddCalendar()" style="margin-top:10px;">
@@ -4131,6 +4137,11 @@
                         </button>
                     </div>
                     <div class="desktop-settings-card">
+                        <div class="setting-label">Category Colors</div>
+                        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Pick the color for each task category. Saved on this device; the board and task colors follow your choice.</div>
+                        <div data-cat-colors></div>
+                    </div>
+                    <div class="desktop-settings-card">
                         <div class="setting-label">Appearance</div>
                         <div class="setting-toggle">
                             <div class="setting-label" style="margin-bottom:0;">Light Mode</div>
@@ -4290,6 +4301,62 @@
             return ordered;
         }
 
+        // User-chosen per-category colors. Persisted locally and layered over the
+        // built-in categoryColors defaults, so a category's color stays fixed to
+        // whatever the user picked (name-keyed — it never drifts on its own).
+        let categoryColorOverrides = loadCategoryColors();
+        function loadCategoryColors() {
+            try {
+                const raw = localStorage.getItem('cardiacCategoryColors');
+                if (raw) { const o = JSON.parse(raw); if (o && typeof o === 'object') return o; }
+            } catch { /* fall through to no overrides */ }
+            return {};
+        }
+        function saveCategoryColors() {
+            try { localStorage.setItem('cardiacCategoryColors', JSON.stringify(categoryColorOverrides)); }
+            catch { /* storage unavailable — colors just won't persist */ }
+        }
+        // The one place category color is resolved: user override → built-in
+        // default → neutral fallback.
+        function colorForCategory(name) {
+            return categoryColorOverrides[name] || categoryColors[name] || '#888780';
+        }
+        function setCategoryColor(name, color) {
+            categoryColorOverrides[name] = color;
+            saveCategoryColors();
+            renderCategoryColorSettings();
+            if (typeof renderDesktopViews === 'function') renderDesktopViews();
+            if (typeof renderTasks === 'function') renderTasks();
+        }
+        function resetCategoryColor(name) {
+            delete categoryColorOverrides[name];
+            saveCategoryColors();
+            renderCategoryColorSettings();
+            if (typeof renderDesktopViews === 'function') renderDesktopViews();
+            if (typeof renderTasks === 'function') renderTasks();
+        }
+        // Fills every settings panel's category-color list (mobile + desktop).
+        function renderCategoryColorSettings() {
+            const containers = document.querySelectorAll('[data-cat-colors]');
+            if (!containers.length) return;
+            const rows = orderedBoardCategories().map(name => {
+                const nameAttr = escapeHtml(name).replace(/'/g, '&#39;');
+                const color = colorForCategory(name);
+                const isOverridden = !!categoryColorOverrides[name];
+                return `
+                    <div style="display:flex; align-items:center; gap:10px; padding:7px 0; border-top:1px solid var(--border-color);">
+                        <input type="color" value="${escapeHtml(color)}"
+                               onchange="setCategoryColor('${nameAttr}', this.value)"
+                               style="width:26px; height:26px; padding:0; border:none; background:none; cursor:pointer; flex-shrink:0;" />
+                        <span style="flex:1; min-width:0; font-size:13px; color:var(--text-primary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(name)}</span>
+                        <button type="button" onclick="resetCategoryColor('${nameAttr}')"
+                                title="Reset to the default color"
+                                style="flex-shrink:0; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:3px 8px; border-radius:20px; cursor:pointer; font-family:inherit; border:1px solid var(--border-color); background:transparent; color:var(--text-secondary); visibility:${isOverridden ? 'visible' : 'hidden'};">Reset</button>
+                    </div>`;
+            }).join('');
+            containers.forEach(el => { el.innerHTML = rows; });
+        }
+
         // Notion has a legacy misspelled "Aquisitions" category option; the app
         // uses the correct "Acquisitions". Rewrite any locally-cached tasks so
         // they don't render a second, near-identical board group before the
@@ -4344,6 +4411,7 @@
             initTaskBoardEvents();
             initOverlayDismissals();
             renderCalendarSettings();
+            renderCategoryColorSettings();
             initDesktop();
 
             // Calendar events: fetch immediately, then refresh every 5 min.
@@ -4914,7 +4982,7 @@
         // Shared helper: renders a desktop task row with category colored
         // border, checkbox, time label, unschedule button, and category dot.
         function desktopTaskRowHtml(task, { small = false, toggleFn = 'toggleTask' } = {}) {
-            const color = categoryColors[task.category] || '#888780';
+            const color = colorForCategory(task.category);
             const time = task.startTime
                 ? `<span class="desktop-task-time">${escapeHtml(formatTime12h(task.startTime))}</span>`
                 : '';
@@ -5516,7 +5584,7 @@
                     items.push(`<div class="desktop-month-chip event-chip"><span class="chip-dot" style="background:${c}"></span>${escapeHtml(ev.title)}</div>`);
                 }
                 for (const t of dayTasks) {
-                    const c = categoryColors[t.category] || '#888780';
+                    const c = colorForCategory(t.category);
                     items.push(`<div class="desktop-month-chip task-chip ${t.completed ? 'done' : ''}"
                                      draggable="true" data-task-id="${t.id}"
                                      ondragstart="event.stopPropagation(); handleMonthDragStart(event, ${t.id})"
@@ -5590,7 +5658,7 @@
             // into any of them; empty ones render as a slim drop target.
             for (const cat of cats) {
                 const items = groups[cat] || [];
-                const color = categoryColors[cat] || '#888780';
+                const color = colorForCategory(cat);
                 const catAttr = escapeHtml(cat).replace(/'/g, '&#39;');
                 html += `<div class="desktop-month-board-cat ${items.length === 0 ? 'empty' : ''}"
                               ondragover="event.preventDefault(); this.classList.add('cat-drag-over')"
@@ -6098,7 +6166,7 @@
             list.innerHTML = mergedList.map(item => {
                 if (item.kind === 'event') return eventCardMarkup(item.event);
                 const task = item.task;
-                const categoryColor = categoryColors[task.category] || '#888780';
+                const categoryColor = colorForCategory(task.category);
                 const hasTime = !!task.startTime;
                 const timeLabel = hasTime
                     ? `<div class="task-time">${escapeHtml(formatTime12h(task.startTime))}</div>`
@@ -6463,7 +6531,7 @@
             ];
 
             container.innerHTML = orderedCats.map(cat => {
-                const color = categoryColors[cat] || '#888780';
+                const color = colorForCategory(cat);
                 const items = groups[cat]
                     .slice()
                     .sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -6630,14 +6698,16 @@
 
         function renderEditCategoryGrid(selectedCategory) {
             const grid = document.getElementById('editCategoryGrid');
-            grid.innerHTML = Object.entries(categoryColors).map(([name, color]) => `
+            grid.innerHTML = Object.keys(categoryColors).map(name => {
+                const color = colorForCategory(name);
+                return `
                 <div class="category-chip ${selectedCategory === name ? 'selected' : ''}"
                      style="background: ${color}22; color: ${color};"
                      data-category="${escapeHtml(name)}"
                      onclick="selectEditCategory(this)">
                     ${escapeHtml(name)}
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function openEditModal(taskId) {
@@ -7777,7 +7847,7 @@
         // A draggable board/holder chip for a task (shared by the Someday board
         // and the This Week / This Month holders).
         function boardTaskChipHtml(t) {
-            const color = categoryColors[t.category] || '#888780';
+            const color = colorForCategory(t.category);
             return `<div class="desktop-board-task ${monthArmedTaskId === t.id ? 'armed' : ''}"
                          data-task-id="${t.id}" draggable="true"
                          style="border-left-color:${color}"
