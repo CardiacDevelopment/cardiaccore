@@ -6764,11 +6764,14 @@
             }
         }
 
-        // Archive a Notion page so it stops coming back on sync. Returns true on
-        // success, false on any failure — caller decides whether to surface the
-        // error to the user.
+        // Archive a Notion page so it stops coming back on sync. Returns
+        // { ok, gone }: ok===true on success; on failure gone===true means the
+        // page no longer exists (404 / object_not_found / unparseable id), i.e.
+        // there is nothing left to archive, so callers can safely delete
+        // locally instead of being wedged by a stale notionId. gone===false is
+        // a real/transient failure the caller should surface.
         async function archiveTaskInNotion(notionId) {
-            if (!notionConnected || !notionId) return false;
+            if (!notionConnected || !notionId) return { ok: false, gone: false };
 
             try {
                 const response = await fetch('/api/notion/archive-task', {
@@ -6779,12 +6782,16 @@
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));
                     console.error('Archive failed:', err.error || response.statusText);
-                    return false;
+                    const code = err && err.notion && err.notion.code;
+                    const gone = response.status === 404 ||
+                                 code === 'object_not_found' ||
+                                 code === 'validation_error';
+                    return { ok: false, gone };
                 }
-                return true;
+                return { ok: true, gone: false };
             } catch (error) {
                 console.error('Archive error:', error);
-                return false;
+                return { ok: false, gone: false };
             }
         }
 
@@ -7808,8 +7815,12 @@
             // notionId. If the archive fails (offline, API error), we surface it
             // and bail — better than a phantom local delete that resurrects.
             if (notionConnected && task.notionId) {
-                const ok = await archiveTaskInNotion(task.notionId);
-                if (!ok) {
+                const { ok, gone } = await archiveTaskInNotion(task.notionId);
+                // A real/transient failure: keep the task so it can't resurrect.
+                // But if the page is already gone (stale notionId pointing at a
+                // deleted page), there's nothing to preserve — fall through and
+                // remove it locally so the task isn't wedged forever.
+                if (!ok && !gone) {
                     window.alert('Could not archive in Notion. Task was not deleted.');
                     return;
                 }
