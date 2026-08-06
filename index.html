@@ -6010,6 +6010,7 @@
                              draggable="true"
                              style="border-left-color: ${color}"
                              onclick="toggleMonthArm(${t.id})"
+                             ondblclick="event.stopPropagation(); openEditModal(${t.id})"
                              ondragstart="handleMonthDragStart(event, ${t.id})"
                              ondragend="handleMonthDragEnd(event)">
                             ${escapeHtml(t.text)}
