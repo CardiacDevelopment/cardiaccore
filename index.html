@@ -1610,6 +1610,51 @@
             background: rgba(151, 196, 89, 0.12);
         }
 
+        /* Explicit delete affordance — the reliable path that doesn't depend on
+           double-click (which draggable rows swallow on trackpads). Red ✕ so it
+           reads unambiguously as delete, unlike the neutral "Board" pill above. */
+        .desktop-task-delete {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 50px;
+            flex-shrink: 0;
+            opacity: 0.35;
+            transition: opacity 0.15s ease, color 0.15s ease,
+                        border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .desktop-task-row:hover .desktop-task-delete {
+            opacity: 1;
+        }
+
+        .desktop-task-delete:hover {
+            color: #E24B4A;
+            border-color: #E24B4A;
+            background: #E24B4A1f;
+        }
+
+        /* Week column small rows position action buttons absolutely bottom-right;
+           stack delete just left of the "Board" pill so they don't overlap. */
+        .desktop-week-col .desktop-task-row.small .desktop-task-delete {
+            position: absolute;
+            right: 62px;
+            bottom: 6px;
+            background: var(--bg-primary);
+            z-index: 2;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .desktop-week-col .desktop-task-row.small:hover .desktop-task-delete {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .desktop-task-text {
             flex: 1;
             line-height: 1.35;
@@ -1984,8 +2029,10 @@
 
 
         /* ── Desktop month grid ──────────────────────────────── */
+        /* Keep the normal 1100px reading cap: a full-viewport 7-column grid
+           blows the day cells out to an unreadable width on large monitors. */
         #desktopTabMonth {
-            max-width: none;
+            max-width: 1100px;
         }
 
         .desktop-month-layout {
@@ -5271,6 +5318,7 @@
                     <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="${toggleFn}(${task.id})"></div>
                     <div class="${textCls}"${textClick}>${time}${escapeHtml(task.text)}</div>
                     <button class="desktop-task-unsched" onclick="event.stopPropagation(); unscheduleTask(${task.id})" title="Move back to the Someday board">↩ Board</button>
+                    <button class="desktop-task-delete" onclick="event.stopPropagation(); deleteTaskById(${task.id})" title="Delete task" aria-label="Delete task">✕</button>
                     <span class="category-dot" style="background-color: ${color}" title="${escapeHtml(task.category)}"></span>
                 </div>
             `;
@@ -6626,6 +6674,14 @@
 
                 saveTasks();
                 renderTasks();
+
+                // Outbound reconciliation: tasks created while offline have no
+                // notionId and syncFromNotion is pull-only, so they'd otherwise
+                // stay stranded locally forever. Push them up now that we're
+                // connected. Runs after the merge so a task that just arrived
+                // from Notion is already linked and won't be re-created.
+                await reconcileUnsyncedTasks();
+
                 if (!silent) alert(`Synced ${remoteTasks.length} tasks from Notion`);
             } catch (error) {
                 console.error('Sync error:', error);
@@ -6680,6 +6736,30 @@
                 }
             } catch (error) {
                 console.error('Push error:', error);
+            }
+        }
+
+        // Push every local task that has no notionId up to Notion. These are
+        // almost always tasks created while offline (creation paths only push
+        // when notionConnected is true, and syncFromNotion only pulls). Guarded
+        // against re-entrancy so overlapping syncs can't create duplicate pages;
+        // pushTaskToNotion stamps the returned notionId onto the local task, so
+        // once a task is linked it's skipped on the next pass.
+        let reconcileInFlight = false;
+        async function reconcileUnsyncedTasks() {
+            if (!notionConnected || reconcileInFlight) return;
+            const unsynced = tasks.filter(t => !t.notionId);
+            if (!unsynced.length) return;
+            reconcileInFlight = true;
+            try {
+                for (const task of unsynced) {
+                    // A concurrent push (or an earlier iteration) may have linked
+                    // it since we snapshotted the list — re-check before pushing.
+                    if (task.notionId) continue;
+                    await pushTaskToNotion(task);
+                }
+            } finally {
+                reconcileInFlight = false;
             }
         }
 
