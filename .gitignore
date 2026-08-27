@@ -1,2 +1,7 @@
 .claude/
 .DS_Store
+
+# Never commit local env files (this repo is public)
+.env
+.env.*
+!.env.example
