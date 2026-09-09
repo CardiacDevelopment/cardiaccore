@@ -32,16 +32,18 @@ module.exports = async function handler(req, res) {
 
       for (const page of data.results || []) {
         if (page.archived) continue;
-        // Narrow shape: the client merge reads only id/title/completed/
-        // category/dayOffset. pageToTask also emits status, dueDate,
-        // categories, project and url — roughly half the payload, never read
-        // on this route. lastEditedTime is kept because the ETag hashes it.
+        // Narrow shape. dueDate, project and url are still dropped — nothing
+        // reads them. status and categories ARE read: taskToProperties needs
+        // them to avoid clobbering a non-Done Status or dropping the extra
+        // multi-select options Notion holds. lastEditedTime feeds the ETag.
         const t = pageToTask(page);
         tasks.push({
           id: t.id,
           title: t.title,
           completed: t.completed,
           category: t.category,
+          categories: t.categories,
+          status: t.status,
           dayOffset: t.dayOffset,
           lastEditedTime: t.lastEditedTime,
         });

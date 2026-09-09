@@ -38,14 +38,22 @@ async function notionFetch(path, { token, method = 'GET', body } = {}) {
   return data;
 }
 
-// The "Select" option in the user's Notion DB is misspelled "Aquisitions".
-// The app (and its category colors) uses the correct "Acquisitions". Map
-// between the two at the API boundary so the typo in Notion doesn't render a
-// second, near-identical category group on the board. Reading canonicalizes
-// to the app's spelling; writing translates back to Notion's existing option
-// name so we reuse it instead of creating a new "Acquisitions" option.
-const CATEGORY_FROM_NOTION = { 'Aquisitions': 'Acquisitions' };
-const CATEGORY_TO_NOTION = { 'Acquisitions': 'Aquisitions' };
+// Read-side canonicalization only. Notion's "Aquisitions" typo has since been
+// corrected to "Acquisitions", so the old write-side alias was translating a
+// correct name INTO a misspelling that no longer exists as an option — every
+// edit to one of those tasks made Notion mint a duplicate. Writing now uses
+// the app's name verbatim, which is exactly what Notion offers.
+//
+// The other two entries migrate categories Notion has since split: "Cardiac"
+// became Ops / Products-Projects, and "Property Management" became Home /
+// Rentals. Mapping on read means a legacy row lands on the new name, and the
+// next edit writes the new name back, retiring the old option naturally.
+const CATEGORY_FROM_NOTION = {
+  'Aquisitions': 'Acquisitions',
+  'Cardiac': 'Cardiac Ops',
+  'Property Management': 'Property Management: Home',
+};
+const CATEGORY_TO_NOTION = {};
 const canonicalCategory = name => CATEGORY_FROM_NOTION[name] || name;
 const notionCategoryName = name => CATEGORY_TO_NOTION[name] || name;
 
@@ -102,10 +110,28 @@ function taskToProperties(task) {
     props['Task'] = { title: [{ text: { content: String(task.text) } }] };
   }
   if (task.completed != null) {
-    props['Status'] = { status: { name: task.completed ? 'Done' : 'Not started' } };
+    // The app only models done/not-done, but Notion's Status has five options.
+    // Writing "Not started" for anything unchecked used to erase Backburner /
+    // Up Next / In progress — and not just on a toggle: the daily rollover
+    // pushes every overdue task, so an Up Next task lost its status simply by
+    // sitting there. Leave Status alone when the task is already in one of
+    // those open states; only Done and a genuine un-complete are written.
+    if (task.completed) {
+      props['Status'] = { status: { name: 'Done' } };
+    } else if (!task.status || task.status === 'Done') {
+      props['Status'] = { status: { name: 'Not started' } };
+    }
   }
   if (task.category) {
-    props['Select'] = { multi_select: [{ name: notionCategoryName(task.category) }] };
+    // "Select" is a multi-select and some tasks carry two or three options.
+    // The app manages the first one; everything after it is Notion-side data
+    // it knows nothing about, so preserve it instead of writing a 1-item array
+    // and silently dropping the rest.
+    const primary = notionCategoryName(task.category);
+    const extras = Array.isArray(task.categories)
+      ? task.categories.slice(1).map(notionCategoryName).filter(n => n !== primary)
+      : [];
+    props['Select'] = { multi_select: [primary, ...extras].map(name => ({ name })) };
   }
   if (task.dayOffset != null && task.dayOffset !== 999) {
     const d = new Date();
