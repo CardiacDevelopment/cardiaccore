@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { getConfig, notionFetch, pageToTask, applyCors } = require('../_lib/notion');
 
 module.exports = async function handler(req, res) {
@@ -50,7 +51,29 @@ module.exports = async function handler(req, res) {
       pages += 1;
     } while (cursor && pages < MAX_PAGES);
 
-    res.status(200).json({ tasks, count: tasks.length, truncated: pages >= MAX_PAGES && cursor });
+    const payload = JSON.stringify({
+      tasks,
+      count: tasks.length,
+      truncated: pages >= MAX_PAGES && cursor,
+    });
+
+    // Conditional GET. The client polls this every 45s, on every focus and on
+    // every visibilitychange; almost every one of those returns a body it
+    // already has. dayOffset is derived from the server's clock so the hash
+    // rotates at midnight on its own, and lastEditedTime makes any Notion edit
+    // change it.
+    const etag = '"' + crypto.createHash('sha1').update(payload).digest('hex') + '"';
+    res.setHeader('ETag', etag);
+    // Never shared-cache this: it is a two-way sync endpoint, and a CDN serving
+    // a pre-push body after the client has pushed would make the merge revert
+    // the local edit, which then pushes back. Explicit so no proxy decides.
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.headers['if-none-match'] === etag) {
+      res.status(304).end();
+      return;
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.status(200).send(payload);
   } catch (err) {
     res.status(err.status || 500).json({
       error: err.message,

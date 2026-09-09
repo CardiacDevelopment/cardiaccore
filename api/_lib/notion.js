@@ -122,7 +122,7 @@ function taskToProperties(task) {
 function applyCors(req, res) {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, If-None-Match');
   if (req.method === 'OPTIONS') {
     res.status(204).end();
     return true;

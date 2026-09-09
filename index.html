@@ -6170,6 +6170,11 @@
         }
 
         // Notion Sync
+        // In memory only, deliberately. Persisting this would let a stale ETag
+        // survive a reload and skip the boot sync entirely — which, with the
+        // open notionId-loss bug, is how local rows get stranded.
+        let lastSyncEtag = null;
+
         async function syncFromNotion({ silent = false } = {}) {
             if (!notionConnected) {
                 if (!silent) alert('Not connected to Notion');
@@ -6183,9 +6188,18 @@
             }
 
             try {
-                const response = await fetch('/api/notion/sync', {
-                    headers: { 'Accept': 'application/json' },
-                });
+                const headers = { 'Accept': 'application/json' };
+                if (lastSyncEtag) headers['If-None-Match'] = lastSyncEtag;
+                const response = await fetch('/api/notion/sync', { headers });
+
+                // 304: nothing changed upstream. Skip the body, the merge, the
+                // save and the render. Note response.ok is false for 304, so
+                // this has to come before the error branch below.
+                if (response.status === 304) {
+                    reconcileUnsyncedTasks().catch(err => console.error('Reconcile error:', err));
+                    if (!silent) alert('Already up to date');
+                    return;
+                }
                 if (!response.ok) {
                     let detail = response.statusText;
                     try {
@@ -6195,6 +6209,7 @@
                     throw new Error(detail || 'Sync failed');
                 }
 
+                lastSyncEtag = response.headers.get('ETag');
                 const data = await response.json();
                 const remoteTasks = Array.isArray(data.tasks) ? data.tasks : [];
 
