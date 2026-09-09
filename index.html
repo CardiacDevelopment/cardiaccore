@@ -4930,7 +4930,12 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data.enabled === false || !Array.isArray(data.checks)) return;
-                checkedCalendarEvents = new Set(data.checks);
+                // Runs on load, every 45s and on every focus. Almost always the
+                // same set, so compare before writing and repainting.
+                const next = new Set(data.checks);
+                if (next.size === checkedCalendarEvents.size
+                    && [...next].every(k => checkedCalendarEvents.has(k))) return;
+                checkedCalendarEvents = next;
                 saveCheckedCalendarEvents();
                 repaintAfterCalendar();
             } catch (error) {
@@ -6206,16 +6211,33 @@
                     const nid = tasks[i].notionId;
                     if (nid && !byNotionId.has(nid)) byNotionId.set(nid, i);
                 }
+                // Most background pulls change nothing. Tracking that lets a
+                // no-op sync skip the localStorage write and the repaint
+                // entirely — this runs every 45s, on every focus and on every
+                // visibilitychange. It also cuts object churn: the spread below
+                // used to allocate a fresh object for all 305 tasks every time,
+                // orphaning any reference held by an in-flight closure (the
+                // `unsynced` snapshot in reconcileUnsyncedTasks, notably).
+                let changed = false;
                 for (const remote of remoteTasks) {
                     const idx = byNotionId.has(remote.id) ? byNotionId.get(remote.id) : -1;
                     if (idx >= 0) {
-                        tasks[idx] = {
-                            ...tasks[idx],
-                            text: remote.title,
-                            completed: remote.completed,
-                            category: remote.category || tasks[idx].category || 'Brain Dump',
-                            dayOffset: remote.dayOffset != null ? remote.dayOffset : tasks[idx].dayOffset,
-                        };
+                        const cur = tasks[idx];
+                        const nextCategory = remote.category || cur.category || 'Brain Dump';
+                        const nextOffset = remote.dayOffset != null ? remote.dayOffset : cur.dayOffset;
+                        if (cur.text !== remote.title
+                            || cur.completed !== remote.completed
+                            || cur.category !== nextCategory
+                            || cur.dayOffset !== nextOffset) {
+                            tasks[idx] = {
+                                ...cur,
+                                text: remote.title,
+                                completed: remote.completed,
+                                category: nextCategory,
+                                dayOffset: nextOffset,
+                            };
+                            changed = true;
+                        }
                     } else {
                         tasks.push({
                             id: nextLocalId++,
@@ -6232,11 +6254,14 @@
                         // a duplicate local row, which then creates a duplicate
                         // Notion page on the next edit.
                         byNotionId.set(remote.id, tasks.length - 1);
+                        changed = true;
                     }
                 }
 
-                saveTasks();
-                scheduleRender();
+                if (changed) {
+                    saveTasks();
+                    scheduleRender();
+                }
 
                 // Outbound reconciliation: tasks created while offline have no
                 // notionId and syncFromNotion is pull-only, so they'd otherwise
