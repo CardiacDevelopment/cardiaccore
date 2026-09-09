@@ -3986,17 +3986,26 @@
         // Fallback color for events whose calendar can't be resolved.
         const CALENDAR_FALLBACK_COLOR = '#5B7BD9';
 
+        // Mirrors the "Select" multi-select options in the Master Task Database,
+        // in Notion's own order (Brain Dump kept first — it's the inbox/default).
+        // Hex values are Notion's palette so the board reads the same in both
+        // places. Notion reuses colors, so three pairs share a swatch here
+        // (both Cardiac options green, both Property Management red, Estate and
+        // COGHQ pink); Settings -> Category Colors overrides any of them per
+        // category without touching this list.
         const categoryColors = {
-            'Brain Dump': '#888780',
-            'Personal': '#378ADD',
-            'Cardiac': '#d4537e',
-            'Benefits Board': '#EF9F27',
-            'Property Management': '#639922',
-            'Estate': '#BA7517',
-            'Acquisitions': '#7F77DD',
-            'Growth': '#1D9E75',
-            'Research': '#888780',
-            'COGHQ': '#C65A9C'
+            'Brain Dump': '#979A9B',                    // gray
+            'Personal': '#529CCA',                      // blue
+            'Benefits Board': '#FFA344',                // orange
+            'Property Management: Home': '#FF7369',     // red
+            'Property Management: Rentals': '#FF7369',  // red
+            'Cardiac Ops': '#4DAB9A',                   // green
+            'Cardiac Products / Projects': '#4DAB9A',   // green
+            'Estate': '#E255A1',                        // pink
+            'Acquisitions': '#FFDC49',                  // yellow
+            'Growth': '#9A6DD7',                        // purple
+            'Research': '#937264',                      // brown
+            'COGHQ': '#E255A1'                          // pink
         };
 
         // User-defined left-to-right order of the Someday board's category
@@ -4088,10 +4097,27 @@
         // they don't render a second, near-identical board group before the
         // next Notion sync canonicalizes them. (The API boundary in
         // api/_lib/notion.js handles the sync direction.)
+        // Notion's category options were restructured after this app was built:
+        // "Cardiac" split into Ops / Products-Projects, and "Property Management"
+        // into Home / Rentals. Notion no longer offers the old names, so these
+        // only ever match tasks cached locally from before the change. The API
+        // layer maps the same names on the way in (CATEGORY_FROM_NOTION), so a
+        // legacy row still sitting in Notion lands on the new name too.
+        const LEGACY_CATEGORIES = {
+            'Aquisitions': 'Acquisitions',
+            'Cardiac': 'Cardiac Ops',
+            'Property Management': 'Property Management: Home',
+        };
+
         function canonicalizeTaskCategories() {
             let changed = false;
             for (const t of tasks) {
-                if (t.category === 'Aquisitions') { t.category = 'Acquisitions'; changed = true; }
+                const mapped = LEGACY_CATEGORIES[t.category];
+                if (mapped) { t.category = mapped; changed = true; }
+                if (Array.isArray(t.categories)) {
+                    const next = t.categories.map(c => LEGACY_CATEGORIES[c] || c);
+                    if (next.some((c, i) => c !== t.categories[i])) { t.categories = next; changed = true; }
+                }
             }
             if (changed) saveTasks();
         }
@@ -6241,15 +6267,26 @@
                         const cur = tasks[idx];
                         const nextCategory = remote.category || cur.category || 'Brain Dump';
                         const nextOffset = remote.dayOffset != null ? remote.dayOffset : cur.dayOffset;
+                        // status and categories are carried but never shown. They
+                        // exist so a push doesn't clobber a Backburner/Up Next/
+                        // In progress status or drop the extra multi-select
+                        // options Notion holds. Compared too, so the copy we'd
+                        // write back can't go stale.
+                        const nextCategories = Array.isArray(remote.categories) ? remote.categories : cur.categories;
+                        const nextStatus = remote.status != null ? remote.status : cur.status;
                         if (cur.text !== remote.title
                             || cur.completed !== remote.completed
                             || cur.category !== nextCategory
-                            || cur.dayOffset !== nextOffset) {
+                            || cur.dayOffset !== nextOffset
+                            || cur.status !== nextStatus
+                            || (cur.categories || []).join('\u0000') !== (nextCategories || []).join('\u0000')) {
                             tasks[idx] = {
                                 ...cur,
                                 text: remote.title,
                                 completed: remote.completed,
                                 category: nextCategory,
+                                categories: nextCategories,
+                                status: nextStatus,
                                 dayOffset: nextOffset,
                             };
                             changed = true;
@@ -6262,6 +6299,8 @@
                             completed: remote.completed,
                             dayOffset: remote.dayOffset != null ? remote.dayOffset : 999,
                             category: remote.category || 'Brain Dump',
+                            categories: remote.categories,
+                            status: remote.status,
                             order: tasks.length,
                             createdAt: new Date().toISOString(),
                         });
