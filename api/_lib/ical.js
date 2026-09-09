@@ -459,6 +459,11 @@ function expandEvent(raw, windowStartMs, windowEndMs, tz = DEFAULT_TZ) {
 async function fetchAndExpand(url, windowStartMs, windowEndMs, tz = DEFAULT_TZ) {
   const res = await fetch(url, {
     headers: { 'Accept': 'text/calendar, text/plain, */*' },
+    // events.js runs allSettled over up to MAX_FEEDS feeds. Without this, one
+    // hung feed burns the whole function budget and every other feed's already
+    // fetched data is lost with it. A timeout turns that into one entry in the
+    // per-feed errors array instead.
+    signal: AbortSignal.timeout(6000),
   });
   if (!res.ok) {
     const err = new Error(`Feed fetch failed (${res.status})`);

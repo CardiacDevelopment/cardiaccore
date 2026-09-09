@@ -21,10 +21,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cardiac Core">
 <meta name="theme-color" content="#0a0a0a">
-    <!-- Barlow / Barlow Condensed used inside the Briefing tab only -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Type is system-only on purpose: a <link rel=stylesheet> to Google
+         Fonts blocks first paint on a third-party round trip, and Barlow was
+         the base font for the whole desktop shell (not just the Briefing tab,
+         as the old comment here claimed). Avenir Next Condensed ships on
+         macOS/iOS and covers the uppercase display type. -->
     <style>
         * {
             margin: 0;
@@ -1458,45 +1459,8 @@
             padding: 8px 0;
         }
 
-        /* ── Dashboard Habits widget ───────────────────────────── */
-        .dash-habits {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .dash-habits-ring {
-            flex-shrink: 0;
-            cursor: pointer;
-            line-height: 0;
-        }
-        .dash-habits-list {
-            flex: 1;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .dash-habit-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--text-primary);
-        }
-        .dash-habit-row.done .dash-habit-name {
-            color: var(--text-secondary);
-            text-decoration: line-through;
-        }
-        .dash-habit-icon { flex-shrink: 0; width: 18px; text-align: center; }
-        .dash-habit-name {
-            flex: 1;
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .dash-habit-check { color: var(--accent-green); font-weight: 700; flex-shrink: 0; }
-        .dash-habit-more { font-size: 12px; color: var(--text-secondary); }
+        /* Overflow note under a dashboard widget list ("+N more…"). */
+        .dash-more-note { font-size: 12px; color: var(--text-secondary); }
 
         /* Dashboard Brain Dump quick-add */
         .brain-dump-add-btn {
@@ -1558,16 +1522,6 @@
             font-family: inherit;
             cursor: pointer;
         }
-        .dash-habit-link {
-            background: none;
-            border: none;
-            color: var(--accent-green);
-            cursor: pointer;
-            font-size: 13px;
-            padding: 0;
-            font-family: inherit;
-        }
-
         .desktop-task-row {
             display: flex;
             align-items: center;
@@ -2579,7 +2533,7 @@
 
         /* ══════════════════════════════════════════════════════
            BRIEFING TAB — scoped entirely under #desktopTabHub
-           Editorial dark-green palette, Barlow Condensed for display type.
+           Editorial dark-green palette, condensed caps for display type.
            All rules are ancestor-scoped so they can't leak into the rest
            of the app.
            ══════════════════════════════════════════════════════ */
@@ -2608,7 +2562,7 @@
             overflow-y: auto;
         }
         #desktopTabHub .briefing {
-            font-family: 'Barlow', -apple-system, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 15px;
             line-height: 1.6;
             max-width: 1100px;
@@ -2628,7 +2582,7 @@
             gap: 2rem;
         }
         #desktopTabHub .briefing-hero-eyebrow {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 0.72rem;
             letter-spacing: 0.18em;
             color: var(--br-green-200);
@@ -2637,7 +2591,7 @@
             margin-bottom: 0.6rem;
         }
         #desktopTabHub .briefing-hero-title {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 900;
             font-size: clamp(2.2rem, 4vw, 3.6rem);
             line-height: 0.92;
@@ -2661,7 +2615,7 @@
             text-align: right;
         }
         #desktopTabHub .briefing-hero-stat {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         #desktopTabHub .briefing-hero-stat-value {
             font-weight: 700;
@@ -2695,7 +2649,7 @@
             color: var(--br-green-100);
         }
         #desktopTabHub .briefing-section-label {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 1rem;
             letter-spacing: 0.16em;
@@ -2736,7 +2690,7 @@
             opacity: 0;
         }
         #desktopTabHub .briefing-section-mini {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
             letter-spacing: 0.2em;
@@ -2797,7 +2751,7 @@
             border-color: var(--br-green-100);
         }
         #desktopTabHub .briefing-networth-value {
-            font-family: 'Barlow', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-weight: 600;
             font-size: 2.2rem;
             letter-spacing: -0.01em;
@@ -2840,7 +2794,7 @@
             font-size: 1.8rem;
         }
         #desktopTabHub .briefing-weather-loc {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 1rem;
             letter-spacing: 0.06em;
@@ -2853,7 +2807,7 @@
             margin-top: 2px;
         }
         #desktopTabHub .briefing-weather-temp {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 900;
             font-size: 2.4rem;
             color: var(--br-green-100);
@@ -2900,7 +2854,7 @@
             border: 1px solid var(--br-border);
         }
         #desktopTabHub .briefing-market-ticker {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
             letter-spacing: 0.16em;
@@ -2909,7 +2863,7 @@
             margin-bottom: 4px;
         }
         #desktopTabHub .briefing-market-value {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 1.2rem;
             color: var(--br-text-bright);
@@ -2949,7 +2903,7 @@
             gap: 0.5rem;
         }
         #desktopTabHub .briefing-sport-name {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 0.82rem;
             letter-spacing: 0.14em;
@@ -2972,7 +2926,7 @@
             padding: 1rem 1.1rem;
         }
         #desktopTabHub .briefing-sport-score {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 900;
             font-size: 1.8rem;
             line-height: 1;
@@ -3029,7 +2983,7 @@
             gap: 0.5rem;
         }
         #desktopTabHub .briefing-sender-name {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 0.82rem;
             letter-spacing: 0.14em;
@@ -3052,7 +3006,7 @@
             padding: 1rem 1.1rem;
         }
         #desktopTabHub .briefing-sender-headline {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 600;
             font-size: 1.05rem;
             color: var(--br-text-bright);
@@ -3100,7 +3054,7 @@
             margin-bottom: 0.5rem;
         }
         #desktopTabHub .briefing-sources-label {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 0.68rem;
             letter-spacing: 0.2em;
@@ -3145,7 +3099,7 @@
             margin-bottom: 0.75rem;
         }
         #desktopTabHub .briefing-footer-message {
-            font-family: 'Barlow Condensed', sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
             font-weight: 700;
             font-size: 1rem;
             letter-spacing: 0.08em;
@@ -3211,7 +3165,7 @@
             --accent-green:    #97c459;      /* was #00ff66 — editorial green */
             --accent-green-dark: #639922;    /* was #00cc52 */
 
-            font-family: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #0d1008 !important;
             color: #f0f5e8 !important;
         }
@@ -3223,7 +3177,7 @@
            desktop. These two-class selectors out-specify it and supply
            a light editorial palette. Covers every .desktop-* surface
            that reads the global vars (Dashboard, Today, Week, Month,
-           Habits, Settings). The Cardiac News briefing has its own
+           Settings). The Cardiac News briefing has its own
            token set, re-skinned below. */
         body.desktop-mode.light-mode {
             --bg-primary:      #ffffff;
@@ -3263,7 +3217,7 @@
             --br-down: #cf3b3b;
         }
 
-        /* Display type — Barlow Condensed with letterspacing wherever
+        /* Display type — condensed caps with letterspacing wherever
            the dashboard uses uppercase headers. */
         body.desktop-mode .desktop-logo,
         body.desktop-mode .desktop-nav-item,
@@ -3272,7 +3226,7 @@
         body.desktop-mode .desktop-tab-title,
         body.desktop-mode .desktop-widget-title,
         body.desktop-mode .setting-label {
-            font-family: 'Barlow Condensed', -apple-system, sans-serif;
+            font-family: 'Avenir Next Condensed', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         /* Logo — bigger, editorial letterspacing */
@@ -3469,337 +3423,6 @@
            border via var(--accent-green), which now correctly resolves
            to editorial green. Category dots use their own explicit
            colors and are unchanged. */
-        /* ============================ HABITS ============================ */
-        /* Habits feature temporarily hidden per request — the code stays so it
-           can be re-enabled later. To bring it back, delete this rule and the
-           `if (tab === 'habits')` redirect in switchDesktopTab. Hides: desktop
-           nav item, dashboard Habits card, and the mobile header habits button. */
-        #desktopNavHabits,
-        #desktopHabitsCard,
-        .habit-btn { display: none !important; }
-
-        .habit-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0 6px;
-            line-height: 1;
-        }
-
-        .habit-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-primary);
-            z-index: 250;
-            transform: translateX(100%);
-            transition: transform 0.28s ease;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .habit-screen.open { transform: translateX(0); }
-
-        .habit-screen-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 18px 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .habit-screen-header .close-btn { font-size: 26px; line-height: 1; }
-        .habit-screen-title { font-size: 20px; font-weight: 700; flex: 0 0 auto; }
-
-        .habit-seg {
-            display: inline-flex;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 3px;
-            margin-left: auto;
-        }
-        .habit-seg button {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 16px;
-            cursor: pointer;
-        }
-        .habit-seg button.active {
-            background: var(--accent-green);
-            color: #06210f;
-        }
-        .habit-add-btn {
-            background: var(--accent-green);
-            color: #06210f;
-            border: none;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            font-size: 22px;
-            line-height: 1;
-            cursor: pointer;
-            flex: 0 0 auto;
-        }
-
-        .habit-screen-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 18px 16px 40px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .habit-daily-ring {
-            display: flex;
-            justify-content: center;
-            margin: 8px 0 22px;
-        }
-        .habit-ring-text { fill: var(--text-primary); font-family: inherit; }
-        .habit-big-pct { font-size: 46px; font-weight: 700; }
-        .habit-big-unit { font-size: 20px; font-weight: 600; fill: var(--text-secondary); }
-        .habit-ring-mini { font-size: 13px; font-weight: 700; }
-
-        .habit-section-label {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: var(--text-secondary);
-            margin: 24px 4px 12px;
-        }
-
-        .habit-row {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-        }
-        .habit-row.muted { opacity: 0.45; }
-        .habit-row.done { border-color: var(--accent-green); }
-
-        .habit-icon {
-            flex: 0 0 auto;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        .habit-icon.sm { width: 30px; height: 30px; font-size: 15px; }
-
-        .habit-meta { flex: 1; min-width: 0; cursor: pointer; }
-        .habit-name {
-            font-size: 15px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .habit-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-
-        .habit-ring { flex: 0 0 auto; cursor: pointer; }
-        .habit-ring-svg { display: block; }
-        .habit-ring-tap:active { transform: scale(0.92); }
-
-        .habit-empty {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 14px;
-            padding: 40px 20px;
-        }
-
-        /* History heatmap */
-        .habit-hist-card {
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-        .habit-hist-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .habit-hist-name { font-size: 15px; font-weight: 600; flex: 1; }
-        .habit-streak { font-size: 14px; font-weight: 700; color: var(--text-primary); }
-        .habit-heat {
-            display: grid;
-            grid-template-columns: repeat(28, 1fr);
-            gap: 3px;
-        }
-        .heat-cell {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 2px;
-            background: var(--border-color);
-        }
-        .heat-cell.wk { border-radius: 3px; }
-        .heat-cell.lvl1 { background: rgba(29,158,117,0.35); }
-        .heat-cell.lvl2 { background: rgba(29,158,117,0.65); }
-        .heat-cell.lvl3 { background: var(--accent-green); }
-
-        /* Log sheet (bottom sheet) */
-        .habit-log-sheet {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            align-items: flex-end;
-            justify-content: center;
-            z-index: 320;
-        }
-        .habit-log-sheet.visible { display: flex; }
-        .habit-log-sheet-inner {
-            background: var(--bg-primary);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 480px;
-            padding: 22px 20px calc(28px + env(safe-area-inset-bottom));
-            text-align: center;
-        }
-        .logsheet-ring { display: flex; justify-content: center; margin-bottom: 10px; }
-        .logsheet-val { font-size: 26px; font-weight: 700; }
-        .logsheet-title { font-size: 18px; font-weight: 700; margin-top: 2px; }
-        .logsheet-goal { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
-        .logsheet-steppers {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 18px 0 12px;
-            flex-wrap: wrap;
-        }
-        .logsheet-step {
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 700;
-            min-width: 64px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .logsheet-step:active { transform: scale(0.95); }
-        .logsheet-timer {
-            width: 100%;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-        .logsheet-timer.running { background: #d4537e; border-color: #d4537e; color: #fff; }
-        .logsheet-manual { display: flex; gap: 8px; margin-bottom: 14px; }
-        .logsheet-manual input {
-            flex: 1;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 11px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-family: inherit;
-        }
-        .logsheet-set {
-            background: var(--accent-green);
-            color: #06210f;
-            border: none;
-            font-family: inherit;
-            font-weight: 700;
-            padding: 0 18px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .logsheet-actions { display: flex; gap: 10px; }
-        .logsheet-complete {
-            flex: 1;
-            background: var(--accent-green);
-            color: #06210f;
-            border: none;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 15px;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .logsheet-edit {
-            flex: 0 0 auto;
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-weight: 600;
-            padding: 12px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        /* Habit editor pickers */
-        .habit-pick-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
-        #habitIconGrid { max-height: 184px; overflow-y: auto; padding: 2px; }
-        .habit-pick-icon {
-            width: 40px; height: 40px;
-            font-size: 19px;
-            background: var(--task-bg);
-            border: 2px solid transparent;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .habit-pick-icon.selected { border-color: var(--accent-green); }
-        .habit-pick-color {
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        .habit-pick-color.selected { border-color: var(--text-primary); box-shadow: 0 0 0 2px var(--bg-primary) inset; }
-        .habit-pick-unit, .habit-pick-day, .habit-seg-opt {
-            background: var(--task-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .habit-pick-unit.selected, .habit-pick-day.selected, .habit-seg-opt.selected {
-            background: var(--accent-green);
-            color: #06210f;
-            border-color: var(--accent-green);
-        }
-        .habit-pick-day { min-width: 42px; text-align: center; padding: 8px 6px; }
-
-        /* Desktop: habit screen becomes an in-panel view, not an overlay */
-        body.desktop-mode .habit-screen {
-            position: static;
-            transform: none;
-            height: 100%;
-            background: transparent;
-            border: none;
-        }
-        body.desktop-mode #habitScreen { display: none; }
-        #desktopTabHabits .habit-screen-body { padding-top: 6px; }
-        #desktopTabHabits .habit-daily-ring { margin-top: 0; }
-
     </style>
 </head>
 <body>
@@ -3814,7 +3437,6 @@
                 </div>
             </div>
             <div style="display:flex; align-items:center; gap:6px;">
-                <button class="habit-btn" onclick="openHabits()" aria-label="Habits" title="Habits">◎</button>
                 <button class="menu-btn" onclick="toggleSettings()">☰</button>
             </div>
         </div>
@@ -3967,77 +3589,6 @@
         </div>
     </div>
 
-    <!-- ===================== HABITS ===================== -->
-    <!-- Habit Tracker Screen (mobile overlay; rendered in-panel on desktop) -->
-    <div class="habit-screen" id="habitScreen">
-        <div class="habit-screen-header">
-            <button class="close-btn" onclick="closeHabits()" aria-label="Close">×</button>
-            <div class="habit-screen-title">Habits</div>
-            <div class="habit-seg">
-                <button data-habit-tab="today" class="active" onclick="setHabitView('today')">Today</button>
-                <button data-habit-tab="history" onclick="setHabitView('history')">History</button>
-            </div>
-            <button class="habit-add-btn" onclick="openHabitEditor(null)" aria-label="Add habit">＋</button>
-        </div>
-        <div class="habit-screen-body" id="habitScreenBody"></div>
-    </div>
-
-    <!-- Habit Log Sheet -->
-    <div class="habit-log-sheet" id="habitLogSheet">
-        <div class="habit-log-sheet-inner">
-            <div id="habitLogSheetBody"></div>
-        </div>
-    </div>
-
-    <!-- Add / Edit Habit Modal -->
-    <div class="edit-modal-overlay" id="habitEditModal">
-        <div class="edit-modal">
-            <div id="habitEditTitle" style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px;">New Habit</div>
-
-            <div class="edit-modal-title" style="margin-top:14px;">Name</div>
-            <input type="text" id="habitNameInput" placeholder="Habit name…" />
-
-            <div class="edit-modal-title" style="margin-top:16px;">Icon</div>
-            <div class="habit-pick-row" id="habitIconGrid"></div>
-
-            <div class="edit-modal-title" style="margin-top:16px;">Color</div>
-            <div class="habit-pick-row" id="habitColorGrid"></div>
-
-            <div class="edit-modal-title" style="margin-top:16px;">Type</div>
-            <div class="habit-pick-row">
-                <button class="habit-seg-opt" data-habit-type="count">Count</button>
-                <button class="habit-seg-opt" data-habit-type="duration">Duration</button>
-            </div>
-
-            <div class="edit-modal-title" style="margin-top:16px;">Unit</div>
-            <div class="habit-pick-row" id="habitUnitRow"></div>
-
-            <div class="edit-modal-title" style="margin-top:16px;" id="habitGoalLabel">Goal (count)</div>
-            <input type="number" id="habitGoalInput" inputmode="numeric" placeholder="Goal" />
-
-            <div class="edit-modal-title" style="margin-top:16px;">Section</div>
-            <div class="habit-pick-row">
-                <button class="habit-seg-opt" data-habit-section="daily">Daily</button>
-                <button class="habit-seg-opt" data-habit-section="weekly">Weekly</button>
-            </div>
-
-            <div class="edit-modal-title" style="margin-top:16px;">Frequency</div>
-            <div class="habit-pick-row">
-                <button class="habit-seg-opt" data-habit-freq="daily">Every day</button>
-                <button class="habit-seg-opt" data-habit-freq="weekly">Weekly</button>
-                <button class="habit-seg-opt" data-habit-freq="custom">Custom days</button>
-            </div>
-            <div class="habit-pick-row" id="habitDaysRow" style="margin-top:8px; display:none;"></div>
-
-            <div class="edit-modal-actions" style="margin-top:22px;">
-                <button class="btn-delete" id="habitDeleteBtn" style="display:none;">Delete</button>
-                <button class="btn-cancel" id="habitCancelBtn">Cancel</button>
-                <button class="btn-save" id="habitSaveBtn">Save</button>
-            </div>
-        </div>
-    </div>
-    <!-- =================== END HABITS =================== -->
-
     <!-- Desktop Dashboard Shell (shown only in body.desktop-mode) -->
     <div class="desktop-app" id="desktopApp">
         <div class="desktop-sidebar">
@@ -4047,7 +3598,6 @@
             <button class="desktop-nav-item" id="desktopNavToday" onclick="switchDesktopTab('today')">Today</button>
             <button class="desktop-nav-item" id="desktopNavWeek" onclick="switchDesktopTab('week')">Week</button>
             <button class="desktop-nav-item" id="desktopNavMonth" onclick="switchDesktopTab('month')">Month</button>
-            <button class="desktop-nav-item" id="desktopNavHabits" onclick="switchDesktopTab('habits')">Habits</button>
             <button class="desktop-nav-item" id="desktopNavSettings" onclick="switchDesktopTab('settings')">Settings</button>
             <div class="desktop-sidebar-status">
                 <div class="status-dot disconnected" id="desktopStatusDot"></div>
@@ -4083,15 +3633,6 @@
                         <div class="desktop-widget-title"><span>Markets</span></div>
                         <div class="desktop-widget-body" id="desktopMarketsWidget">
                             <div class="desktop-widget-empty">Loading…</div>
-                        </div>
-                    </div>
-                    <div class="desktop-widget" id="desktopHabitsCard">
-                        <div class="desktop-widget-title">
-                            <span>Habits</span>
-                            <span class="desktop-widget-count" id="desktopHabitsCount"></span>
-                        </div>
-                        <div class="desktop-widget-body" id="desktopHabitsWidget">
-                            <div class="desktop-widget-empty">No habits yet.</div>
                         </div>
                     </div>
                     <div class="desktop-widget">
@@ -4303,20 +3844,6 @@
                     </div>
                     <div class="desktop-widget-body" id="monthDetailBody"></div>
                     <button class="desktop-add-btn" style="margin-top:12px;" onclick="openCreateTaskModal(monthDetailYmd)">+ Add task</button>
-                </div>
-            </div>
-
-            <div class="desktop-tab" id="desktopTabHabits">
-                <div class="habit-screen">
-                    <div class="habit-screen-header">
-                        <div class="habit-screen-title">Habits</div>
-                        <div class="habit-seg">
-                            <button data-habit-tab="today" class="active" onclick="setHabitView('today')">Today</button>
-                            <button data-habit-tab="history" onclick="setHabitView('history')">History</button>
-                        </div>
-                        <button class="habit-add-btn" onclick="openHabitEditor(null)" aria-label="Add habit">＋</button>
-                    </div>
-                    <div class="habit-screen-body" id="habitScreenBodyDesktop"></div>
                 </div>
             </div>
 
@@ -4578,20 +4105,18 @@
             loadCalendars();
             loadGoogleCalendars();
             loadCheckedCalendarEvents();
-            initHabits();
             applyLightModePreference();
             rolloverOverdueTasks();
             updateDateDisplay();
             renderTasks();
 
-            // Check Notion connection status (uses server-side env-var token)
-            await checkNotionStatus();
-            // The auto sync inside the status check refreshes offsets from
-            // Notion's Due Dates; lock dates to those fresh offsets.
-            reconcileDatesFromOffsets();
-
-            // Habits sync in the background once Notion connectivity is known.
-            syncHabitsFromNotion();
+            // ── Phase B: wire the DOM and paint the desktop shell ──────
+            // This block used to sit below the Notion await. That meant
+            // body.desktop-mode — the class that makes .desktop-app visible at
+            // all — wasn't set until the whole Notion waterfall had resolved,
+            // so desktop showed a blank page while every task it needed was
+            // already in localStorage, loaded above. Nothing here reads Notion
+            // state, so it runs first now.
 
             // Handle add task input
             const addTaskInput = document.getElementById('addTaskInput');
@@ -4613,6 +4138,10 @@
             renderCategoryColorSettings();
             initDesktop();
 
+            // ── Phase C: independent network work, all in flight at once ──
+            // None of this depends on the Notion task sync; it used to queue
+            // behind it anyway.
+
             // Calendar events: fetch immediately, then refresh every 5 min.
             // First fetch is non-blocking — UI renders without events first.
             fetchCalendarEvents();
@@ -4626,14 +4155,38 @@
             renderGoogleCalendarList();
             loadGoogleCalendarList().then(fetchGoogleCalendarEvents);
             setInterval(fetchGoogleCalendarEvents, CAL_REFRESH_MS);
+            syncCalChecks(); // once on load
+
+            // ── Phase D: the Notion chain. Still awaited, no longer blocks ──
+            // Check Notion connection status (uses server-side env-var token)
+            await checkNotionStatus();
+            // The auto sync inside the status check refreshes offsets from
+            // Notion's Due Dates; lock dates to those fresh offsets.
+            reconcileDatesFromOffsets();
+
+            // ── Phase E: background loop ───────────────────────────────
+            // Registered LAST on purpose. If focus/visibilitychange were bound
+            // before the await above, a focus landing after notionConnected
+            // flips true but while the boot sync is still running would start a
+            // second concurrent syncFromNotion — bgSyncInFlight guards only
+            // background syncs, not the boot one. Two concurrent merges racing
+            // reconcileUnsyncedTasks is how duplicate Notion rows get made.
 
             // Tasks and calendar-event checks are the two things with no
             // background refresh of their own. Pull changes made on other
             // devices every 45s, and whenever this tab regains focus, so a task
             // or event completed on mobile shows up on web (and vice versa)
             // without a manual reload.
-            const backgroundRefresh = () => { maybeBackgroundSync(); syncCalChecks(); };
-            syncCalChecks(); // once on load
+            // visibilitychange and focus both fire on tab activation, so
+            // alt-tabbing back used to kick off two pulls. The in-flight guards
+            // absorbed the duplicate requests but not the render fan-out.
+            let lastBgRefresh = 0;
+            const backgroundRefresh = () => {
+                if (Date.now() - lastBgRefresh < 5000) return;
+                lastBgRefresh = Date.now();
+                maybeBackgroundSync();
+                syncCalChecks();
+            };
             const TASK_RESYNC_MS = 45 * 1000;
             setInterval(backgroundRefresh, TASK_RESYNC_MS);
             document.addEventListener('visibilitychange', () => {
@@ -4706,8 +4259,6 @@
                 });
             }
 
-            renderDesktopViews();
-
             // Weather: show cached data instantly, then resolve the location
             // (auto-detect current location, or an explicitly chosen city) and
             // refresh every 15 min.
@@ -4735,12 +4286,11 @@
         }
 
         function switchDesktopTab(tab) {
-            const valid = ['dashboard', 'hub', 'today', 'week', 'month', 'habits', 'settings'];
+            const valid = ['dashboard', 'hub', 'today', 'week', 'month', 'settings'];
             // Migrate anyone who saved the old 'briefing' tab name.
             if (tab === 'briefing') tab = 'hub';
-            // Habits is temporarily hidden (feature paused, code kept). Never
-            // land on it, even from a persisted preference. Remove this line to
-            // bring habits back.
+            // The habits feature was removed; send anyone holding a saved
+            // 'habits' preference to the dashboard.
             if (tab === 'habits') tab = 'dashboard';
             if (!valid.includes(tab)) tab = 'dashboard';
 
@@ -4758,13 +4308,14 @@
                 console.error('Failed to save desktop tab preference:', err);
             }
 
+            // Build this tab's view if it went stale while it was hidden.
+            desktopActiveTab = tab;
+            flushDesktopView(tab);
+
             // Lazy-render the Hub tab the first time it's opened, then
             // let its own timers keep it fresh. Safe to call repeatedly.
             if (tab === 'hub' && typeof renderBriefing === 'function') {
                 renderBriefing();
-            }
-            if (tab === 'habits' && typeof renderHabits === 'function') {
-                renderHabits('habitScreenBodyDesktop');
             }
         }
 
@@ -4817,54 +4368,7 @@
             // network requests on every task change.
             renderWeatherFromCache();
             renderDashMarkets();
-            renderDesktopHabitsWidget();
             renderDesktopBrainDump();
-        }
-
-        // Dashboard habits card: today's daily-completion ring + a compact list
-        // of due daily habits. Read-only summary; clicking opens the full
-        // habit tracker. Reuses the habit module's helpers.
-        function renderDesktopHabitsWidget() {
-            const el = document.getElementById('desktopHabitsWidget');
-            const countEl = document.getElementById('desktopHabitsCount');
-            if (!el) return;
-            if (typeof habits === 'undefined' || !Array.isArray(habits) || habits.length === 0) {
-                el.innerHTML = '<div class="desktop-widget-empty">No habits yet. '
-                    + '<button class="dash-habit-link" onclick="openHabits()">Open habits →</button></div>';
-                if (countEl) countEl.textContent = '';
-                return;
-            }
-            const dk = habitDateKey();
-            const due = habits.filter(h => !h.archived && h.section === 'daily' && isHabitDueOn(h, dk));
-            if (!due.length) {
-                el.innerHTML = '<div class="desktop-widget-empty">Nothing due today. '
-                    + '<button class="dash-habit-link" onclick="openHabits()">Open habits →</button></div>';
-                if (countEl) countEl.textContent = '';
-                return;
-            }
-            const doneCount = due.filter(h => habitProgressFraction(h) >= 1).length;
-            if (countEl) countEl.textContent = `${doneCount}/${due.length}`;
-            const pct = Math.round(dailyProgress() * 100);
-            // Center the whole "NN%" block in this small ring (dx=0) so it reads
-            // as centered, rather than centering just the number (which leaves
-            // the % hanging right and looks off at this size).
-            const ring = habitRingSVG(dailyProgress(), 84, 9, 'var(--accent-green)',
-                `<tspan class="habit-big-pct" style="font-size:24px">${pct}</tspan>`
-                + `<tspan class="habit-big-unit" style="font-size:12px" dx="1">%</tspan>`, 0);
-            const rows = due.slice(0, 6).map(h => {
-                const done = habitProgressFraction(h) >= 1;
-                return `<div class="dash-habit-row ${done ? 'done' : ''}">
-                    <span class="dash-habit-icon" style="color:${h.color}">${escapeHtml(h.icon || '•')}</span>
-                    <span class="dash-habit-name">${escapeHtml(h.name)}</span>
-                    <span class="dash-habit-check">${done ? '✓' : ''}</span>
-                </div>`;
-            }).join('');
-            const more = due.length > 6 ? `<div class="dash-habit-more">+${due.length - 6} more</div>` : '';
-            el.innerHTML = `
-                <div class="dash-habits">
-                    <div class="dash-habits-ring" onclick="openHabits()" title="Open habit tracker">${ring}</div>
-                    <div class="dash-habits-list">${rows}${more}</div>
-                </div>`;
         }
 
         // Dashboard Brain Dump card: uncategorized tasks with a "Sort into…"
@@ -4893,7 +4397,7 @@
                 </div>
             `).join('');
             if (items.length > 8) {
-                el.innerHTML += `<div class="dash-habit-more">+${items.length - 8} more on the board</div>`;
+                el.innerHTML += `<div class="dash-more-note">+${items.length - 8} more on the board</div>`;
             }
         }
 
@@ -4914,7 +4418,6 @@
         function addBrainDumpItem(text) {
             const t = createTaskAtTarget(text, 'Brain Dump', 'someday');
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(t);
         }
@@ -4925,7 +4428,6 @@
             if (!task) return;
             task.category = category;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -5429,7 +4931,12 @@
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data.enabled === false || !Array.isArray(data.checks)) return;
-                checkedCalendarEvents = new Set(data.checks);
+                // Runs on load, every 45s and on every focus. Almost always the
+                // same set, so compare before writing and repainting.
+                const next = new Set(data.checks);
+                if (next.size === checkedCalendarEvents.size
+                    && [...next].every(k => checkedCalendarEvents.has(k))) return;
+                checkedCalendarEvents = next;
                 saveCheckedCalendarEvents();
                 repaintAfterCalendar();
             } catch (error) {
@@ -5775,15 +5282,54 @@
 
         // Single entry point the renderTasks hook and initDesktop call:
         // refreshes every desktop view that displays task/event data.
+        // Which desktop tab is showing, kept in lockstep with switchDesktopTab.
+        // This used to render all four task views on every call, three of them
+        // into panels the user couldn't see: one checkbox click meant ~23
+        // innerHTML teardowns, ~59 full passes over the task array and ~52
+        // sorts. Now only the visible view is built; the rest are marked dirty
+        // and flushed when they're activated.
+        let desktopActiveTab = 'dashboard';
+        const desktopViewDirty = { dashboard: true, today: true, week: true, month: true };
+
+        function flushDesktopView(tab) {
+            // Undefined for hub/settings, which render through their own paths.
+            if (!desktopViewDirty[tab]) return;
+            desktopViewDirty[tab] = false;
+            switch (tab) {
+                case 'dashboard': renderDesktopDashboard(); break;
+                case 'today':     renderDesktopToday();     break;
+                case 'week':      renderDesktopWeek();      break;
+                case 'month':     renderDesktopMonth();     break;
+            }
+        }
+
+        // Coalesce bursts of async repaints into one frame. The four boot
+        // fetches (iCal, Google list, Google events, cal-checks) each land
+        // independently and each used to trigger its own full repaint.
+        // Deliberately NOT used for direct user actions — routing a click
+        // through rAF adds a frame of input latency and breaks the assumption
+        // that the DOM is current right after a handler runs.
+        let renderScheduled = false;
+        function scheduleRender() {
+            if (renderScheduled) return;
+            renderScheduled = true;
+            requestAnimationFrame(() => {
+                renderScheduled = false;
+                renderTasks();
+            });
+        }
+
         function renderDesktopViews() {
             if (!document.body.classList.contains('desktop-mode')) return;
-            renderDesktopDashboard();
-            renderDesktopWeek();
-            renderDesktopToday();
-            renderDesktopMonth();
-            // If the month day-detail popup is open, refresh it too so an action
-            // taken inside it (e.g. "↩ Board") updates immediately instead of
-            // leaving the moved task visible.
+            desktopViewDirty.dashboard = true;
+            desktopViewDirty.today = true;
+            desktopViewDirty.week = true;
+            desktopViewDirty.month = true;
+            flushDesktopView(desktopActiveTab);
+            // The month day-detail popup floats above the tab panels, so refresh
+            // it whenever it's open regardless of which tab is active — an action
+            // taken inside it (e.g. "↩ Board") has to update immediately
+            // instead of leaving the moved task visible.
             const overlay = document.getElementById('monthDetailOverlay');
             if (overlay && overlay.classList.contains('visible') && monthDetailYmd) {
                 renderMonthDetailBody(monthDetailYmd);
@@ -6136,7 +5682,6 @@
             }
             task.category = category;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -6208,7 +5753,6 @@
             delete task.weekOf; // and no longer pinned to a specific week
             task.order = tasks.filter(t => t.dueDate === ymd || t.dayOffset === offset).length;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -6476,6 +6020,14 @@
             // is covered too. No-ops entirely when not in desktop mode.
             renderDesktopViews();
 
+            // Everything below builds the mobile day list, the all-day banner
+            // and the board — all of which live inside .mobile-view /
+            // .task-board-view, which body.desktop-mode hides outright. On
+            // desktop it was building ~300 task cards and attaching gesture
+            // listeners to nodes nobody can reach. Desktop mode is decided once
+            // at load and needs a reload to change, so this can't go stale.
+            if (document.body.classList.contains('desktop-mode')) return;
+
             const list = document.getElementById('mobileTaskList');
             // Tasks are rendered in `order` ascending. Timed tasks are constrained
             // to chronological order via placeTimedTask() whenever a time is set
@@ -6619,6 +6171,11 @@
         }
 
         // Notion Sync
+        // In memory only, deliberately. Persisting this would let a stale ETag
+        // survive a reload and skip the boot sync entirely — which, with the
+        // open notionId-loss bug, is how local rows get stranded.
+        let lastSyncEtag = null;
+
         async function syncFromNotion({ silent = false } = {}) {
             if (!notionConnected) {
                 if (!silent) alert('Not connected to Notion');
@@ -6632,9 +6189,18 @@
             }
 
             try {
-                const response = await fetch('/api/notion/sync', {
-                    headers: { 'Accept': 'application/json' },
-                });
+                const headers = { 'Accept': 'application/json' };
+                if (lastSyncEtag) headers['If-None-Match'] = lastSyncEtag;
+                const response = await fetch('/api/notion/sync', { headers });
+
+                // 304: nothing changed upstream. Skip the body, the merge, the
+                // save and the render. Note response.ok is false for 304, so
+                // this has to come before the error branch below.
+                if (response.status === 304) {
+                    reconcileUnsyncedTasks().catch(err => console.error('Reconcile error:', err));
+                    if (!silent) alert('Already up to date');
+                    return;
+                }
                 if (!response.ok) {
                     let detail = response.statusText;
                     try {
@@ -6644,22 +6210,50 @@
                     throw new Error(detail || 'Sync failed');
                 }
 
+                lastSyncEtag = response.headers.get('ETag');
                 const data = await response.json();
                 const remoteTasks = Array.isArray(data.tasks) ? data.tasks : [];
 
                 // Merge remote tasks. Use a counter-based ID to avoid Date.now() collisions
                 // when multiple new tasks arrive in the same millisecond.
                 let nextLocalId = Date.now();
+                // notionId -> index, built once. The findIndex this replaces was
+                // O(local x remote) — ~93k comparisons at 305 tasks, re-run on
+                // every boot, every 45s tick, and every window focus.
+                // Keep-first mirrors findIndex's semantics when two local rows
+                // somehow share a notionId.
+                const byNotionId = new Map();
+                for (let i = 0; i < tasks.length; i++) {
+                    const nid = tasks[i].notionId;
+                    if (nid && !byNotionId.has(nid)) byNotionId.set(nid, i);
+                }
+                // Most background pulls change nothing. Tracking that lets a
+                // no-op sync skip the localStorage write and the repaint
+                // entirely — this runs every 45s, on every focus and on every
+                // visibilitychange. It also cuts object churn: the spread below
+                // used to allocate a fresh object for all 305 tasks every time,
+                // orphaning any reference held by an in-flight closure (the
+                // `unsynced` snapshot in reconcileUnsyncedTasks, notably).
+                let changed = false;
                 for (const remote of remoteTasks) {
-                    const idx = tasks.findIndex(t => t.notionId === remote.id);
+                    const idx = byNotionId.has(remote.id) ? byNotionId.get(remote.id) : -1;
                     if (idx >= 0) {
-                        tasks[idx] = {
-                            ...tasks[idx],
-                            text: remote.title,
-                            completed: remote.completed,
-                            category: remote.category || tasks[idx].category || 'Brain Dump',
-                            dayOffset: remote.dayOffset != null ? remote.dayOffset : tasks[idx].dayOffset,
-                        };
+                        const cur = tasks[idx];
+                        const nextCategory = remote.category || cur.category || 'Brain Dump';
+                        const nextOffset = remote.dayOffset != null ? remote.dayOffset : cur.dayOffset;
+                        if (cur.text !== remote.title
+                            || cur.completed !== remote.completed
+                            || cur.category !== nextCategory
+                            || cur.dayOffset !== nextOffset) {
+                            tasks[idx] = {
+                                ...cur,
+                                text: remote.title,
+                                completed: remote.completed,
+                                category: nextCategory,
+                                dayOffset: nextOffset,
+                            };
+                            changed = true;
+                        }
                     } else {
                         tasks.push({
                             id: nextLocalId++,
@@ -6671,18 +6265,32 @@
                             order: tasks.length,
                             createdAt: new Date().toISOString(),
                         });
+                        // Index the row we just added. Without this, an id that
+                        // appears twice in one payload would be pushed twice —
+                        // a duplicate local row, which then creates a duplicate
+                        // Notion page on the next edit.
+                        byNotionId.set(remote.id, tasks.length - 1);
+                        changed = true;
                     }
                 }
 
-                saveTasks();
-                renderTasks();
+                if (changed) {
+                    saveTasks();
+                    scheduleRender();
+                }
 
                 // Outbound reconciliation: tasks created while offline have no
                 // notionId and syncFromNotion is pull-only, so they'd otherwise
                 // stay stranded locally forever. Push them up now that we're
                 // connected. Runs after the merge so a task that just arrived
                 // from Notion is already linked and won't be re-created.
-                await reconcileUnsyncedTasks();
+                // Fire-and-forget: the pushes still drain serially at the same
+                // rate, but boot no longer waits on one serverless invocation
+                // per unsynced task before the shell settles. Deliberately not
+                // parallelized — that loop is what turns a lost notionId into
+                // duplicate Notion pages, and concurrency would make them
+                // faster and in bigger batches.
+                reconcileUnsyncedTasks().catch(err => console.error('Reconcile error:', err));
 
                 if (!silent) alert(`Synced ${remoteTasks.length} tasks from Notion`);
             } catch (error) {
@@ -7136,7 +6744,6 @@
                 if (newTime) { t.startTime = newTime; placeTimedTask(t); }
                 saveTasks();
                 renderActiveView();
-                renderDesktopViews();
                 closeEditModal();
                 if (notionConnected) pushTaskToNotion(t);
                 return;
@@ -7703,7 +7310,7 @@
         // too when that tab has been opened at least once.
         function repaintAfterCalendar() {
             renderAllDayBanner();
-            renderTasks();
+            scheduleRender();
             if (typeof briefingState !== 'undefined' && briefingState.initialized
                 && typeof renderBriefingHero === 'function') {
                 renderBriefingHero();
@@ -7838,6 +7445,11 @@
         }
 
         function renderActiveView() {
+            // Desktop has no mobile day/board split, and currentView can still
+            // be 'tasks' from a prior mobile session in the same tab — which
+            // would route to renderTaskBoard() and never refresh the desktop
+            // panels. Short-circuit so callers only need this one call.
+            if (document.body.classList.contains('desktop-mode')) { renderDesktopViews(); return; }
             if (currentView === 'tasks') renderTaskBoard();
             else renderTasks();
         }
@@ -8181,7 +7793,6 @@
             delete task.weekOf;
             task.order = 0;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -8197,7 +7808,6 @@
             task.bucket = bucket;
             delete task.weekOf; // 'month'/'someday' buckets aren't week-pinned
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -8213,7 +7823,6 @@
             task.bucket = 'week';
             task.weekOf = weekOf;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -9097,914 +8706,6 @@
                 ...errored.map(n => `<li><span class="briefing-source-dot dim"></span><span style="opacity:0.5;">${escapeHtml(n)} (no data)</span></li>`),
             ];
             el.innerHTML = html.length ? html.join('') : `<li><span class="briefing-source-dot dim"></span>No active sources yet.</li>`;
-        }
-
-        // ============================================================
-        // HABITS MODULE
-        // Self-contained habit tracker. Data lives in localStorage
-        // (cardiacHabits / cardiacHabitLogs / cardiacHabitTimers) and
-        // two-way syncs to Notion via /api/habits/* when connected —
-        // mirrors the existing task sync design. Nothing here touches
-        // the task/Notion task flow.
-        // ============================================================
-
-        let habits = [];        // Habit definitions
-        let habitLogs = [];     // Daily / weekly check-ins
-        let habitTimers = {};   // habitId -> startEpochMs for a running duration timer
-        let habitView = 'today';        // 'today' | 'history'
-        let habitTimerInterval = null;  // ticking interval while a timer sheet is open
-        let logSheetHabitId = null;     // habit currently open in the log sheet
-        let _habitIdCounter = 0;
-
-        const HABITS_KEY = 'cardiacHabits';
-        const HABIT_LOGS_KEY = 'cardiacHabitLogs';
-        const HABIT_TIMERS_KEY = 'cardiacHabitTimers';
-
-        const HABIT_COLORS = ['#378ADD', '#d4537e', '#EF9F27', '#639922', '#BA7517',
-                              '#7F77DD', '#1D9E75', '#888780', '#48b7c9', '#c94fb0'];
-        const HABIT_ICONS = [
-            // General / status
-            '✅', '⭐', '🎯', '🔥', '🏆', '💪', '❤️', '🧠', '⏰', '📅',
-            // Health / medical
-            '💊', '🩺', '💉', '🩹', '🩸', '🫀', '🫁', '🦷', '👁️', '🌡️', '⚕️', '🏥', '🧬', '🩻',
-            // Fitness / activity
-            '🏋️', '🚶', '🏃', '🚴', '🏊', '🧗', '🤸', '⛹️', '🚣', '🥊', '⚽', '🏀', '🎾', '🏓', '🥾', '👟',
-            // Mind / rest
-            '🧘', '😌', '🛌', '😴', '💤', '🕯️', '📿',
-            // Food / drink / diet
-            '🍎', '🥗', '🥦', '🥕', '🥑', '🍌', '🍳', '🐟', '🥩', '🌰', '💧', '🥤', '☕', '🍵', '🥛', '🧂',
-            // Faith
-            '🙏', '📖', '✝️', '⛪', '🕊️',
-            // Home / chores
-            '🧹', '🧽', '🧴', '🗑️', '🧺', '🪥', '🧼', '🚿', '🌱', '🪴', '🔧', '🛒', '🧾',
-            // Pets
-            '🐕', '🐈', '🐾', '🦴',
-            // Productivity / learning / hobbies
-            '📚', '✍️', '💻', '📝', '💡', '🎨', '🎸', '🎹', '📷', '🧩', '🎧', '🗣️',
-            // Money
-            '💰', '💵', '🏦', '📈',
-            // Time / nature
-            '☀️', '🌙', '🌅', '🌊', '🏔️', '🌳', '⚖️',
-            // Vices to break
-            '🚭', '🚫',
-        ];
-        const HABIT_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-        // ---- Persistence ------------------------------------------------
-        function loadHabits() {
-            try {
-                const h = localStorage.getItem(HABITS_KEY);
-                habits = h ? JSON.parse(h) : [];
-            } catch { habits = []; }
-            try {
-                const l = localStorage.getItem(HABIT_LOGS_KEY);
-                habitLogs = l ? JSON.parse(l) : [];
-            } catch { habitLogs = []; }
-            try {
-                const t = localStorage.getItem(HABIT_TIMERS_KEY);
-                habitTimers = t ? JSON.parse(t) : {};
-            } catch { habitTimers = {}; }
-            if (!Array.isArray(habits) || !habits.length) seedExampleHabits();
-        }
-
-        function saveHabits() {
-            try { localStorage.setItem(HABITS_KEY, JSON.stringify(habits)); } catch (e) { console.error('saveHabits', e); }
-        }
-        function saveHabitLogs() {
-            try { localStorage.setItem(HABIT_LOGS_KEY, JSON.stringify(habitLogs)); } catch (e) { console.error('saveHabitLogs', e); }
-        }
-        function saveHabitTimers() {
-            try { localStorage.setItem(HABIT_TIMERS_KEY, JSON.stringify(habitTimers)); } catch (e) { console.error('saveHabitTimers', e); }
-        }
-
-        function genHabitId() {
-            return 'h' + Date.now().toString(36) + (_habitIdCounter++).toString(36);
-        }
-
-        function makeHabit(name, icon, color, type, goal, unit, section, frequency) {
-            return {
-                id: genHabitId(),
-                notionId: null,
-                name, icon, color,
-                type,               // 'count' | 'duration' (duration goal is in minutes)
-                goal,
-                unit,               // display unit: 'x' | 'steps' | 'hr' | 'min' ...
-                section,            // 'daily' | 'weekly'
-                frequency,          // 'daily' | 'weekly' | 'custom'
-                days: [0, 1, 2, 3, 4, 5, 6],  // used when frequency === 'custom'
-                order: 0,
-                archived: false,
-                createdAt: new Date().toISOString(),
-            };
-        }
-
-        function seedExampleHabits() {
-            habits = [
-                makeHabit('Sleep', '🛌', '#48b7c9', 'duration', 480, 'hr', 'daily', 'daily'),
-                makeHabit('Weigh-In', '⚖️', '#d4537e', 'count', 1, 'x', 'daily', 'daily'),
-                makeHabit('Mindfulness', '🧘', '#7F77DD', 'duration', 10, 'min', 'daily', 'daily'),
-                makeHabit('Steps', '🚶', '#EF9F27', 'count', 10000, 'steps', 'daily', 'daily'),
-                makeHabit('Blood Pressure Meds', '🩺', '#639922', 'count', 2, 'x', 'daily', 'daily'),
-                makeHabit('Take Supplements', '💊', '#d4537e', 'count', 1, 'x', 'daily', 'daily'),
-                makeHabit('Devotion', '📖', '#7F77DD', 'count', 1, 'x', 'daily', 'daily'),
-                makeHabit('Read', '📚', '#BA7517', 'duration', 120, 'hr', 'weekly', 'weekly'),
-            ];
-            habits.forEach((h, i) => { h.order = i; });
-            saveHabits();
-        }
-
-        // ---- Date / period keys ----------------------------------------
-        function habitDateKey(d) {
-            const dt = d ? new Date(d) : new Date();
-            dt.setHours(0, 0, 0, 0);
-            const y = dt.getFullYear();
-            const m = String(dt.getMonth() + 1).padStart(2, '0');
-            const day = String(dt.getDate()).padStart(2, '0');
-            return `${y}-${m}-${day}`;
-        }
-
-        // Monday-start week key, e.g. "W2026-07-06".
-        function habitWeekKey(d) {
-            const dt = d ? new Date(d) : new Date();
-            dt.setHours(0, 0, 0, 0);
-            const dow = dt.getDay();
-            const diff = (dow === 0 ? -6 : 1) - dow;
-            dt.setDate(dt.getDate() + diff);
-            return 'W' + habitDateKey(dt);
-        }
-
-        // The period bucket a habit logs into for a given day.
-        function habitPeriodKey(habit, d) {
-            return habit.section === 'weekly' ? habitWeekKey(d) : habitDateKey(d);
-        }
-
-        // ---- Logs -------------------------------------------------------
-        function getHabitLog(habitId, periodKey) {
-            return habitLogs.find(l => l.habitId === habitId && l.date === periodKey) || null;
-        }
-
-        function getOrCreateHabitLog(habitId, periodKey) {
-            let log = getHabitLog(habitId, periodKey);
-            if (!log) {
-                log = {
-                    id: genHabitId(),
-                    notionId: null,
-                    habitId,
-                    date: periodKey,
-                    value: 0,
-                    completed: false,
-                    createdAt: new Date().toISOString(),
-                };
-                habitLogs.push(log);
-            }
-            return log;
-        }
-
-        function setHabitValue(habitId, value) {
-            const habit = habits.find(h => h.id === habitId);
-            if (!habit) return;
-            const key = habitPeriodKey(habit, new Date());
-            const log = getOrCreateHabitLog(habitId, key);
-            log.value = Math.max(0, Math.round(value));
-            log.completed = log.value >= (habit.goal || 1);
-            saveHabitLogs();
-            pushHabitLogToNotion(log);
-            renderHabitsActive();
-            if (logSheetHabitId === habitId) renderLogSheet();
-        }
-
-        function currentHabitValue(habit) {
-            const key = habitPeriodKey(habit, new Date());
-            const log = getHabitLog(habit.id, key);
-            return log ? log.value : 0;
-        }
-
-        function incrementHabit(habitId, step) {
-            const habit = habits.find(h => h.id === habitId);
-            if (!habit) return;
-            setHabitValue(habitId, currentHabitValue(habit) + step);
-        }
-
-        // ---- Scheduling / progress -------------------------------------
-        function isHabitDueOn(habit, dateKey) {
-            if (habit.frequency === 'custom') {
-                const dow = new Date(dateKey + 'T00:00:00').getDay();
-                return (habit.days || []).includes(dow);
-            }
-            return true; // daily & weekly always "due" in their section
-        }
-
-        function habitProgressFraction(habit) {
-            const v = currentHabitValue(habit);
-            return Math.min(1, v / (habit.goal || 1));
-        }
-
-        function dailyProgress() {
-            const dk = habitDateKey();
-            const due = habits.filter(h => !h.archived && h.section === 'daily' && isHabitDueOn(h, dk));
-            if (!due.length) return 0;
-            let sum = 0;
-            for (const h of due) sum += habitProgressFraction(h);
-            return sum / due.length;
-        }
-
-        function habitStreak(habit) {
-            let streak = 0;
-            const d = new Date();
-            d.setHours(0, 0, 0, 0);
-            const step = habit.section === 'weekly' ? 7 : 1;
-            let first = true;
-            for (let i = 0; i < 730; i++) {
-                const dk = habitDateKey(d);
-                const due = habit.section === 'weekly' ? true : isHabitDueOn(habit, dk);
-                if (due) {
-                    const log = getHabitLog(habit.id, habitPeriodKey(habit, d));
-                    const done = log && log.completed;
-                    if (done) {
-                        streak++;
-                    } else if (first) {
-                        // grace: current period not finished yet doesn't break the streak
-                    } else {
-                        break;
-                    }
-                    first = false;
-                }
-                d.setDate(d.getDate() - step);
-            }
-            return streak;
-        }
-
-        // ---- Value formatting ------------------------------------------
-        // Duration values are stored in minutes. Display as H:MM when the
-        // unit is hours, otherwise as a plain number + unit.
-        function formatHabitValue(habit, value) {
-            if (habit.type === 'duration') {
-                if (habit.unit === 'hr') {
-                    const h = Math.floor(value / 60);
-                    const m = Math.round(value % 60);
-                    return `${h}:${String(m).padStart(2, '0')}`;
-                }
-                return `${Math.round(value)}`;
-            }
-            return `${Math.round(value)}`;
-        }
-
-        function formatHabitGoal(habit) {
-            if (habit.type === 'duration') {
-                if (habit.unit === 'hr') {
-                    const h = Math.floor(habit.goal / 60);
-                    const m = Math.round(habit.goal % 60);
-                    return m ? `${h} hr ${m} min` : `${h} hr`;
-                }
-                return `${habit.goal} min`;
-            }
-            const unit = habit.unit && habit.unit !== 'x' ? ' ' + habit.unit : '';
-            return `${habit.goal}${unit}`;
-        }
-
-        // ---- SVG progress ring -----------------------------------------
-        // centerDx nudges the centered text horizontally. It's used by the big
-        // percentage ring so the *number* sits on the ring's centerline while
-        // the smaller "%" hangs to its right (otherwise text-anchor=middle
-        // centers the whole "0%" run, which pushed the bold number left of
-        // center — the "not aligned in the circle" report on the web view).
-        function habitRingSVG(fraction, size, stroke, color, centerText, centerDx) {
-            const r = (size - stroke) / 2;
-            const c = 2 * Math.PI * r;
-            const off = c * (1 - Math.max(0, Math.min(1, fraction)));
-            const cx = size / 2;
-            const dx = centerDx || 0;
-            return `
-                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="habit-ring-svg">
-                    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none"
-                            stroke="var(--border-color)" stroke-width="${stroke}" />
-                    <circle cx="${cx}" cy="${cx}" r="${r}" fill="none"
-                            stroke="${color}" stroke-width="${stroke}" stroke-linecap="round"
-                            stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"
-                            transform="rotate(-90 ${cx} ${cx})" />
-                    ${centerText != null ? `<text x="${cx + dx}" y="${cx}" text-anchor="middle"
-                            dominant-baseline="central" class="habit-ring-text">${centerText}</text>` : ''}
-                </svg>`;
-        }
-
-        // ---- Rendering: screen shell -----------------------------------
-        function openHabits() {
-            habitView = 'today';
-            const screen = document.getElementById('habitScreen');
-            if (screen) screen.classList.add('open');
-            renderHabits('habitScreenBody');
-        }
-
-        function closeHabits() {
-            const screen = document.getElementById('habitScreen');
-            if (screen) screen.classList.remove('open');
-            stopTimerTicker();
-        }
-
-        function setHabitView(view) {
-            habitView = view === 'history' ? 'history' : 'today';
-            renderHabitsActive();
-        }
-
-        // Re-render whichever habit surface is currently visible (mobile
-        // overlay and/or desktop tab).
-        function renderHabitsActive() {
-            const mobile = document.getElementById('habitScreen');
-            if (mobile && mobile.classList.contains('open')) renderHabits('habitScreenBody');
-            const deskPanel = document.getElementById('desktopTabHabits');
-            if (deskPanel && deskPanel.classList.contains('active')) renderHabits('habitScreenBodyDesktop');
-            // Keep the Dashboard habits card in sync after any habit change.
-            if (typeof renderDesktopHabitsWidget === 'function') renderDesktopHabitsWidget();
-        }
-
-        function renderHabits(containerId) {
-            const el = document.getElementById(containerId);
-            if (!el) return;
-            // Toggle segmented control active state within this container.
-            el.innerHTML = habitView === 'history' ? renderHabitHistory() : renderHabitToday();
-            // Sync the toggle buttons that live in the header of this surface.
-            const root = el.closest('.habit-screen, .desktop-tab') || document;
-            root.querySelectorAll('[data-habit-tab]').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-habit-tab') === habitView);
-            });
-        }
-
-        // ---- Rendering: Today ------------------------------------------
-        function renderHabitToday() {
-            const dk = habitDateKey();
-            const active = habits.filter(h => !h.archived);
-            const daily = active.filter(h => h.section === 'daily')
-                .sort((a, b) => (a.order || 0) - (b.order || 0));
-            const weekly = active.filter(h => h.section === 'weekly')
-                .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-            const pct = Math.round(dailyProgress() * 100);
-            // Shift the whole "NN%" run right by ~half the "%" width so the
-            // number lands on the ring's centerline (see habitRingSVG).
-            const ring = habitRingSVG(dailyProgress(), 168, 12, 'var(--accent-green)',
-                `<tspan class="habit-big-pct">${pct}</tspan><tspan class="habit-big-unit">%</tspan>`, 9.4);
-
-            const dailyRows = daily.length
-                ? daily.map(h => habitRowHTML(h, dk)).join('')
-                : `<div class="habit-empty">No daily habits yet. Tap ＋ to add one.</div>`;
-
-            const weeklySection = weekly.length ? `
-                <div class="habit-section-label">Weekly goals</div>
-                ${weekly.map(h => habitRowHTML(h, dk)).join('')}
-            ` : '';
-
-            return `
-                <div class="habit-daily-ring">${ring}</div>
-                ${dailyRows}
-                ${weeklySection}
-            `;
-        }
-
-        function habitRowHTML(habit, dk) {
-            const due = habit.section === 'weekly' ? true : isHabitDueOn(habit, dk);
-            const value = currentHabitValue(habit);
-            const frac = habitProgressFraction(habit);
-            const done = frac >= 1;
-            const iconBg = habit.color + '22';
-            const ringText = habit.type === 'duration'
-                ? formatHabitValue(habit, value)
-                : `${value}`;
-            const timerRunning = !!habitTimers[habit.id];
-            return `
-                <div class="habit-row ${due ? '' : 'muted'} ${done ? 'done' : ''}" data-habit-id="${habit.id}">
-                    <div class="habit-icon" style="background:${iconBg};color:${habit.color}">${escapeHtml(habit.icon || '•')}</div>
-                    <div class="habit-meta" data-habit-open="${habit.id}">
-                        <div class="habit-name">${escapeHtml(habit.name)}</div>
-                        <div class="habit-sub">Goal: ${escapeHtml(formatHabitGoal(habit))}${timerRunning ? ' · ⏱ running' : ''}</div>
-                    </div>
-                    <div class="habit-ring habit-ring-tap" data-habit-quick="${habit.id}">
-                        ${habitRingSVG(frac, 46, 5, done ? 'var(--accent-green)' : habit.color,
-                            `<tspan class="habit-ring-mini">${escapeHtml(ringText)}</tspan>`)}
-                    </div>
-                </div>`;
-        }
-
-        // ---- Rendering: History ----------------------------------------
-        function renderHabitHistory() {
-            const active = habits.filter(h => !h.archived)
-                .sort((a, b) => (a.order || 0) - (b.order || 0));
-            if (!active.length) return `<div class="habit-empty">No habits yet.</div>`;
-
-            // 12-week heatmap grid of daily habits; weekly habits show streak only.
-            return active.map(habit => {
-                const streak = habitStreak(habit);
-                const grid = habit.section === 'weekly'
-                    ? weeklyHeatRow(habit)
-                    : dailyHeatRow(habit);
-                return `
-                    <div class="habit-hist-card">
-                        <div class="habit-hist-head">
-                            <div class="habit-icon sm" style="background:${habit.color}22;color:${habit.color}">${escapeHtml(habit.icon || '•')}</div>
-                            <div class="habit-hist-name">${escapeHtml(habit.name)}</div>
-                            <div class="habit-streak">${streak > 0 ? '🔥 ' + streak : '—'}</div>
-                        </div>
-                        <div class="habit-heat">${grid}</div>
-                    </div>`;
-            }).join('');
-        }
-
-        function dailyHeatRow(habit) {
-            const cells = [];
-            const d = new Date();
-            d.setHours(0, 0, 0, 0);
-            for (let i = 83; i >= 0; i--) {          // ~12 weeks
-                const day = new Date(d);
-                day.setDate(day.getDate() - i);
-                const dk = habitDateKey(day);
-                const log = getHabitLog(habit.id, dk);
-                const frac = log ? Math.min(1, log.value / (habit.goal || 1)) : 0;
-                let lvl = 0;
-                if (frac >= 1) lvl = 3; else if (frac >= 0.5) lvl = 2; else if (frac > 0) lvl = 1;
-                cells.push(`<span class="heat-cell lvl${lvl}" title="${dk}"></span>`);
-            }
-            return cells.join('');
-        }
-
-        function weeklyHeatRow(habit) {
-            const cells = [];
-            const d = new Date();
-            d.setHours(0, 0, 0, 0);
-            for (let i = 11; i >= 0; i--) {          // 12 weeks
-                const day = new Date(d);
-                day.setDate(day.getDate() - i * 7);
-                const key = habitWeekKey(day);
-                const log = getHabitLog(habit.id, key);
-                const frac = log ? Math.min(1, log.value / (habit.goal || 1)) : 0;
-                let lvl = 0;
-                if (frac >= 1) lvl = 3; else if (frac >= 0.5) lvl = 2; else if (frac > 0) lvl = 1;
-                cells.push(`<span class="heat-cell wk lvl${lvl}" title="${key}"></span>`);
-            }
-            return cells.join('');
-        }
-
-        // ---- Quick log + log sheet -------------------------------------
-        // Quick tap on a habit's ring: count habits increment by 1;
-        // duration habits open the log sheet (they need a timer / entry).
-        function habitQuickTap(habitId) {
-            const habit = habits.find(h => h.id === habitId);
-            if (!habit) return;
-            if (habit.type === 'count' && (habit.goal || 1) <= 20) {
-                incrementHabit(habitId, 1);
-            } else {
-                openLogSheet(habitId);
-            }
-        }
-
-        function openLogSheet(habitId) {
-            logSheetHabitId = habitId;
-            const overlay = document.getElementById('habitLogSheet');
-            if (overlay) overlay.classList.add('visible');
-            renderLogSheet();
-            if (habitTimers[habitId]) startTimerTicker();
-        }
-
-        function closeLogSheet() {
-            logSheetHabitId = null;
-            const overlay = document.getElementById('habitLogSheet');
-            if (overlay) overlay.classList.remove('visible');
-            stopTimerTicker();
-        }
-
-        function renderLogSheet() {
-            const body = document.getElementById('habitLogSheetBody');
-            if (!body || !logSheetHabitId) return;
-            const habit = habits.find(h => h.id === logSheetHabitId);
-            if (!habit) { closeLogSheet(); return; }
-
-            let value = currentHabitValue(habit);
-            // If a timer is running, reflect live elapsed time in the display.
-            if (habitTimers[habit.id]) {
-                const elapsedMin = (Date.now() - habitTimers[habit.id]) / 60000;
-                value = value + elapsedMin;
-            }
-            const frac = Math.min(1, value / (habit.goal || 1));
-            const step = habit.type === 'duration' ? 5 : 1;
-            const bigStep = habit.type === 'count' && habit.goal > 50 ? Math.max(1, Math.round(habit.goal / 10)) : null;
-            const timerRunning = !!habitTimers[habit.id];
-
-            body.innerHTML = `
-                <div class="logsheet-ring">
-                    ${habitRingSVG(frac, 140, 10, frac >= 1 ? 'var(--accent-green)' : habit.color,
-                        `<tspan class="logsheet-val">${escapeHtml(formatHabitValue(habit, value))}</tspan>`)}
-                </div>
-                <div class="logsheet-title">${escapeHtml(habit.icon || '')} ${escapeHtml(habit.name)}</div>
-                <div class="logsheet-goal">Goal: ${escapeHtml(formatHabitGoal(habit))}</div>
-
-                <div class="logsheet-steppers">
-                    <button class="logsheet-step" data-log-step="-${step}">−${step}${habit.type === 'duration' ? 'm' : ''}</button>
-                    <button class="logsheet-step" data-log-step="${step}">＋${step}${habit.type === 'duration' ? 'm' : ''}</button>
-                    ${bigStep ? `<button class="logsheet-step" data-log-step="${bigStep}">＋${bigStep}</button>` : ''}
-                </div>
-
-                ${habit.type === 'duration' ? `
-                    <button class="logsheet-timer ${timerRunning ? 'running' : ''}" data-log-timer="1">
-                        ${timerRunning ? '⏹ Stop timer' : '⏱ Start timer'}
-                    </button>` : ''}
-
-                <div class="logsheet-manual">
-                    <input type="number" id="logManualInput" inputmode="numeric"
-                           placeholder="${habit.type === 'duration' ? 'Set minutes' : 'Set exact ' + (habit.unit || 'count')}" />
-                    <button class="logsheet-set" data-log-set="1">Set</button>
-                </div>
-
-                <div class="logsheet-actions">
-                    <button class="logsheet-complete" data-log-complete="1">✓ Mark complete</button>
-                    <button class="logsheet-edit" data-log-edit="1">Edit habit</button>
-                </div>`;
-        }
-
-        function startTimerTicker() {
-            stopTimerTicker();
-            habitTimerInterval = setInterval(() => {
-                if (logSheetHabitId && habitTimers[logSheetHabitId]) {
-                    renderLogSheet();
-                } else {
-                    stopTimerTicker();
-                }
-            }, 1000);
-        }
-        function stopTimerTicker() {
-            if (habitTimerInterval) { clearInterval(habitTimerInterval); habitTimerInterval = null; }
-        }
-
-        function toggleHabitTimer(habitId) {
-            const habit = habits.find(h => h.id === habitId);
-            if (!habit) return;
-            if (habitTimers[habitId]) {
-                // Stop: add elapsed minutes to the stored value.
-                const elapsedMin = (Date.now() - habitTimers[habitId]) / 60000;
-                delete habitTimers[habitId];
-                saveHabitTimers();
-                stopTimerTicker();
-                setHabitValue(habitId, currentHabitValue(habit) + elapsedMin);
-            } else {
-                habitTimers[habitId] = Date.now();
-                saveHabitTimers();
-                startTimerTicker();
-                renderLogSheet();
-            }
-        }
-
-        // ---- Log sheet event delegation --------------------------------
-        function initHabitLogSheetEvents() {
-            const sheet = document.getElementById('habitLogSheet');
-            if (!sheet) return;
-            sheet.addEventListener('click', (e) => {
-                if (e.target === sheet) { closeLogSheet(); return; }
-                const habit = habits.find(h => h.id === logSheetHabitId);
-                if (!habit) return;
-
-                const stepBtn = e.target.closest('[data-log-step]');
-                if (stepBtn) {
-                    incrementHabit(habit.id, parseInt(stepBtn.getAttribute('data-log-step'), 10));
-                    return;
-                }
-                if (e.target.closest('[data-log-timer]')) { toggleHabitTimer(habit.id); return; }
-                if (e.target.closest('[data-log-set]')) {
-                    const input = document.getElementById('logManualInput');
-                    const n = parseFloat(input && input.value);
-                    if (!isNaN(n)) setHabitValue(habit.id, n);
-                    return;
-                }
-                if (e.target.closest('[data-log-complete]')) { setHabitValue(habit.id, habit.goal || 1); return; }
-                if (e.target.closest('[data-log-edit]')) { closeLogSheet(); openHabitEditor(habit.id); return; }
-            });
-        }
-
-        // ---- Habit screen event delegation -----------------------------
-        function initHabitScreenEvents() {
-            ['habitScreenBody', 'habitScreenBodyDesktop'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.addEventListener('click', (e) => {
-                    const quick = e.target.closest('[data-habit-quick]');
-                    if (quick) { habitQuickTap(quick.getAttribute('data-habit-quick')); return; }
-                    const open = e.target.closest('[data-habit-open]');
-                    if (open) { openLogSheet(open.getAttribute('data-habit-open')); return; }
-                });
-            });
-        }
-
-        // ---- Add / Edit habit modal ------------------------------------
-        let editingHabitId = null;
-        let habitDraft = null;
-
-        function openHabitEditor(habitId) {
-            const existing = habitId ? habits.find(h => h.id === habitId) : null;
-            editingHabitId = existing ? existing.id : null;
-            habitDraft = existing
-                ? JSON.parse(JSON.stringify(existing))
-                : makeHabit('', '✅', HABIT_COLORS[0], 'count', 1, 'x', 'daily', 'daily');
-            renderHabitEditor();
-            const overlay = document.getElementById('habitEditModal');
-            if (overlay) overlay.classList.add('visible');
-        }
-
-        function closeHabitEditor() {
-            editingHabitId = null;
-            habitDraft = null;
-            const overlay = document.getElementById('habitEditModal');
-            if (overlay) overlay.classList.remove('visible');
-        }
-
-        function renderHabitEditor() {
-            if (!habitDraft) return;
-            const d = habitDraft;
-            document.getElementById('habitEditTitle').textContent = editingHabitId ? 'Edit Habit' : 'New Habit';
-            const nameInput = document.getElementById('habitNameInput');
-            if (nameInput) nameInput.value = d.name || '';
-            const goalInput = document.getElementById('habitGoalInput');
-            if (goalInput) goalInput.value = d.type === 'duration' && d.unit === 'hr'
-                ? (d.goal / 60) : d.goal;
-
-            // Icons
-            document.getElementById('habitIconGrid').innerHTML = HABIT_ICONS.map(ic =>
-                `<button class="habit-pick-icon ${ic === d.icon ? 'selected' : ''}" data-icon="${ic}">${ic}</button>`
-            ).join('');
-            // Colors
-            document.getElementById('habitColorGrid').innerHTML = HABIT_COLORS.map(c =>
-                `<button class="habit-pick-color ${c === d.color ? 'selected' : ''}" data-color="${c}" style="background:${c}"></button>`
-            ).join('');
-            // Type
-            document.querySelectorAll('[data-habit-type]').forEach(b =>
-                b.classList.toggle('selected', b.getAttribute('data-habit-type') === d.type));
-            // Unit hint / goal label
-            const goalLabel = document.getElementById('habitGoalLabel');
-            if (goalLabel) goalLabel.textContent = d.type === 'duration'
-                ? (d.unit === 'hr' ? 'Goal (hours)' : 'Goal (minutes)')
-                : 'Goal (count)';
-            // Unit selector
-            document.querySelectorAll('[data-habit-unit]').forEach(b =>
-                b.classList.toggle('selected', b.getAttribute('data-habit-unit') === d.unit));
-            renderUnitOptions();
-            // Section
-            document.querySelectorAll('[data-habit-section]').forEach(b =>
-                b.classList.toggle('selected', b.getAttribute('data-habit-section') === d.section));
-            // Frequency
-            document.querySelectorAll('[data-habit-freq]').forEach(b =>
-                b.classList.toggle('selected', b.getAttribute('data-habit-freq') === d.frequency));
-            // Custom days
-            const daysWrap = document.getElementById('habitDaysRow');
-            if (daysWrap) {
-                daysWrap.style.display = d.frequency === 'custom' ? 'flex' : 'none';
-                daysWrap.innerHTML = HABIT_DOW.map((lbl, i) =>
-                    `<button class="habit-pick-day ${(d.days || []).includes(i) ? 'selected' : ''}" data-day="${i}">${lbl}</button>`
-                ).join('');
-            }
-            // Delete button only when editing
-            const del = document.getElementById('habitDeleteBtn');
-            if (del) del.style.display = editingHabitId ? '' : 'none';
-        }
-
-        function renderUnitOptions() {
-            const wrap = document.getElementById('habitUnitRow');
-            if (!wrap || !habitDraft) return;
-            const opts = habitDraft.type === 'duration' ? ['min', 'hr'] : ['x', 'steps', 'reps', 'oz', 'pages'];
-            if (!opts.includes(habitDraft.unit)) habitDraft.unit = opts[0];
-            wrap.innerHTML = opts.map(u =>
-                `<button class="habit-pick-unit ${u === habitDraft.unit ? 'selected' : ''}" data-habit-unit="${u}">${u}</button>`
-            ).join('');
-        }
-
-        function initHabitEditorEvents() {
-            const modal = document.getElementById('habitEditModal');
-            if (!modal) return;
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) { closeHabitEditor(); return; }
-                if (!habitDraft) return;
-                const iconBtn = e.target.closest('[data-icon]');
-                if (iconBtn) { habitDraft.icon = iconBtn.getAttribute('data-icon'); renderHabitEditor(); return; }
-                const colorBtn = e.target.closest('[data-color]');
-                if (colorBtn) { habitDraft.color = colorBtn.getAttribute('data-color'); renderHabitEditor(); return; }
-                const typeBtn = e.target.closest('[data-habit-type]');
-                if (typeBtn) {
-                    habitDraft.type = typeBtn.getAttribute('data-habit-type');
-                    habitDraft.unit = habitDraft.type === 'duration' ? 'min' : 'x';
-                    renderHabitEditor();
-                    return;
-                }
-                const unitBtn = e.target.closest('[data-habit-unit]');
-                if (unitBtn) { habitDraft.unit = unitBtn.getAttribute('data-habit-unit'); renderHabitEditor(); return; }
-                const secBtn = e.target.closest('[data-habit-section]');
-                if (secBtn) { habitDraft.section = secBtn.getAttribute('data-habit-section'); renderHabitEditor(); return; }
-                const freqBtn = e.target.closest('[data-habit-freq]');
-                if (freqBtn) {
-                    habitDraft.frequency = freqBtn.getAttribute('data-habit-freq');
-                    if (habitDraft.frequency === 'weekly') habitDraft.section = 'weekly';
-                    renderHabitEditor();
-                    return;
-                }
-                const dayBtn = e.target.closest('[data-day]');
-                if (dayBtn) {
-                    const i = parseInt(dayBtn.getAttribute('data-day'), 10);
-                    const set = new Set(habitDraft.days || []);
-                    if (set.has(i)) set.delete(i); else set.add(i);
-                    habitDraft.days = [...set].sort((a, b) => a - b);
-                    renderHabitEditor();
-                    return;
-                }
-                if (e.target.closest('#habitSaveBtn')) { saveHabitDraft(); return; }
-                if (e.target.closest('#habitDeleteBtn')) { deleteHabitFromEditor(); return; }
-                if (e.target.closest('#habitCancelBtn')) { closeHabitEditor(); return; }
-            });
-        }
-
-        function saveHabitDraft() {
-            if (!habitDraft) return;
-            const name = (document.getElementById('habitNameInput').value || '').trim();
-            if (!name) { document.getElementById('habitNameInput').focus(); return; }
-            habitDraft.name = name;
-            let goal = parseFloat(document.getElementById('habitGoalInput').value);
-            if (isNaN(goal) || goal <= 0) goal = 1;
-            // Hours entered are stored as minutes.
-            habitDraft.goal = (habitDraft.type === 'duration' && habitDraft.unit === 'hr')
-                ? Math.round(goal * 60) : Math.round(goal);
-
-            if (editingHabitId) {
-                const idx = habits.findIndex(h => h.id === editingHabitId);
-                if (idx >= 0) habits[idx] = { ...habits[idx], ...habitDraft, id: editingHabitId };
-            } else {
-                habitDraft.order = habits.length;
-                habits.push(habitDraft);
-            }
-            saveHabits();
-            const saved = habits.find(h => h.id === (editingHabitId || habitDraft.id));
-            if (saved) pushHabitToNotion(saved);
-            closeHabitEditor();
-            renderHabitsActive();
-        }
-
-        function deleteHabitFromEditor() {
-            if (!editingHabitId) return;
-            if (!window.confirm('Delete this habit? Its history will be removed.')) return;
-            const habit = habits.find(h => h.id === editingHabitId);
-            if (habit && habit.notionId) archiveHabitInNotion(habit.notionId);
-            habits = habits.filter(h => h.id !== editingHabitId);
-            habitLogs = habitLogs.filter(l => l.habitId !== editingHabitId);
-            saveHabits();
-            saveHabitLogs();
-            closeHabitEditor();
-            renderHabitsActive();
-        }
-
-        // Remove duplicate local habits that share the same Notion page id,
-        // keeping the first and repointing any logs to it. Guards against
-        // duplicates left behind by the old id-only merge.
-        function dedupeHabitsByNotionId() {
-            const seen = new Map();
-            const kept = [];
-            for (const h of habits) {
-                if (!h.notionId) { kept.push(h); continue; }
-                const existing = seen.get(h.notionId);
-                if (existing) {
-                    // Fold this duplicate into the kept one.
-                    for (const l of habitLogs) if (l.habitId === h.id) l.habitId = existing.id;
-                } else {
-                    seen.set(h.notionId, h);
-                    kept.push(h);
-                }
-            }
-            if (kept.length !== habits.length) {
-                habits = kept;
-                saveHabits();
-                saveHabitLogs();
-            }
-        }
-
-        // ---- Notion sync (client) --------------------------------------
-        // All no-ops when not connected, exactly like the task sync.
-        async function syncHabitsFromNotion({ silent = true } = {}) {
-            if (!notionConnected) return;
-            try {
-                const res = await fetch('/api/habits', { headers: { 'Accept': 'application/json' } });
-                if (!res.ok) return;
-                const data = await res.json();
-                const remoteHabits = Array.isArray(data.habits) ? data.habits : [];
-                const remoteLogs = Array.isArray(data.logs) ? data.logs : [];
-
-                for (const rh of remoteHabits) {
-                    let idx = habits.findIndex(h => h.notionId === rh.notionId);
-                    if (idx < 0) {
-                        // No id match — adopt a not-yet-linked local habit with
-                        // the same name (e.g. a seeded example) instead of pushing
-                        // a duplicate. This is the core fix for habits appearing
-                        // twice: seeded habits have notionId===null, so an
-                        // id-only match always missed and re-appended the remote.
-                        idx = habits.findIndex(h => !h.notionId && !h.archived
-                            && h.name && rh.name
-                            && h.name.trim().toLowerCase() === rh.name.trim().toLowerCase());
-                    }
-                    if (idx >= 0) {
-                        habits[idx] = { ...habits[idx], ...rh, id: habits[idx].id };
-                    } else if (!rh.archived) {
-                        habits.push({ ...rh, id: genHabitId() });
-                    }
-                }
-                // Collapse any pre-existing local duplicates (from earlier buggy
-                // syncs) that now share a notionId, repointing their logs.
-                dedupeHabitsByNotionId();
-                for (const rl of remoteLogs) {
-                    const habit = habits.find(h => h.notionId === rl.habitNotionId);
-                    if (!habit) continue;
-                    const idx = habitLogs.findIndex(l => l.notionId === rl.notionId
-                        || (l.habitId === habit.id && l.date === rl.date));
-                    if (idx >= 0) {
-                        habitLogs[idx] = { ...habitLogs[idx], ...rl, habitId: habit.id, id: habitLogs[idx].id };
-                    } else {
-                        habitLogs.push({ ...rl, id: genHabitId(), habitId: habit.id });
-                    }
-                }
-                saveHabits();
-                saveHabitLogs();
-                renderHabitsActive();
-
-                // Migration: push any local habits/logs that were created before
-                // sync was active (e.g. the seeded examples) so they reach Notion.
-                // Adopt a same-named remote habit if one exists to avoid creating
-                // duplicates when a second device already seeded the same habits.
-                for (const h of habits) {
-                    if (h.archived || h.notionId) continue;
-                    const match = remoteHabits.find(rh => rh.name && h.name
-                        && rh.name.trim().toLowerCase() === h.name.trim().toLowerCase());
-                    if (match) {
-                        h.notionId = match.notionId;
-                    } else {
-                        await pushHabitToNotion(h); // sets h.notionId on success
-                    }
-                }
-                // Adopting notionIds above can leave two local rows sharing one
-                // id (e.g. two seeded copies) — collapse them again.
-                dedupeHabitsByNotionId();
-                saveHabits();
-                for (const l of habitLogs) {
-                    if (l.notionId) continue;
-                    const h = habits.find(x => x.id === l.habitId);
-                    if (h && h.notionId) await pushHabitLogToNotion(l);
-                }
-                saveHabitLogs();
-            } catch (e) {
-                console.error('syncHabitsFromNotion', e);
-            }
-        }
-
-        async function pushHabitToNotion(habit) {
-            if (!notionConnected || !habit) return;
-            try {
-                const res = await fetch('/api/habits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'push', habit }),
-                });
-                if (!res.ok) { console.error('pushHabit failed', await res.text()); return; }
-                const data = await res.json();
-                if (data.habit && data.habit.notionId && !habit.notionId) {
-                    const local = habits.find(h => h.id === habit.id);
-                    if (local) { local.notionId = data.habit.notionId; saveHabits(); }
-                }
-            } catch (e) { console.error('pushHabitToNotion', e); }
-        }
-
-        async function pushHabitLogToNotion(log) {
-            if (!notionConnected || !log) return;
-            const habit = habits.find(h => h.id === log.habitId);
-            if (!habit || !habit.notionId) return; // need the habit synced first
-            try {
-                const res = await fetch('/api/habits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'log', log: { ...log, habitNotionId: habit.notionId } }),
-                });
-                if (!res.ok) { console.error('logHabit failed', await res.text()); return; }
-                const data = await res.json();
-                if (data.log && data.log.notionId && !log.notionId) {
-                    log.notionId = data.log.notionId;
-                    saveHabitLogs();
-                }
-            } catch (e) { console.error('pushHabitLogToNotion', e); }
-        }
-
-        async function archiveHabitInNotion(notionId) {
-            if (!notionConnected || !notionId) return;
-            try {
-                await fetch('/api/habits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'archive', notionId }),
-                });
-            } catch (e) { console.error('archiveHabitInNotion', e); }
-        }
-
-        // ---- Boot hooks -------------------------------------------------
-        function initHabits() {
-            loadHabits();
-            initHabitScreenEvents();
-            initHabitLogSheetEvents();
-            initHabitEditorEvents();
         }
 
         // Initialize on load
