@@ -4258,8 +4258,6 @@
                 });
             }
 
-            renderDesktopViews();
-
             // Weather: show cached data instantly, then resolve the location
             // (auto-detect current location, or an explicitly chosen city) and
             // refresh every 15 min.
@@ -4308,6 +4306,10 @@
             } catch (err) {
                 console.error('Failed to save desktop tab preference:', err);
             }
+
+            // Build this tab's view if it went stale while it was hidden.
+            desktopActiveTab = tab;
+            flushDesktopView(tab);
 
             // Lazy-render the Hub tab the first time it's opened, then
             // let its own timers keep it fresh. Safe to call repeatedly.
@@ -5274,15 +5276,54 @@
 
         // Single entry point the renderTasks hook and initDesktop call:
         // refreshes every desktop view that displays task/event data.
+        // Which desktop tab is showing, kept in lockstep with switchDesktopTab.
+        // This used to render all four task views on every call, three of them
+        // into panels the user couldn't see: one checkbox click meant ~23
+        // innerHTML teardowns, ~59 full passes over the task array and ~52
+        // sorts. Now only the visible view is built; the rest are marked dirty
+        // and flushed when they're activated.
+        let desktopActiveTab = 'dashboard';
+        const desktopViewDirty = { dashboard: true, today: true, week: true, month: true };
+
+        function flushDesktopView(tab) {
+            // Undefined for hub/settings, which render through their own paths.
+            if (!desktopViewDirty[tab]) return;
+            desktopViewDirty[tab] = false;
+            switch (tab) {
+                case 'dashboard': renderDesktopDashboard(); break;
+                case 'today':     renderDesktopToday();     break;
+                case 'week':      renderDesktopWeek();      break;
+                case 'month':     renderDesktopMonth();     break;
+            }
+        }
+
+        // Coalesce bursts of async repaints into one frame. The four boot
+        // fetches (iCal, Google list, Google events, cal-checks) each land
+        // independently and each used to trigger its own full repaint.
+        // Deliberately NOT used for direct user actions — routing a click
+        // through rAF adds a frame of input latency and breaks the assumption
+        // that the DOM is current right after a handler runs.
+        let renderScheduled = false;
+        function scheduleRender() {
+            if (renderScheduled) return;
+            renderScheduled = true;
+            requestAnimationFrame(() => {
+                renderScheduled = false;
+                renderTasks();
+            });
+        }
+
         function renderDesktopViews() {
             if (!document.body.classList.contains('desktop-mode')) return;
-            renderDesktopDashboard();
-            renderDesktopWeek();
-            renderDesktopToday();
-            renderDesktopMonth();
-            // If the month day-detail popup is open, refresh it too so an action
-            // taken inside it (e.g. "↩ Board") updates immediately instead of
-            // leaving the moved task visible.
+            desktopViewDirty.dashboard = true;
+            desktopViewDirty.today = true;
+            desktopViewDirty.week = true;
+            desktopViewDirty.month = true;
+            flushDesktopView(desktopActiveTab);
+            // The month day-detail popup floats above the tab panels, so refresh
+            // it whenever it's open regardless of which tab is active — an action
+            // taken inside it (e.g. "↩ Board") has to update immediately
+            // instead of leaving the moved task visible.
             const overlay = document.getElementById('monthDetailOverlay');
             if (overlay && overlay.classList.contains('visible') && monthDetailYmd) {
                 renderMonthDetailBody(monthDetailYmd);
@@ -6195,7 +6236,7 @@
                 }
 
                 saveTasks();
-                renderTasks();
+                scheduleRender();
 
                 // Outbound reconciliation: tasks created while offline have no
                 // notionId and syncFromNotion is pull-only, so they'd otherwise
@@ -7228,7 +7269,7 @@
         // too when that tab has been opened at least once.
         function repaintAfterCalendar() {
             renderAllDayBanner();
-            renderTasks();
+            scheduleRender();
             if (typeof briefingState !== 'undefined' && briefingState.initialized
                 && typeof renderBriefingHero === 'function') {
                 renderBriefingHero();
