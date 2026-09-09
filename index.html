@@ -4584,14 +4584,13 @@
             updateDateDisplay();
             renderTasks();
 
-            // Check Notion connection status (uses server-side env-var token)
-            await checkNotionStatus();
-            // The auto sync inside the status check refreshes offsets from
-            // Notion's Due Dates; lock dates to those fresh offsets.
-            reconcileDatesFromOffsets();
-
-            // Habits sync in the background once Notion connectivity is known.
-            syncHabitsFromNotion();
+            // ── Phase B: wire the DOM and paint the desktop shell ──────
+            // This block used to sit below the Notion await. That meant
+            // body.desktop-mode — the class that makes .desktop-app visible at
+            // all — wasn't set until the whole Notion waterfall had resolved,
+            // so desktop showed a blank page while every task it needed was
+            // already in localStorage, loaded above. Nothing here reads Notion
+            // state, so it runs first now.
 
             // Handle add task input
             const addTaskInput = document.getElementById('addTaskInput');
@@ -4613,6 +4612,10 @@
             renderCategoryColorSettings();
             initDesktop();
 
+            // ── Phase C: independent network work, all in flight at once ──
+            // None of this depends on the Notion task sync; it used to queue
+            // behind it anyway.
+
             // Calendar events: fetch immediately, then refresh every 5 min.
             // First fetch is non-blocking — UI renders without events first.
             fetchCalendarEvents();
@@ -4626,6 +4629,25 @@
             renderGoogleCalendarList();
             loadGoogleCalendarList().then(fetchGoogleCalendarEvents);
             setInterval(fetchGoogleCalendarEvents, CAL_REFRESH_MS);
+            syncCalChecks(); // once on load
+
+            // ── Phase D: the Notion chain. Still awaited, no longer blocks ──
+            // Check Notion connection status (uses server-side env-var token)
+            await checkNotionStatus();
+            // The auto sync inside the status check refreshes offsets from
+            // Notion's Due Dates; lock dates to those fresh offsets.
+            reconcileDatesFromOffsets();
+
+            // Habits sync in the background once Notion connectivity is known.
+            syncHabitsFromNotion();
+
+            // ── Phase E: background loop ───────────────────────────────
+            // Registered LAST on purpose. If focus/visibilitychange were bound
+            // before the await above, a focus landing after notionConnected
+            // flips true but while the boot sync is still running would start a
+            // second concurrent syncFromNotion — bgSyncInFlight guards only
+            // background syncs, not the boot one. Two concurrent merges racing
+            // reconcileUnsyncedTasks is how duplicate Notion rows get made.
 
             // Tasks and calendar-event checks are the two things with no
             // background refresh of their own. Pull changes made on other
@@ -4642,7 +4664,6 @@
                 maybeBackgroundSync();
                 syncCalChecks();
             };
-            syncCalChecks(); // once on load
             const TASK_RESYNC_MS = 45 * 1000;
             setInterval(backgroundRefresh, TASK_RESYNC_MS);
             document.addEventListener('visibilitychange', () => {
@@ -6710,7 +6731,13 @@
                 // stay stranded locally forever. Push them up now that we're
                 // connected. Runs after the merge so a task that just arrived
                 // from Notion is already linked and won't be re-created.
-                await reconcileUnsyncedTasks();
+                // Fire-and-forget: the pushes still drain serially at the same
+                // rate, but boot no longer waits on one serverless invocation
+                // per unsynced task before the shell settles. Deliberately not
+                // parallelized — that loop is what turns a lost notionId into
+                // duplicate Notion pages, and concurrency would make them
+                // faster and in bigger batches.
+                reconcileUnsyncedTasks().catch(err => console.error('Reconcile error:', err));
 
                 if (!silent) alert(`Synced ${remoteTasks.length} tasks from Notion`);
             } catch (error) {
