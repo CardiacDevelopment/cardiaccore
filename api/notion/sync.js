@@ -31,7 +31,19 @@ module.exports = async function handler(req, res) {
 
       for (const page of data.results || []) {
         if (page.archived) continue;
-        tasks.push(pageToTask(page));
+        // Narrow shape: the client merge reads only id/title/completed/
+        // category/dayOffset. pageToTask also emits status, dueDate,
+        // categories, project and url — roughly half the payload, never read
+        // on this route. lastEditedTime is kept because the ETag hashes it.
+        const t = pageToTask(page);
+        tasks.push({
+          id: t.id,
+          title: t.title,
+          completed: t.completed,
+          category: t.category,
+          dayOffset: t.dayOffset,
+          lastEditedTime: t.lastEditedTime,
+        });
       }
 
       cursor = data.has_more ? data.next_cursor : null;

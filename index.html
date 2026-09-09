@@ -4632,7 +4632,16 @@
             // devices every 45s, and whenever this tab regains focus, so a task
             // or event completed on mobile shows up on web (and vice versa)
             // without a manual reload.
-            const backgroundRefresh = () => { maybeBackgroundSync(); syncCalChecks(); };
+            // visibilitychange and focus both fire on tab activation, so
+            // alt-tabbing back used to kick off two pulls. The in-flight guards
+            // absorbed the duplicate requests but not the render fan-out.
+            let lastBgRefresh = 0;
+            const backgroundRefresh = () => {
+                if (Date.now() - lastBgRefresh < 5000) return;
+                lastBgRefresh = Date.now();
+                maybeBackgroundSync();
+                syncCalChecks();
+            };
             syncCalChecks(); // once on load
             const TASK_RESYNC_MS = 45 * 1000;
             setInterval(backgroundRefresh, TASK_RESYNC_MS);
@@ -4914,7 +4923,6 @@
         function addBrainDumpItem(text) {
             const t = createTaskAtTarget(text, 'Brain Dump', 'someday');
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(t);
         }
@@ -4925,7 +4933,6 @@
             if (!task) return;
             task.category = category;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -6136,7 +6143,6 @@
             }
             task.category = category;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -6208,7 +6214,6 @@
             delete task.weekOf; // and no longer pinned to a specific week
             task.order = tasks.filter(t => t.dueDate === ymd || t.dayOffset === offset).length;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -6476,6 +6481,14 @@
             // is covered too. No-ops entirely when not in desktop mode.
             renderDesktopViews();
 
+            // Everything below builds the mobile day list, the all-day banner
+            // and the board — all of which live inside .mobile-view /
+            // .task-board-view, which body.desktop-mode hides outright. On
+            // desktop it was building ~300 task cards and attaching gesture
+            // listeners to nodes nobody can reach. Desktop mode is decided once
+            // at load and needs a reload to change, so this can't go stale.
+            if (document.body.classList.contains('desktop-mode')) return;
+
             const list = document.getElementById('mobileTaskList');
             // Tasks are rendered in `order` ascending. Timed tasks are constrained
             // to chronological order via placeTimedTask() whenever a time is set
@@ -6650,8 +6663,18 @@
                 // Merge remote tasks. Use a counter-based ID to avoid Date.now() collisions
                 // when multiple new tasks arrive in the same millisecond.
                 let nextLocalId = Date.now();
+                // notionId -> index, built once. The findIndex this replaces was
+                // O(local x remote) — ~93k comparisons at 305 tasks, re-run on
+                // every boot, every 45s tick, and every window focus.
+                // Keep-first mirrors findIndex's semantics when two local rows
+                // somehow share a notionId.
+                const byNotionId = new Map();
+                for (let i = 0; i < tasks.length; i++) {
+                    const nid = tasks[i].notionId;
+                    if (nid && !byNotionId.has(nid)) byNotionId.set(nid, i);
+                }
                 for (const remote of remoteTasks) {
-                    const idx = tasks.findIndex(t => t.notionId === remote.id);
+                    const idx = byNotionId.has(remote.id) ? byNotionId.get(remote.id) : -1;
                     if (idx >= 0) {
                         tasks[idx] = {
                             ...tasks[idx],
@@ -6671,6 +6694,11 @@
                             order: tasks.length,
                             createdAt: new Date().toISOString(),
                         });
+                        // Index the row we just added. Without this, an id that
+                        // appears twice in one payload would be pushed twice —
+                        // a duplicate local row, which then creates a duplicate
+                        // Notion page on the next edit.
+                        byNotionId.set(remote.id, tasks.length - 1);
                     }
                 }
 
@@ -7136,7 +7164,6 @@
                 if (newTime) { t.startTime = newTime; placeTimedTask(t); }
                 saveTasks();
                 renderActiveView();
-                renderDesktopViews();
                 closeEditModal();
                 if (notionConnected) pushTaskToNotion(t);
                 return;
@@ -7838,6 +7865,11 @@
         }
 
         function renderActiveView() {
+            // Desktop has no mobile day/board split, and currentView can still
+            // be 'tasks' from a prior mobile session in the same tab — which
+            // would route to renderTaskBoard() and never refresh the desktop
+            // panels. Short-circuit so callers only need this one call.
+            if (document.body.classList.contains('desktop-mode')) { renderDesktopViews(); return; }
             if (currentView === 'tasks') renderTaskBoard();
             else renderTasks();
         }
@@ -8181,7 +8213,6 @@
             delete task.weekOf;
             task.order = 0;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -8197,7 +8228,6 @@
             task.bucket = bucket;
             delete task.weekOf; // 'month'/'someday' buckets aren't week-pinned
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }
@@ -8213,7 +8243,6 @@
             task.bucket = 'week';
             task.weekOf = weekOf;
             saveTasks();
-            renderDesktopViews();
             renderActiveView();
             if (notionConnected) pushTaskToNotion(task);
         }

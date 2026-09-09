@@ -22,6 +22,7 @@ async function notionFetch(path, { token, method = 'GET', body } = {}) {
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(8000),
   });
 
   const text = await res.text();

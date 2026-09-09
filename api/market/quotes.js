@@ -49,6 +49,7 @@ async function fetchQuote(symbol) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1d`;
   const res = await fetch(url, {
     headers: { 'User-Agent': 'Mozilla/5.0' },
+    signal: AbortSignal.timeout(5000),
   });
   if (!res.ok) throw new Error(`Yahoo Finance ${res.status} for ${symbol}`);
   const data = await res.json();
